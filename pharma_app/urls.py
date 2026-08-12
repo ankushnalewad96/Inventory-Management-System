@@ -1,0 +1,24 @@
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+   
+    path('', views.dashboard, name="dashboard"),
+    
+    #User Authentication URLs
+    path('user-login/', views._login, name="user_login"),
+    path('retailer-register/', views.retailer_register, name="retailer_register"),
+    path('logout/', views.user_logout, name='user_logout'),
+
+    #Products URLs
+    path("product-list/", views.products, name="product_list"),
+    path("add-product/", views.add_product, name="add_product"),
+
+    #Order URLs
+    path('add-order/', views.add_order, name='add_new_order'),
+    path('purchase-product-list/', views.purchase_list, name='purchase_product_list'),
+
+    #Supplier URLs
+    path('add-supplier/', views.add_supplier, name='add_new_supplier'),
+]

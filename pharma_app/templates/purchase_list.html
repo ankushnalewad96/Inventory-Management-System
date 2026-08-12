@@ -1,0 +1,249 @@
+
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Home Page - My Django Site{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <h1>Purchase List</h1>
+    <!-- <p>A quick pulse on your cash position</p> -->
+{% endblock %}
+
+{% block body %}
+<!-- Summary Cards -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <div class="card-top">
+            <div class="card-icon-wrap paid">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="card-menu"><i class="fas fa-ellipsis-v"></i></div>
+        </div>
+        <div class="card-label">Paid</div>
+        <div class="card-value">₹5,42,100</div>
+        <div class="card-trend up">
+            <i class="fas fa-arrow-up" style="font-size:10px;"></i>
+            <span>12.5% vs last month</span>
+        </div>
+    </div>
+
+    <div class="summary-card">
+        <div class="card-top">
+            <div class="card-icon-wrap unpaid">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="card-menu"><i class="fas fa-ellipsis-v"></i></div>
+        </div>
+        <div class="card-label">Unpaid</div>
+        <div class="card-value">₹2,14,900</div>
+        <div class="card-trend down">
+            <i class="fas fa-arrow-down" style="font-size:10px;"></i>
+            <span>3.1% vs last month</span>
+        </div>
+    </div>
+
+    <div class="summary-card">
+        <div class="card-top">
+            <div class="card-icon-wrap overdue">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="card-menu"><i class="fas fa-ellipsis-v"></i></div>
+        </div>
+        <div class="card-label">Overdue</div>
+        <div class="card-value">₹84,750</div>
+        <div class="card-trend down">
+            <i class="fas fa-arrow-down" style="font-size:10px;"></i>
+            <span>1.8% vs last month</span>
+        </div>
+    </div>
+
+    <div class="summary-card">
+        <div class="card-top">
+            <div class="card-icon-wrap total">
+                <i class="fas fa-wallet"></i>
+            </div>
+            <div class="card-menu"><i class="fas fa-ellipsis-v"></i></div>
+        </div>
+        <div class="card-label">Total</div>
+        <div class="card-value">₹8,41,750</div>
+        <div class="card-trend up">
+            <i class="fas fa-arrow-up" style="font-size:10px;"></i>
+            <span>6.4% vs last month</span>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions">
+    <a href="{% url 'add_new_order' %}"><button class="action-btn primary">
+        <i class="fas fa-plus"></i>
+        New purchase order
+    </button></a>
+    <button class="action-btn">
+        <i class="fas fa-file-upload"></i>
+        Upload bills
+    </button>
+    <!-- <a href="{% url 'add_new_supplier' %}"><button class="action-btn">
+        <i class="fas fa-user-plus"></i>
+        Add supplier
+    </button></a>
+
+    {% if request.user.is_superuser %}
+    <a href="{% url 'retailer_register' %}"><button class="action-btn">
+        <i class="fas fa-user-plus"></i>
+        Add retailer
+    </button></a>
+    {% endif %} -->
+</div>
+
+<!-- Recent Purchases -->
+<div class="purchases-section">
+    <div class="section-header">
+        <h2>Recent purchases</h2>
+        <p>42 orders this month</p>
+    </div>
+
+    <div class="filters-bar">
+        <div class="filter-group">
+            <label>From</label>
+            <input type="date" class="filter-input">
+        </div>
+        <div class="filter-group">
+            <label>To</label>
+            <input type="date" class="filter-input">
+        </div>
+        <div class="filter-group">
+            <label>Status</label>
+            <select class="filter-select">
+                <option>All Status</option>
+                <option>Paid</option>
+                <option>Pending</option>
+                <option>Overdue</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Supplier</label>
+            <select class="filter-select">
+                <option>All Suppliers</option>
+                {% for supplier in supplier_list %}
+                    <option value="{{ supplier.id }}">{{ supplier.supplier_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="search-filter">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search orders, suppliers...">
+        </div>
+        <div class="export-btns">
+            <button class="export-btn" onclick="downloadCSV()">
+                <i class="fas fa-download"></i> Download
+            </button>
+            <button class="export-btn" onclick="window.print()">
+                <i class="fas fa-print"></i> Print
+            </button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Order No.</th>
+                    <th>Supplier</th>
+                    <th>Date</th>
+                    <th>Payment Type</th>
+                    <th>Amount</th>
+                    <th>Balance</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+                {% for purchase in purchases %}
+                    <tr>
+                        <td><strong>{{ purchase.bill_number }}</strong></td>
+                        <td>
+                            <div class="supplier-cell">
+                                <div class="supplier-avatar" style="background:#3b82f6;">
+                                    {{ purchase.supplier|slice:":2"|upper }}
+                                </div>
+                                <span>{{ purchase }}</span>
+                            </div>
+                        </td>
+                        <td>{{ purchase.bill_date|date:"d M Y" }}</td>
+                        <td>{{ purchase.get_payment_type_display }}</td>
+                        <td><strong>₹{{ purchase.grand_total|floatformat:2 }}</strong></td>
+                        <td>₹{{ purchase.due_amount|floatformat:2 }}</td>
+                        <td>
+                            {% if purchase.due_date %}
+                                {{ purchase.due_date|date:"d M Y" }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if purchase.payment_status == "Paid" %}
+                                <span class="status-text paid">
+                                    <span class="status-dot"></span>
+                                    Paid
+                                </span>
+                            {% elif purchase.payment_status == "Partial" %}
+                                <span class="status-text partial">
+                                    <span class="status-dot"></span>
+                                    Partial
+                                </span>
+                            {% else %}
+                                <span class="status-text unpaid">
+                                    <span class="status-dot"></span>
+                                    Unpaid
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-btns">
+                                <a href="#" class="action-icon-btn" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="#" class="action-icon-btn" title="Print" target="_blank">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                                <button class="action-icon-btn" title="Share" onclick="sharePurchase('{{ purchase.bill_number }}')">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="9" style="text-align:center;padding:40px;color:#999;">
+                            <i class="fas fa-inbox" style="font-size:48px;display:block;margin-bottom:10px;color:#ddd;"></i>
+                            No purchase orders found
+                        </td>
+                    </tr>
+                {% endfor %}
+                
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-footer">
+        <div class="showing-text">Showing 6 of 42 orders</div>
+        <div class="pagination">
+            <button class="page-btn"><i class="fas fa-chevron-left"></i></button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+
+<script src="{% static 'jss/dashboard.js' %}"></script>
+{% endblock %}

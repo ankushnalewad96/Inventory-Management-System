@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Product List - My Django Site{% endblock %}
+
+{% block css %}
+<!-- <link rel="stylesheet" href="{% static 'css/add_order.css' %}"> -->
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <h1>Product List</h1>
+    <!-- <p>A quick pulse on your cash position</p> -->
+{% endblock %}
+
+{% block body %}
+    <div class="quick-actions">
+        <a href="{% url 'add_product' %}"><button class="action-btn primary">
+            <i class="fas fa-plus"></i>
+            Add Product
+        </button></a>
+    </div>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Order No.</th>
+                    <th>Supplier</th>
+                    <th>Date</th>
+                    <th>Payment Type</th>
+                    <th>Amount</th>
+                    <th>Balance</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+                {% for purchase in purchases %}
+                    <tr>
+                        <td><strong>{{ purchase.bill_number }}</strong></td>
+                        <td>
+                            <div class="supplier-cell">
+                                <div class="supplier-avatar" style="background:#3b82f6;">
+                                    {{ purchase.supplier|slice:":2"|upper }}
+                                </div>
+                                <span>{{ purchase }}</span>
+                            </div>
+                        </td>
+                        <td>{{ purchase.bill_date|date:"d M Y" }}</td>
+                        <td>{{ purchase.get_payment_type_display }}</td>
+                        <td><strong>₹{{ purchase.grand_total|floatformat:2 }}</strong></td>
+                        <td>₹{{ purchase.due_amount|floatformat:2 }}</td>
+                        <td>
+                            {% if purchase.due_date %}
+                                {{ purchase.due_date|date:"d M Y" }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if purchase.payment_status == "Paid" %}
+                                <span class="status-text paid">
+                                    <span class="status-dot"></span>
+                                    Paid
+                                </span>
+                            {% elif purchase.payment_status == "Partial" %}
+                                <span class="status-text partial">
+                                    <span class="status-dot"></span>
+                                    Partial
+                                </span>
+                            {% else %}
+                                <span class="status-text unpaid">
+                                    <span class="status-dot"></span>
+                                    Unpaid
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-btns">
+                                <a href="#" class="action-icon-btn" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="#" class="action-icon-btn" title="Print" target="_blank">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                                <button class="action-icon-btn" title="Share" onclick="sharePurchase('{{ purchase.bill_number }}')">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="9" style="text-align:center;padding:40px;color:#999;">
+                            <i class="fas fa-inbox" style="font-size:48px;display:block;margin-bottom:10px;color:#ddd;"></i>
+                            No purchase orders found
+                        </td>
+                    </tr>
+                {% endfor %}
+                
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-footer">
+        <div class="showing-text">Showing 6 of 42 orders</div>
+        <div class="pagination">
+            <button class="page-btn"><i class="fas fa-chevron-left"></i></button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+<script>
+    // ===== SIDEBAR TOGGLE =====
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+    }
+
+    function openMobileSidebar() {
+        sidebar.classList.add('open');
+        sidebarOverlay.classList.add('active');
+    }
+
+    function closeMobileSidebar() {
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('active');
+    }
+
+    if (localStorage.getItem('sidebarCollapsed') === 'true' && window.innerWidth > 768) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('expanded');
+    }
+
+    // ===== THEME TOGGLE =====
+    const html = document.documentElement;
+    const themeIcon = document.getElementById('themeIcon');
+
+    function toggleTheme() {
+        const current = html.getAttribute('data-theme');
+        const next = current === 'light' ? 'dark' : 'light';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        themeIcon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    html.setAttribute('data-theme', savedTheme);
+    themeIcon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+
+
+    /* ============================================================
+        USER PROFILE DROPDOWN
+        ============================================================ */
+    const userProfile = document.getElementById('userProfile');
+    const userDropdownMenu = document.getElementById('userDropdownMenu');
+
+    userProfile.addEventListener('click', function (e) {
+        e.stopPropagation();
+        userDropdownMenu.classList.toggle('show');
+        userProfile.classList.toggle('open');
+    });
+
+    // Close dropdown when clicking anywhere else
+    document.addEventListener('click', function (e) {
+        if (!userProfile.contains(e.target)) {
+            userDropdownMenu.classList.remove('show');
+            userProfile.classList.remove('open');
+        }
+    });
+
+    // Close dropdown on Escape
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            userDropdownMenu.classList.remove('show');
+            userProfile.classList.remove('open');
+            closeMobileSidebar();
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            closeMobileSidebar();
+        }
+    });
+</script>
+{% endblock %}

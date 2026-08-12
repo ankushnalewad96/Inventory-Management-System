@@ -1,0 +1,15 @@
+            <!-- <a href="{% url 'register_user' %}" class="admin-btn"> -->
+            <!-- <a href="{% url 'logout' %}" class="logout-btn"><i class="fas fa-power-off"></i></a> -->
+            <!-- {% block page_title %} {% endblock %} -->
+
+
+
+
+
+
+
+
+
+
+
+        

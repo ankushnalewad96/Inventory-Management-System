@@ -1,0 +1,429 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Add Retailer - My Django Site{% endblock %}
+
+{% block css %}
+<!-- <link rel="stylesheet" href="{% static 'css/add_order.css' %}"> -->
+<link rel="stylesheet" href="{% static 'css/retailer_registration.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <h1>Add Retailer</h1>
+    <!-- <p>A quick pulse on your cash position</p> -->
+{% endblock %}
+
+{% block body %}
+    <form method="POST" action="{% url 'retailer_register' %}" id="retailerForm" novalidate>
+        {% csrf_token %}
+        <div class="form-card">
+            <div class="form-header">
+                <h2><i class="fas fa-store" style="color:var(--primary);margin-right:8px;"></i>New Retailer Account</h2>
+            </div>
+
+            <div class="form-body">
+                <!-- Account Information -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon blue"><i class="fas fa-user-shield"></i></div>
+                        <div>
+                            <div class="section-title">Account Information</div>
+                            <div class="section-subtitle">Login credentials for the retailer</div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="username">Username <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="username" id="username" placeholder="e.g. rajesh_store" autocomplete="username" required>
+                            <span class="error-msg" id="usernameError"><i class="fas fa-circle-exclamation"></i> Username is required</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address <span class="required">*</span></label>
+                            <input type="email" class="form-control" name="email" id="email" placeholder="e.g. rajesh@store.com" autocomplete="email" required>
+                            <span class="error-msg" id="emailError"><i class="fas fa-circle-exclamation"></i> Enter a valid email address</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password <span class="required">*</span></label>
+                            <div class="password-wrap">
+                                <input type="password" class="form-control" name="password" id="password" placeholder="Min 8 characters" autocomplete="new-password" required oninput="checkStrength(this.value)">
+                                <button type="button" class="toggle-password" onclick="togglePassword()" aria-label="Show password">
+                                    <i class="fas fa-eye" id="eyeIcon"></i>
+                                </button>
+                            </div>
+                            <div class="password-strength">
+                                <div class="strength-bar">
+                                    <div class="strength-fill" id="strengthFill"></div>
+                                </div>
+                                <div class="strength-text" id="strengthText"></div>
+                            </div>
+                            <span class="error-msg" id="passwordError"><i class="fas fa-circle-exclamation"></i> Password must be at least 8 characters</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm Password <span class="required">*</span></label>
+                            <div class="password-wrap">
+                                <input type="password" class="form-control" id="confirmPassword" placeholder="Re-enter password" autocomplete="new-password" required oninput="checkMatch()">
+                                <button type="button" class="toggle-password" onclick="toggleConfirmPassword()" aria-label="Show password">
+                                    <i class="fas fa-eye" id="eyeIcon2"></i>
+                                </button>
+                            </div>
+                            <span class="error-msg" id="matchError"><i class="fas fa-circle-exclamation"></i> Passwords do not match</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shop Details -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon green"><i class="fas fa-store"></i></div>
+                        <div>
+                            <div class="section-title">Shop Details</div>
+                            <div class="section-subtitle">Business information of the retailer</div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="shop_name">Shop Name <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="shop_name" id="shop_name" placeholder="e.g. Rajesh General Store" required>
+                            <span class="error-msg" id="shopError"><i class="fas fa-circle-exclamation"></i> Shop name is required</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="owner_name">Owner Name <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="owner_name" id="owner_name" placeholder="e.g. Rajesh Kumar Sharma" required>
+                            <span class="error-msg" id="ownerError"><i class="fas fa-circle-exclamation"></i> Owner name is required</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mobile">Mobile Number <span class="required">*</span></label>
+                            <input type="tel" class="form-control" name="mobile" id="mobile" placeholder="e.g. 9876543210" maxlength="10" inputmode="numeric" autocomplete="tel" required oninput="this.value = this.value.replace(/\D/g,'')">
+                            <span class="error-msg" id="mobileError"><i class="fas fa-circle-exclamation"></i> Enter a valid 10-digit mobile number</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon orange"><i class="fas fa-map-marker-alt"></i></div>
+                        <div>
+                            <div class="section-title">Address</div>
+                            <div class="section-subtitle">Location details of the shop</div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="city">City <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="city" id="city" placeholder="e.g. Mumbai" required>
+                            <span class="error-msg" id="cityError"><i class="fas fa-circle-exclamation"></i> City is required</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="state">State <span class="required">*</span></label>
+                            <select class="form-control" name="state" id="state" required>
+                                <option value="">Select State</option>
+                                <option value="maharashtra">Maharashtra</option>
+                                <option value="gujarat">Gujarat</option>
+                                <option value="karnataka">Karnataka</option>
+                                <option value="tamilnadu">Tamil Nadu</option>
+                                <option value="delhi">Delhi</option>
+                                <option value="rajasthan">Rajasthan</option>
+                                <option value="telangana">Telangana</option>
+                                <option value="westbengal">West Bengal</option>
+                                <option value="punjab">Punjab</option>
+                                <option value="haryana">Haryana</option>
+                                <option value="up">Uttar Pradesh</option>
+                                <option value="mp">Madhya Pradesh</option>
+                                <option value="kerala">Kerala</option>
+                                <option value="andhra">Andhra Pradesh</option>
+                                <option value="bihar">Bihar</option>
+                                <option value="odisha">Odisha</option>
+                                <option value="assam">Assam</option>
+                                <option value="jharkhand">Jharkhand</option>
+                                <option value="chhattisgarh">Chhattisgarh</option>
+                                <option value="goa">Goa</option>
+                            </select>
+                            <span class="error-msg" id="stateError"><i class="fas fa-circle-exclamation"></i> Please select a state</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pincode">PIN Code <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="pincode" id="pincode" placeholder="e.g. 400001" maxlength="6" inputmode="numeric" required oninput="this.value = this.value.replace(/\D/g,'')">
+                            <span class="error-msg" id="pincodeError"><i class="fas fa-circle-exclamation"></i> Enter a valid 6-digit PIN code</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Footer -->
+            <div class="form-footer">
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="fas fa-check"></i> Register Retailer
+                </button>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block js %}
+<script>
+    // ===== SIDEBAR TOGGLE =====
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+    }
+
+    function openMobileSidebar() {
+        sidebar.classList.add('open');
+        sidebarOverlay.classList.add('active');
+    }
+
+    function closeMobileSidebar() {
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('active');
+    }
+
+    if (localStorage.getItem('sidebarCollapsed') === 'true' && window.innerWidth > 768) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('expanded');
+    }
+
+    // ===== THEME TOGGLE =====
+    const html = document.documentElement;
+    const themeIcon = document.getElementById('themeIcon');
+
+    function toggleTheme() {
+        const current = html.getAttribute('data-theme');
+        const next = current === 'light' ? 'dark' : 'light';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        themeIcon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    html.setAttribute('data-theme', savedTheme);
+    themeIcon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+
+
+    /* ============================================================
+        USER PROFILE DROPDOWN
+        ============================================================ */
+    const userProfile = document.getElementById('userProfile');
+    const userDropdownMenu = document.getElementById('userDropdownMenu');
+
+    userProfile.addEventListener('click', function (e) {
+        e.stopPropagation();
+        userDropdownMenu.classList.toggle('show');
+        userProfile.classList.toggle('open');
+    });
+
+    // Close dropdown when clicking anywhere else
+    document.addEventListener('click', function (e) {
+        if (!userProfile.contains(e.target)) {
+            userDropdownMenu.classList.remove('show');
+            userProfile.classList.remove('open');
+        }
+    });
+
+    // Close dropdown on Escape
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            userDropdownMenu.classList.remove('show');
+            userProfile.classList.remove('open');
+            closeMobileSidebar();
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            closeMobileSidebar();
+        }
+    });
+
+    // Toggle password visibility
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        function toggleConfirmPassword() {
+            const input = document.getElementById('confirmPassword');
+            const icon = document.getElementById('eyeIcon2');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        // Password strength checker
+        function checkStrength(password) {
+            const fill = document.getElementById('strengthFill');
+            const text = document.getElementById('strengthText');
+
+            if (!password) {
+                fill.className = 'strength-fill';
+                text.textContent = '';
+                return;
+            }
+
+            let score = 0;
+            if (password.length >= 8) score++;
+            if (password.length >= 12) score++;
+            if (/[A-Z]/.test(password)) score++;
+            if (/[0-9]/.test(password)) score++;
+            if (/[^A-Za-z0-9]/.test(password)) score++;
+
+            fill.className = 'strength-fill';
+            text.className = 'strength-text';
+
+            if (score <= 2) {
+                fill.classList.add('weak');
+                text.classList.add('weak');
+                text.textContent = 'Weak password';
+            } else if (score <= 4) {
+                fill.classList.add('medium');
+                text.classList.add('medium');
+                text.textContent = 'Medium strength';
+            } else {
+                fill.classList.add('strong');
+                text.classList.add('strong');
+                text.textContent = 'Strong password';
+            }
+
+            if (password.length >= 8) {
+                clearError(document.getElementById('password'), 'passwordError');
+            }
+        }
+
+        // Check password match
+        function checkMatch() {
+            const pwd = document.getElementById('password').value;
+            const confirmVal = document.getElementById('confirmPassword').value;
+            const msg = document.getElementById('matchError');
+            const input = document.getElementById('confirmPassword');
+
+            if (confirmVal && pwd !== confirmVal) {
+                msg.classList.add('show');
+                input.classList.add('error');
+                input.classList.remove('success');
+            } else {
+                msg.classList.remove('show');
+                input.classList.remove('error');
+                if (confirmVal) input.classList.add('success');
+            }
+        }
+
+        function setError(input, errorId) {
+            input.classList.add('error');
+            input.classList.remove('success');
+            const err = document.getElementById(errorId);
+            if (err) err.classList.add('show');
+        }
+
+        function clearError(input, errorId) {
+            input.classList.remove('error');
+            input.classList.add('success');
+            const err = document.getElementById(errorId);
+            if (err) err.classList.remove('show');
+        }
+
+        function validateField(id, errorId, testFn) {
+            const input = document.getElementById(id);
+            const ok = testFn(input.value.trim());
+            if (ok) {
+                clearError(input, errorId);
+            } else {
+                setError(input, errorId);
+            }
+            return ok;
+        }
+
+        // Full form validation
+        document.getElementById('retailerForm').addEventListener('submit', function (e) {
+            let valid = true;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!validateField('username', 'usernameError', v => v.length > 0)) valid = false;
+            if (!validateField('email', 'emailError', v => emailRegex.test(v))) valid = false;
+            if (!validateField('password', 'passwordError', v => v.length >= 8)) valid = false;
+
+            const pwd = document.getElementById('password').value;
+            const confirmInput = document.getElementById('confirmPassword');
+            if (!confirmInput.value || pwd !== confirmInput.value) {
+                setError(confirmInput, 'matchError');
+                valid = false;
+            } else {
+                clearError(confirmInput, 'matchError');
+            }
+
+            if (!validateField('shop_name', 'shopError', v => v.length > 0)) valid = false;
+            if (!validateField('owner_name', 'ownerError', v => v.length > 0)) valid = false;
+            if (!validateField('mobile', 'mobileError', v => /^\d{10}$/.test(v))) valid = false;
+            if (!validateField('city', 'cityError', v => v.length > 0)) valid = false;
+            if (!validateField('state', 'stateError', v => v.length > 0)) valid = false;
+            if (!validateField('pincode', 'pincodeError', v => /^\d{6}$/.test(v))) valid = false;
+
+            if (!valid) {
+                e.preventDefault();
+                const firstError = document.querySelector('.form-control.error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+            }
+        });
+
+        // Live-clear errors as the user types / selects
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('input', function () {
+                this.classList.remove('error');
+                const group = this.closest('.form-group');
+                if (group) {
+                    const err = group.querySelector('.error-msg');
+                    if (err) err.classList.remove('show');
+                }
+            });
+            input.addEventListener('change', function () {
+                this.classList.remove('error');
+                const group = this.closest('.form-group');
+                if (group) {
+                    const err = group.querySelector('.error-msg');
+                    if (err) err.classList.remove('show');
+                }
+            });
+        });
+
+        // Reset form
+        function resetForm() {
+            if (confirm('Are you sure you want to reset the form?')) {
+                document.getElementById('retailerForm').reset();
+                document.querySelectorAll('.form-control').forEach(el => {
+                    el.classList.remove('error');
+                    el.classList.remove('success');
+                });
+                document.querySelectorAll('.error-msg').forEach(el => el.classList.remove('show'));
+                document.getElementById('strengthFill').className = 'strength-fill';
+                document.getElementById('strengthText').textContent = '';
+            }
+        }
+</script>
+{% endblock %}

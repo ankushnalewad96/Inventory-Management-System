@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Add Supplier - My Django Site{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/add_order.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <h1>Add Supplier</h1>
+    <!-- <p>A quick pulse on your cash position</p> -->
+{% endblock %}
+
+{% block body %}
+<!-- Form Card -->
+<div class="form-card">
+    <div class="form-header">
+        <h2>Supplier Information</h2>
+    </div>
+
+    {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Note: Changed action name to a more generic one if applicable, keep your exact url name if needed -->
+    <form method="POST" action="{% url 'add_new_supplier' %}" id="purchaseForm" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-body">
+            <!-- Top Form Fields -->
+            <div class="form-grid">
+                
+                <!-- Retailer Selection -->
+                <div class="form-group">
+                  <label for="retailer">Retailer Name <span class="required">*</span></label>
+                  <select class="form-control" name="retailer" id="retailer" required>
+                      <option value="" disabled selected>Select a Retailer</option>
+                      {% for retailer in retailers %}
+                          <option value="{{ retailer.id }}">{{ retailer.shop_name }}</option>
+                      {% endfor %}
+                  </select>
+                </div>
+
+                <!-- Supplier Name -->
+                <div class="form-group">
+                    <label for="supplierName">Supplier Name <span class="required">*</span></label>
+                    <input type="text" class="form-control" name="supplier_name" id="supplierName" placeholder="Enter supplier name" required>
+                </div>
+
+                <!-- Contact Person (Optional) -->
+                <div class="form-group">
+                    <label for="contactPerson">Contact Person</label>
+                    <input type="text" class="form-control" name="contact_person" id="contactPerson" placeholder="Enter contact person name">
+                </div>
+
+                <!-- Mobile -->
+                <div class="form-group">
+                    <label for="mobile">Mobile <span class="required">*</span></label>
+                    <input type="text" class="form-control" name="mobile" id="mobile" placeholder="Enter mobile number" required>
+                </div>
+
+                <!-- Alternate Mobile (Optional) -->
+                <div class="form-group">
+                    <label for="alternateMobile">Alternate Mobile</label>
+                    <input type="text" class="form-control" name="alternate_mobile" id="alternateMobile" placeholder="Enter alternate mobile number">
+                </div>
+
+                <!-- Email (Optional) -->
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" class="form-control" name="email" id="email" placeholder="Enter email address">
+                </div>
+
+                <!-- GST Number (Optional) -->
+                <div class="form-group">
+                    <label for="gstNumber">GST Number</label>
+                    <input type="text" class="form-control" name="gst_number" id="gstNumber" placeholder="Enter GSTIN">
+                </div>
+
+                <!-- PAN Number (Optional) -->
+                <div class="form-group">
+                    <label for="panNumber">PAN Number</label>
+                    <input type="text" class="form-control" name="pan_number" id="panNumber" placeholder="Enter PAN card number">
+                </div>
+
+                <!-- City -->
+                <div class="form-group">
+                    <label for="city">City <span class="required">*</span></label>
+                    <input type="text" class="form-control" name="city" id="city" placeholder="Enter city" required>
+                </div>
+
+                <!-- State -->
+                <div class="form-group">
+                    <label for="state">State <span class="required">*</span></label>
+                    <input type="text" class="form-control" name="state" id="state" placeholder="Enter state" required>
+                </div>
+
+                <!-- Pincode -->
+                <div class="form-group">
+                    <label for="pincode">Pincode <span class="required">*</span></label>
+                    <input type="text" class="form-control" name="pincode" id="pincode" placeholder="Enter pincode" required>
+                </div>
+
+                <!-- Opening Balance -->
+                <div class="form-group">
+                    <label for="openingBalance">Opening Balance</label>
+                    <input type="number" step="0.01" class="form-control" name="opening_balance" id="openingBalance" value="0.00">
+                </div>
+
+                <!-- Credit Limit -->
+                <div class="form-group">
+                    <label for="creditLimit">Credit Limit</label>
+                    <input type="number" step="0.01" class="form-control" name="credit_limit" id="creditLimit" value="0.00">
+                </div>
+
+                <!-- Credit Days -->
+                <div class="form-group">
+                    <label for="creditDays">Credit Days</label>
+                    <input type="number" class="form-control" name="credit_days" id="creditDays" value="0">
+                </div>
+
+                <!-- Full Width Address Field -->
+                <div class="form-group col-full">
+                    <label for="address">Address <span class="required">*</span></label>
+                    <textarea class="form-control" name="address" id="address" rows="3" placeholder="Enter complete address" required></textarea>
+                </div>
+
+                <!-- Full Width Notes Field (Optional) -->
+                <div class="form-group col-full">
+                    <label for="notes">Notes</label>
+                    <textarea class="form-control" name="notes" id="notes" rows="3" placeholder="Add any special instructions or remarks"></textarea>
+                </div>
+
+                <!-- Status Checkbox -->
+                <div class="form-group checkbox-group">
+                    <label for="isActive">
+                        <input type="checkbox" name="is_active" id="isActive" checked> Is Active
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Footer -->
+        <div class="form-footer">
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                <i class="fas fa-check"></i> Save Supplier
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    // ===== SIDEBAR TOGGLE =====
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+    }
+
+    function openMobileSidebar() {
+        sidebar.classList.add('open');
+        sidebarOverlay.classList.add('active');
+    }
+
+    function closeMobileSidebar() {
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('active');
+    }
+
+    if (localStorage.getItem('sidebarCollapsed') === 'true' && window.innerWidth > 768) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('expanded');
+    }
+
+    // ===== THEME TOGGLE =====
+    const html = document.documentElement;
+    const themeIcon = document.getElementById('themeIcon');
+
+    function toggleTheme() {
+        const current = html.getAttribute('data-theme');
+        const next = current === 'light' ? 'dark' : 'light';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        themeIcon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    html.setAttribute('data-theme', savedTheme);
+    themeIcon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+
+
+    /* ============================================================
+        USER PROFILE DROPDOWN
+        ============================================================ */
+    const userProfile = document.getElementById('userProfile');
+    const userDropdownMenu = document.getElementById('userDropdownMenu');
+
+    userProfile.addEventListener('click', function (e) {
+        e.stopPropagation();
+        userDropdownMenu.classList.toggle('show');
+        userProfile.classList.toggle('open');
+    });
+
+    // Close dropdown when clicking anywhere else
+    document.addEventListener('click', function (e) {
+        if (!userProfile.contains(e.target)) {
+            userDropdownMenu.classList.remove('show');
+            userProfile.classList.remove('open');
+        }
+    });
+
+    // Close dropdown on Escape
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            userDropdownMenu.classList.remove('show');
+            userProfile.classList.remove('open');
+            closeMobileSidebar();
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            closeMobileSidebar();
+        }
+    });
+</script>
+{% endblock %}

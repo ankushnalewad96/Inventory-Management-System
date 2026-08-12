@@ -1,0 +1,171 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} {% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    {% block css %} 
+        
+    {% endblock %}
+<!-- <base target="_blank"> -->
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <button class="collapse-btn" onclick="toggleSidebar()" title="Collapse sidebar">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <div class="sidebar-header">
+            <div class="logo-icon">
+                <i class="fas fa-wave-square"></i>
+            </div>
+            <div class="logo-text">CashFlow <span>IMS</span></div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Overview</div>
+            <a href="{% url 'dashboard' %}" class="nav-item {% if request.path == '/' %}active{% endif %}">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="{% url 'add_new_supplier' %}" class="nav-item {% if request.path == '/add-supplier/' %}active{% endif %}">
+                <i class="fas fa-users"></i>
+                <span>Add Suppliers</span>
+            </a>
+            {% if request.user.is_superuser %}
+            <a href="{% url 'retailer_register' %}" class="nav-item {% if request.path == '/retailer-register/' %}active{% endif %}">
+                <i class="fas fa-users"></i>
+                <span>Add Retailers</span>
+            </a>
+            {% endif %}
+
+            <a href="{% url 'product_list' %}" class="nav-item {% if request.path == '/product-list/' or request.path == '/add-product/' %}active{% endif %}">
+                <i class="fas fa-cart-plus"></i>
+                <span>Products</span>
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Transactions</div>
+            <a href="{% url 'purchase_product_list' %}" class="nav-item {% if request.path == '/purchase-product-list/' or request.path == '/add-order/' %}active{% endif %}">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Purchase</span>
+                <span class="nav-badge">12</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Sales</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-receipt"></i>
+                <span>Expenses</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-box"></i>
+                <span>Inventory</span>
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Insights</div>
+            <a href="#" class="nav-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reports</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="cash-pulse">
+                <div class="cash-pulse-header">
+                    <span class="cash-pulse-title">Cash flow pulse</span>
+                    <span class="cash-pulse-value">+8.2%</span>
+                </div>
+                <div class="pulse-chart">
+                    <div class="pulse-bar" style="height:40%"></div>
+                    <div class="pulse-bar" style="height:55%"></div>
+                    <div class="pulse-bar" style="height:45%"></div>
+                    <div class="pulse-bar" style="height:60%"></div>
+                    <div class="pulse-bar" style="height:50%"></div>
+                    <div class="pulse-bar" style="height:70%"></div>
+                    <div class="pulse-bar" style="height:65%"></div>
+                    <div class="pulse-bar" style="height:80%"></div>
+                    <div class="pulse-bar" style="height:75%"></div>
+                    <div class="pulse-bar" style="height:90%"></div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Header -->
+        <div class="page-header">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <button class="sidebar-toggle" onclick="openMobileSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-title">  .
+                    {% block page_title %} 
+        
+                    {% endblock %}                  
+                    <!-- <h1>Home</h1>
+                    <p>A quick pulse on your cash position</p> -->
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search orders, suppliers, invoices...">
+                </div>
+                <button class="header-icon-btn" onclick="toggleTheme()" title="Toggle theme">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+                <button class="header-icon-btn" style="position:relative;">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">9</span>
+                </button>
+                <!-- USER PROFILE + DROPDOWN (see .user-dropdown-menu CSS above form-card) -->
+                <div class="user-profile" id="userProfile">
+                    <div class="user-avatar">RAs</div>
+                    <div class="user-info">
+                        <div class="user-name">{{request.user}}</div>
+                        <div class="user-role">Purchasing Manager</div>
+                    </div>
+                    <i class="fas fa-chevron-down" style="font-size:10px;color:var(--text-muted);"></i>
+
+                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                        <a href="#"><i class="fas fa-user"></i> My Profile</a>
+                        <a href="#"><i class="fas fa-cog"></i> Account Settings</a>
+                        <a href="#"><i class="fas fa-question-circle"></i> Help & Support</a>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="{% url 'user_logout' %}" class="danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        {% block body %}
+
+        {% endblock %}
+
+        
+    </main>
+
+    
+    {% block js %}
+
+    {% endblock %}
+
+</body>
+</html>

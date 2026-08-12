@@ -1,0 +1,601 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Add Order Page - My Django Site{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/add_order.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <h1>Add Order</h1>
+    <!-- <p>A quick pulse on your cash position</p> -->
+{% endblock %}
+
+{% block body %}
+<!-- Form Card -->
+<div class="form-card">
+    <div class="form-header">
+        <h2><i class="fas fa-file-invoice"></i>Purchase Order Details</h2>
+        <div class="form-header-actions">
+            <button class="btn btn-outline btn-sm" onclick="window.print()">
+                <i class="fas fa-print"></i> Print
+            </button>
+        </div>
+    </div>
+
+    {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'add_new_order' %}" id="purchaseForm" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-body">
+            <!-- Top Form Fields -->
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label>Search by Supplier Name <span class="required">*</span></label>
+                    <div class="supplier-search">
+                        <i class="fas fa-search"></i>
+                        <select class="form-control" id="supplierSelect" name="supplier" required>
+                            <option value="">Select Supplier</option>
+                            {% for supplier in supplier_list %}
+                                <option value="{{ supplier.id }}">{{ supplier.supplier_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Bill Number <span class="required">*</span></label>
+                    <input type="text" class="form-control" name="bill_number" id="billNumber" placeholder="Enter bill number" value="BILL-2026-001" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Bill Date <span class="required">*</span></label>
+                    <div class="form-control-icon">
+                        <input type="date" class="form-control" name="bill_date" id="billDate" value="2026-07-27" required>
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Time</label>
+                    <div class="form-control-icon">
+                        <input type="time" class="form-control" name="bill_time" id="billTime" value="18:35">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Payment Terms</label>
+                    <select class="form-control" name="payment_terms" id="paymentTerms">
+                        <option value="">Select Terms</option>
+                        <option value="net15" selected>Net 15</option>
+                        <option value="net30">Net 30</option>
+                        <option value="net45">Net 45</option>
+                        <option value="net60">Net 60</option>
+                        <option value="immediate">Immediate</option>
+                        <option value="cod">Cash on Delivery</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Due Date</label>
+                    <div class="form-control-icon">
+                        <input type="date" class="form-control" name="due_date" id="dueDate" value="2026-08-11">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>State of Supply</label>
+                    <select class="form-control" name="state_of_supply" id="stateOfSupply">
+                        <option value="">Select State</option>
+                        <option value="maharashtra" selected>Maharashtra</option>
+                        <option value="gujarat">Gujarat</option>
+                        <option value="karnataka">Karnataka</option>
+                        <option value="tamilnadu">Tamil Nadu</option>
+                        <option value="delhi">Delhi</option>
+                        <option value="rajasthan">Rajasthan</option>
+                        <option value="telangana">Telangana</option>
+                        <option value="westbengal">West Bengal</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Warehouse / Godown</label>
+                    <select class="form-control" name="warehouse" id="warehouse">
+                        <option value="">Select Warehouse</option>
+                        <option value="main" selected>Main Godown</option>
+                        <option value="secondary">Secondary Warehouse</option>
+                        <option value="retail">Retail Store</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="items-section">
+                <div class="items-header">
+                    <h3><i class="fas fa-list"></i>Items</h3>
+                </div>
+
+                <div class="items-table-wrap">
+                    <table class="items-table" id="itemsTable">
+                        <thead>
+                            <tr>
+                                <th class="center" style="width:40px;">#</th>
+                                <th>Product Name</th>
+                                <th class="right" style="width:100px;">MRP</th>
+                                <th class="center" style="width:80px;">Qty</th>
+                                <th class="center" style="width:80px;">Free Qty</th>
+                                <th style="width:100px;">Unit</th>
+                                <th class="right" style="width:120px;">Price/Unit <span style="font-size:10px;color:var(--text-muted);font-weight:400;">(Without Tax)</span></th>
+                                <th style="width:100px;">Tax</th>
+                                <th class="right" style="width:110px;">Amount</th>
+                                <th class="center" style="width:40px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody">
+                            <!-- Rows added by JS -->
+                        </tbody>
+                        <tbody>
+                            <tr>
+                                <td colspan="10" style="padding:12px 14px;">
+                                    <button type="button" class="add-row-btn" id="addRowBtn">
+                                        <i class="fas fa-plus"></i> Add Row
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="total-row">
+                                <td colspan="3" class="total-label">Total</td>
+                                <td class="total-value" id="totalQty">0</td>
+                                <td class="total-value" id="totalFreeQty">0</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td class="total-value" id="totalAmount">₹0</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Bottom Section -->
+            <div class="bottom-section">
+                <div class="bottom-left">
+                    <div class="payment-type-group">
+                        <label>Payment Type</label>
+                        <select class="form-control" name="payment_type" id="paymentType" style="max-width:240px;">
+                            <option value="">Select Payment Type</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="UPI">UPI</option>
+                            <option value="Cheque">Cheque</option>
+                            <option value="Credit">Credit</option>
+                        </select>
+                        <a href="#" class="add-payment-link">
+                            <i class="fas fa-plus-circle"></i> Add Payment Type
+                        </a>
+                    </div>
+
+                    <div class="form-group" style="max-width:240px;">
+                        <label>Paid Amount</label>
+                        <input type="text" class="form-control" name="paid_amount" id="paidamount" placeholder="Enter paid amount" required>
+                    </div>
+
+                    <div>
+                        <button type="button" class="upload-bill-btn" id="uploadBillBtn">
+                            <i class="fas fa-cloud-upload-alt"></i> Upload Bill
+                        </button>
+                        <input type="file" id="billFileInput" name="bill_file" style="display:none;" accept="image/*,.pdf">
+                    </div>
+                </div>
+
+                <div class="bottom-right">
+                    <div class="summary-box">
+                        <div class="summary-row">
+                            <span class="summary-label">Subtotal</span>
+                            <span class="summary-value" id="summarySubtotal">₹0.00</span>
+                            <input type="hidden" name="subtotal" id="subtotalInput" value="0">
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Tax</span>
+                            <span class="summary-value" id="summaryTax">₹0.00</span>
+                            <input type="hidden" name="gst" id="taxInput" value="0">
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Discount</span>
+                            <span class="summary-value" id="summaryDiscount">₹0.00</span>
+                            <input type="hidden" name="discount" id="discountInput" value="0">
+                        </div>
+                        <div class="summary-row grand-total">
+                            <span class="summary-label">Grand Total</span>
+                            <span class="summary-value" id="summaryGrandTotal">₹0.00</span>
+                            <input type="hidden" name="grand_total" id="grandTotalInput" value="0">
+                        </div>
+                    </div>
+
+                    <div class="tax-section">
+                        <label>Tax</label>
+                        <select class="form-control" id="taxType" name="tax_type">
+                            <option value="none" selected>None</option>
+                            <option value="gst5">GST 5%</option>
+                            <option value="gst12">GST 12%</option>
+                            <option value="gst18">GST 18%</option>
+                            <option value="gst28">GST 28%</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Footer -->
+        <div class="form-footer">
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                <i class="fas fa-check"></i> Save
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block js %}
+
+<script>
+    // ===== SIDEBAR TOGGLE =====
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+    }
+
+    function openMobileSidebar() {
+        sidebar.classList.add('open');
+        sidebarOverlay.classList.add('active');
+    }
+
+    function closeMobileSidebar() {
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('active');
+    }
+
+    // Restore sidebar state on desktop
+    if (localStorage.getItem('sidebarCollapsed') === 'true' && window.innerWidth > 768) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('expanded');
+    }
+
+    // ===== THEME TOGGLE =====
+    const html = document.documentElement;
+    const themeIcon = document.getElementById('themeIcon');
+
+    function toggleTheme() {
+        const current = html.getAttribute('data-theme');
+        const next = current === 'light' ? 'dark' : 'light';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        themeIcon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+
+    // Restore theme on load
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    html.setAttribute('data-theme', savedTheme);
+    themeIcon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+
+    // ===== ITEMS TABLE (your existing code, kept intact) =====
+    let rowCounter = 0;
+
+    const taxRates = {
+        none: 0,
+        gst5: 5,
+        gst12: 12,
+        gst18: 18,
+        gst28: 28
+    };
+
+    function addRow() {
+        rowCounter++;
+        const tbody = document.getElementById('itemsBody');
+        const tr = document.createElement('tr');
+        tr.dataset.rowId = rowCounter;
+        tr.innerHTML = `
+            <td class="row-num">${rowCounter}</td>
+            
+            <td>
+                <select class="item-select product-select"
+                        name="item_name_${rowCounter}"
+                        required>
+
+                    <option value="">Select Product</option>
+
+                    {% for product in products %}
+                        <option value="{{ product.product_name }}"
+                                data-mrp="{{ product.mrp }}"
+                                data-price="{{ product.purchase_price }}"
+                                data-unit="{{ product.unit.id }}"
+                                data-gst="{{ product.gst }}">
+                            {{ product.product_name }}
+                        </option>
+                    {% endfor %}
+
+                </select>
+            </td>
+            <td>
+                <input type="number" class="item-input mrp-input" placeholder="0.00" 
+                    data-field="mrp" name="item_mrp_${rowCounter}" step="0.01" min="0">
+            </td>
+            <td>
+                <input type="number" class="item-input qty-input" placeholder="0" 
+                    data-field="qty" name="item_qty_${rowCounter}" min="0" required>
+            </td>
+            <td>
+                <input type="number" class="item-input qty-input" placeholder="0" 
+                    data-field="freeQty" name="item_free_qty_${rowCounter}" min="0">
+            </td>
+            <td>
+                <select class="item-select unit-select"
+                        name="item_unit_${rowCounter}">
+
+                    {% for unit in units %}
+                        <option value="{{ unit.id }}">
+                            {{ unit.short_name }}
+                        </option>
+                    {% endfor %}
+
+                </select>
+            </td>
+            <td>
+                <input type="number" class="item-input price-input" placeholder="0.00" 
+                    data-field="price" name="item_price_${rowCounter}" step="0.01" min="0" required>
+            </td>
+            <td>
+                <select class="item-select" data-field="tax" name="item_tax_${rowCounter}">
+                    <option value="none" selected>Select</option>
+                    <option value="gst5">GST 5%</option>
+                    <option value="gst12">GST 12%</option>
+                    <option value="gst18">GST 18%</option>
+                    <option value="gst28">GST 28%</option>
+                </select>
+            </td>
+            <td class="amount-cell" data-field="amount">₹0.00</td>
+            <td class="center">
+                <button type="button" class="remove-btn" onclick="removeRow(this)" title="Remove row">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+
+        tr.querySelectorAll('input[data-field], select[data-field]').forEach(el => {
+            el.addEventListener('input', calculateRow);
+            el.addEventListener('change', calculateRow);
+        });
+    }
+
+    function removeRow(btn) {
+        const row = btn.closest('tr');
+        row.remove();
+        renumberRows();
+        calculateTotals();
+    }
+
+    function renumberRows() {
+        const rows = document.querySelectorAll('#itemsBody tr');
+        rows.forEach((row, idx) => {
+            row.querySelector('.row-num').textContent = idx + 1;
+            const inputs = row.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                const name = input.getAttribute('name');
+                if (name) {
+                    const newName = name.replace(/\d+/, idx + 1);
+                    input.setAttribute('name', newName);
+                }
+            });
+        });
+        rowCounter = rows.length;
+    }
+
+    function calculateRow(e) {
+        const row = e.target.closest('tr');
+        const qty = parseFloat(row.querySelector('[data-field="qty"]').value) || 0;
+        const price = parseFloat(row.querySelector('[data-field="price"]').value) || 0;
+        const taxSelect = row.querySelector('[data-field="tax"]');
+        const taxRate = taxRates[taxSelect.value] || 0;
+
+        let amount = qty * price;
+        const taxAmount = amount * (taxRate / 100);
+        amount += taxAmount;
+
+        row.querySelector('[data-field="amount"]').textContent = '₹' + amount.toFixed(2);
+        calculateTotals();
+    }
+
+    function calculateTotals() {
+        const rows = document.querySelectorAll('#itemsBody tr');
+        let totalQty = 0;
+        let totalFreeQty = 0;
+        let totalAmount = 0;
+        let subtotal = 0;
+
+        rows.forEach(row => {
+            const qty = parseFloat(row.querySelector('[data-field="qty"]').value) || 0;
+            const freeQty = parseFloat(row.querySelector('[data-field="freeQty"]').value) || 0;
+            const price = parseFloat(row.querySelector('[data-field="price"]').value) || 0;
+            const taxSelect = row.querySelector('[data-field="tax"]');
+            const taxRate = taxRates[taxSelect.value] || 0;
+
+            const lineSubtotal = qty * price;
+            const lineTax = lineSubtotal * (taxRate / 100);
+            const lineTotal = lineSubtotal + lineTax;
+
+            totalQty += qty;
+            totalFreeQty += freeQty;
+            totalAmount += lineTotal;
+            subtotal += lineSubtotal;
+        });
+
+        const overallTax = totalAmount - subtotal;
+        document.getElementById('totalQty').textContent = totalQty;
+        document.getElementById('totalFreeQty').textContent = totalFreeQty;
+        document.getElementById('totalAmount').textContent = '₹' + totalAmount.toFixed(2);
+        document.getElementById('summarySubtotal').textContent = '₹' + subtotal.toFixed(2);
+        document.getElementById('summaryTax').textContent = '₹' + overallTax.toFixed(2);
+        document.getElementById('summaryGrandTotal').textContent = '₹' + totalAmount.toFixed(2);
+        document.getElementById('summaryDiscount').textContent = '₹0.00';
+
+        document.getElementById('subtotalInput').value = subtotal.toFixed(2);
+        document.getElementById('taxInput').value = overallTax.toFixed(2);
+        document.getElementById('grandTotalInput').value = totalAmount.toFixed(2);
+        document.getElementById('discountInput').value = '0.00';
+    }
+
+    document.getElementById('uploadBillBtn').addEventListener('click', function() {
+        document.getElementById('billFileInput').click();
+    });
+
+    document.getElementById('billFileInput').addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const btn = document.getElementById('uploadBillBtn');
+            const fileSize = (this.files[0].size / 1024).toFixed(1);
+            btn.innerHTML = '<i class="fas fa-file-alt"></i> ' + this.files[0].name + ' (' + fileSize + ' KB)';
+            btn.style.borderColor = 'var(--success)';
+            btn.style.color = 'var(--success)';
+        }
+    });
+
+    document.getElementById('addRowBtn').addEventListener('click', addRow);
+
+    document.getElementById('paymentTerms').addEventListener('change', function() {
+        const billDate = document.getElementById('billDate').value;
+        if (!billDate) return;
+        const days = { net15: 15, net30: 30, net45: 45, net60: 60, immediate: 0, cod: 0 };
+        const d = new Date(billDate);
+        d.setDate(d.getDate() + (days[this.value] || 0));
+        document.getElementById('dueDate').value = d.toISOString().split('T')[0];
+    });
+
+    function saveAsDraft() {
+        const form = document.getElementById('purchaseForm');
+        form.action = "#";
+        form.submit();
+    }
+
+    function resetForm() {
+        if (confirm('Are you sure you want to reset the form?')) {
+            document.getElementById('itemsBody').innerHTML = '';
+            document.getElementById('supplierSelect').value = '';
+            document.getElementById('paymentType').value = '';
+            document.getElementById('uploadBillBtn').innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload Bill';
+            document.getElementById('uploadBillBtn').style = '';
+            document.getElementById('billFileInput').value = '';
+            rowCounter = 0;
+            addRow();
+            addRow();
+            calculateTotals();
+        }
+    }
+
+    document.getElementById('purchaseForm').addEventListener('submit', function(e) {
+        const supplier = document.getElementById('supplierSelect').value;
+        if (!supplier) {
+            e.preventDefault();
+            alert('Please select a supplier');
+            return false;
+        }
+
+        const rows = document.querySelectorAll('#itemsBody tr');
+        if (rows.length === 0) {
+            e.preventDefault();
+            alert('Please add at least one item');
+            return false;
+        }
+
+        let hasError = false;
+        rows.forEach((row, index) => {
+            const name = row.querySelector('[data-field="name"]').value.trim();
+            const qty = parseFloat(row.querySelector('[data-field="qty"]').value) || 0;
+            const price = parseFloat(row.querySelector('[data-field="price"]').value) || 0;
+
+            if (!name) {
+                alert('Please enter item name for row ' + (index + 1));
+                hasError = true;
+                return;
+            }
+            if (qty <= 0) {
+                alert('Please enter valid quantity for row ' + (index + 1));
+                hasError = true;
+                return;
+            }
+            if (price <= 0) {
+                alert('Please enter valid price for row ' + (index + 1));
+                hasError = true;
+                return;
+            }
+        });
+
+        if (hasError) {
+            e.preventDefault();
+            return false;
+        }
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        submitBtn.disabled = true;
+    });
+
+    // Initialize
+    addRow();
+    addRow();
+    calculateTotals();
+
+    
+    /* ============================================================
+        USER PROFILE DROPDOWN
+        ============================================================ */
+    const userProfile = document.getElementById('userProfile');
+    const userDropdownMenu = document.getElementById('userDropdownMenu');
+
+    userProfile.addEventListener('click', function (e) {
+        e.stopPropagation();
+        userDropdownMenu.classList.toggle('show');
+        userProfile.classList.toggle('open');
+    });
+
+    // Close dropdown when clicking anywhere else
+    document.addEventListener('click', function (e) {
+        if (!userProfile.contains(e.target)) {
+            userDropdownMenu.classList.remove('show');
+            userProfile.classList.remove('open');
+        }
+    });
+
+    // Close dropdown on Escape
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            userDropdownMenu.classList.remove('show');
+            userProfile.classList.remove('open');
+            closeMobileSidebar();
+        }
+    });
+
+    // Close mobile sidebar on resize to desktop
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            closeMobileSidebar();
+        }
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,86 @@
+
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Home Page - My Django Site{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <h1>Dashboard Page</h1>
+    <!-- <p>A quick pulse on your cash position</p> -->
+{% endblock %}
+
+{% block body %}
+<!-- Summary Cards -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <div class="card-top">
+            <div class="card-icon-wrap paid">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="card-menu"><i class="fas fa-ellipsis-v"></i></div>
+        </div>
+        <div class="card-label">Paid</div>
+        <div class="card-value">₹5,42,100</div>
+        <div class="card-trend up">
+            <i class="fas fa-arrow-up" style="font-size:10px;"></i>
+            <span>12.5% vs last month</span>
+        </div>
+    </div>
+
+    <div class="summary-card">
+        <div class="card-top">
+            <div class="card-icon-wrap unpaid">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="card-menu"><i class="fas fa-ellipsis-v"></i></div>
+        </div>
+        <div class="card-label">Unpaid</div>
+        <div class="card-value">₹2,14,900</div>
+        <div class="card-trend down">
+            <i class="fas fa-arrow-down" style="font-size:10px;"></i>
+            <span>3.1% vs last month</span>
+        </div>
+    </div>
+
+    <div class="summary-card">
+        <div class="card-top">
+            <div class="card-icon-wrap overdue">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="card-menu"><i class="fas fa-ellipsis-v"></i></div>
+        </div>
+        <div class="card-label">Overdue</div>
+        <div class="card-value">₹84,750</div>
+        <div class="card-trend down">
+            <i class="fas fa-arrow-down" style="font-size:10px;"></i>
+            <span>1.8% vs last month</span>
+        </div>
+    </div>
+
+    <div class="summary-card">
+        <div class="card-top">
+            <div class="card-icon-wrap total">
+                <i class="fas fa-wallet"></i>
+            </div>
+            <div class="card-menu"><i class="fas fa-ellipsis-v"></i></div>
+        </div>
+        <div class="card-label">Total</div>
+        <div class="card-value">₹8,41,750</div>
+        <div class="card-trend up">
+            <i class="fas fa-arrow-up" style="font-size:10px;"></i>
+            <span>6.4% vs last month</span>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block js %}
+
+<script src="{% static 'jss/dashboard.js' %}"></script>
+{% endblock %}

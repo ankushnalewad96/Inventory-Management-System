@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product</title>
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:Arial, Helvetica, sans-serif;
+        }
+
+        body{
+            background:#f4f6f9;
+        }
+
+        .container{
+            width:70%;
+            margin:30px auto;
+            background:#fff;
+            padding:30px;
+            border-radius:8px;
+            box-shadow:0 0 10px rgba(0,0,0,.1);
+        }
+
+        h2{
+            margin-bottom:20px;
+            text-align:center;
+            color:#333;
+        }
+
+        .row{
+            display:flex;
+            gap:20px;
+            margin-bottom:18px;
+        }
+
+        .form-group{
+            flex:1;
+        }
+
+        label{
+            display:block;
+            margin-bottom:6px;
+            font-weight:bold;
+        }
+
+        input,
+        select{
+            width:100%;
+            padding:10px;
+            border:1px solid #ccc;
+            border-radius:5px;
+            outline:none;
+        }
+
+        input:focus,
+        select:focus{
+            border-color:#007bff;
+        }
+
+        .btn{
+            padding:10px 20px;
+            border:none;
+            border-radius:5px;
+            cursor:pointer;
+            font-size:16px;
+        }
+
+        .btn-primary{
+            background:#007bff;
+            color:white;
+        }
+
+        .btn-primary:hover{
+            background:#0056b3;
+        }
+
+        .btn-secondary{
+            background:#6c757d;
+            color:white;
+            margin-left:10px;
+            text-decoration:none;
+            display:inline-block;
+            padding:10px 20px;
+            border-radius:5px;
+        }
+
+        @media(max-width:768px){
+            .container{
+                width:95%;
+            }
+
+            .row{
+                flex-direction:column;
+            }
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="container">
+
+    <h2>Add Product</h2>
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        <div class="row">
+
+            <div class="form-group">
+                <label>Retailer</label>
+                <select name="retailer" required>
+
+                    <option value="">Select Retailer</option>
+
+                    {% for retailer in retailers %}
+                    <option value="{{ retailer.id }}">
+                        {{ retailer.shop_name }}
+                    </option>
+                    {% endfor %}
+
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Category</label>
+
+                <select name="category" required>
+
+                    <option value="">Select Category</option>
+
+                    {% for category in categories %}
+                    <option value="{{ category.id }}">
+                        {{ category.category_name }}
+                    </option>
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="form-group">
+                <label>Brand</label>
+
+                <select name="brand" required>
+
+                    <option value="">Select Brand</option>
+
+                    {% for brand in brands %}
+                    <option value="{{ brand.id }}">
+                        {{ brand.brand_name }}
+                    </option>
+                    {% endfor %}
+
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Product Name</label>
+                <input
+                    type="text"
+                    name="product_name"
+                    placeholder="Enter Product Name"
+                    required>
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="form-group">
+                <label>Barcode</label>
+                <input
+                    type="text"
+                    name="barcode"
+                    placeholder="Barcode">
+            </div>
+
+            <div class="form-group">
+                <label>HSN Code</label>
+                <input
+                    type="text"
+                    name="hsn_code"
+                    placeholder="HSN Code"
+                    required>
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="form-group">
+                <label>Unit</label>
+
+                <select name="unit" required>
+
+                    <option value="">Select Unit</option>
+
+                    {% for unit in units %}
+                    <option value="{{ unit.id }}">
+                        {{ unit.name }}
+                    </option>
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <div class="form-group">
+                <label>Purchase Price</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    name="purchase_price"
+                    placeholder="Purchase Price"
+                    required>
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="form-group">
+                <label>Selling Price</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    name="selling_price"
+                    placeholder="Selling Price"
+                    required>
+            </div>
+
+            <div class="form-group">
+                <label>MRP</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    name="mrp"
+                    placeholder="MRP"
+                    required>
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="form-group">
+                <label>Minimum Stock</label>
+                <input
+                    type="number"
+                    name="minimum_stock"
+                    value="0"
+                    min="0">
+            </div>
+
+            <div class="form-group">
+                <label>Current Stock</label>
+                <input
+                    type="number"
+                    name="current_stock"
+                    value="0"
+                    min="0">
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="form-group">
+                <label>GST (%)</label>
+                <input
+                    type="number"
+                    step="0.01"
+                    name="gst"
+                    value="0">
+            </div>
+
+            <div class="form-group">
+                <label>Status</label>
+
+                <select name="is_active">
+
+                    <option value="True">Active</option>
+                    <option value="False">Inactive</option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Save Product
+        </button>
+
+        <a href="#" class="btn-secondary">
+            Cancel
+        </a>
+
+    </form>
+
+</div>
+
+</body>
+</html>
