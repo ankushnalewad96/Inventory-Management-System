@@ -1,239 +1,1076 @@
-{% extends "base.html" %}
-{% load static %}
-{% block title %}Add Supplier - My Django Site{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product — Inventory Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
+            --sidebar-text: #94a3b8;
+            --sidebar-active-text: #fff;
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #6366f1;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --input-bg: #ffffff;
+            --shadow: rgba(0,0,0,0.04);
+            --header-bg: #f1f5f9;
+            --table-header-bg: #f8fafc;
+            --table-row-hover: #f8fafc;
+            --footer-bg: #f8fafc;
+            --toggle-bg: #e2e8f0;
+            --placeholder: #94a3b8;
+        }
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/add_order.css' %}">
-{% endblock %}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-{% block page_title %}
-    <h1>Add Supplier</h1>
-    <!-- <p>A quick pulse on your cash position</p> -->
-{% endblock %}
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
 
-{% block body %}
-<!-- Form Card -->
-<div class="form-card">
-    <div class="form-header">
-        <h2>Supplier Information</h2>
+        /* ============================================
+           MAIN CONTENT WRAPPER
+           Insert this inside your existing layout
+           below the navbar and to the right of sidebar
+           ============================================ */
+        .main-content {
+            padding: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Page Header */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: -0.3px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            color: var(--text-muted);
+            background: var(--card-bg);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        /* Form Card */
+        .form-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 1px 3px var(--shadow), 0 0 0 1px var(--border);
+            overflow: hidden;
+        }
+
+        .form-section {
+            padding: 28px 32px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .section-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--info) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .section-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .section-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Grid Layout */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.span-2 {
+            grid-column: span 2;
+        }
+
+        .form-group.span-3 {
+            grid-column: span 3;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .required {
+            color: var(--danger);
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 11px 14px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-dark);
+            background: var(--input-bg);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.2s ease;
+            appearance: none;
+        }
+
+        .form-input::placeholder,
+        .form-select option:first-child {
+            color: var(--placeholder);
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-input.error,
+        .form-select.error {
+            border-color: var(--danger);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+            animation: shake 0.35s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-prefix {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        .input-prefix + .form-input {
+            padding-left: 36px;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper::after {
+            content: '';
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            border-right: 2px solid var(--text-muted);
+            border-bottom: 2px solid var(--text-muted);
+            transform: translateY(-50%) rotate(45deg);
+            pointer-events: none;
+        }
+
+        .form-select {
+            padding-right: 36px;
+            cursor: pointer;
+        }
+
+        .error-message {
+            font-size: 12px;
+            color: var(--danger);
+            display: none;
+            align-items: center;
+            gap: 4px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .error-message.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-3px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Toggle Switch for is_active */
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: var(--toggle-bg);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch.active {
+            background: var(--success);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(20px);
+        }
+
+        .toggle-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .toggle-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Form Actions */
+        .form-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 24px 32px;
+            background: var(--footer-bg);
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 11px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary {
+            color: var(--text-muted);
+            background: white;
+            border: 1.5px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--text-muted);
+            color: var(--text-dark);
+        }
+
+        .btn-primary {
+            color: white;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 14px 20px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            transform: translateX(150%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            border-left: 4px solid var(--success);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error-toast {
+            border-left-color: var(--danger);
+            color: var(--danger);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .form-group.span-2,
+            .form-group.span-3 {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .main-content {
+                padding: 16px;
+            }
+            .form-section {
+                padding: 20px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-group.span-2,
+            .form-group.span-3 {
+                grid-column: span 1;
+            }
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .form-actions {
+                flex-direction: column-reverse;
+                width: 100%;
+            }
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+
+    <!-- ============================================
+         PASTE THIS .main-content BLOCK INSIDE YOUR 
+         EXISTING LAYOUT (below navbar, right of sidebar)
+         ============================================ -->
+    <main class="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Add New Product</h1>
+                <p class="page-subtitle">Fill in the details below to add a product to your inventory</p>
+            </div>
+            <a href="#" class="btn-back">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Back to Products
+            </a>
+        </div>
+
+        <!-- Form -->
+        <form id="addProductForm" method="POST" action="/products/add/" novalidate>
+
+            <div class="form-card">
+
+                <!-- Section 1: Basic Information -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="section-title">Basic Information</div>
+                            <div class="section-desc">Product identification and classification details</div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <!-- Product Name -->
+                        <div class="form-group span-2">
+                            <label class="form-label" for="product_name">
+                                Product Name <span class="required">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="product_name" 
+                                name="product_name"
+                                class="form-input" 
+                                placeholder="e.g., Tata Salt, Aashirvaad Atta 5kg"
+                                maxlength="200"
+                            >
+                            <span class="error-message" id="product_name_error">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="error-text">Product name is required</span>
+                            </span>
+                        </div>
+
+                        <!-- Barcode -->
+                        <div class="form-group">
+                            <label class="form-label" for="barcode">Barcode</label>
+                            <input 
+                                type="text" 
+                                id="barcode" 
+                                name="barcode"
+                                class="form-input" 
+                                placeholder="Scan or enter barcode"
+                                maxlength="100"
+                            >
+                            <span class="error-message" id="barcode_error">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="error-text">Invalid barcode format</span>
+                            </span>
+                        </div>
+
+                        <!-- HSN Code -->
+                        <div class="form-group">
+                            <label class="form-label" for="hsn_code">
+                                HSN Code <span class="required">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="hsn_code" 
+                                name="hsn_code"
+                                class="form-input" 
+                                placeholder="e.g., 2106"
+                                maxlength="20"
+                            >
+                            <span class="error-message" id="hsn_code_error">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="error-text">HSN code is required</span>
+                            </span>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="form-group">
+                            <label class="form-label" for="category">
+                                Category <span class="required">*</span>
+                            </label>
+                            <div class="select-wrapper">
+                                <select id="category" name="category" class="form-select">
+                                    <option value="" disabled selected>Select category</option>
+                                    <option value="1">Grocery</option>
+                                    <option value="2">Beverages</option>
+                                    <option value="3">Dairy</option>
+                                    <option value="4">Snacks</option>
+                                    <option value="5">Household</option>
+                                </select>
+                            </div>
+                            <span class="error-message" id="category_error">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="error-text">Please select a category</span>
+                            </span>
+                        </div>
+
+                        <!-- Brand -->
+                        <div class="form-group">
+                            <label class="form-label" for="brand">
+                                Brand <span class="required">*</span>
+                            </label>
+                            <div class="select-wrapper">
+                                <select id="brand" name="brand" class="form-select">
+                                    <option value="" disabled selected>Select brand</option>
+                                    <option value="1">Tata</option>
+                                    <option value="2">Aashirvaad</option>
+                                    <option value="3">Nestle</option>
+                                    <option value="4">Britannia</option>
+                                    <option value="5">Parle</option>
+                                </select>
+                            </div>
+                            <span class="error-message" id="brand_error">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="error-text">Please select a brand</span>
+                            </span>
+                        </div>
+
+                        <!-- Unit -->
+                        <div class="form-group">
+                            <label class="form-label" for="unit">
+                                Unit <span class="required">*</span>
+                            </label>
+                            <div class="select-wrapper">
+                                <select id="unit" name="unit" class="form-select">
+                                    <option value="" disabled selected>Select unit</option>
+                                    <option value="1">Kg</option>
+                                    <option value="2">Gram</option>
+                                    <option value="3">Litre</option>
+                                    <option value="4">Piece</option>
+                                    <option value="5">Packet</option>
+                                    <option value="6">Box</option>
+                                    <option value="7">Bottle</option>
+                                </select>
+                            </div>
+                            <span class="error-message" id="unit_error">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="error-text">Please select a unit</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Pricing -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon" style="background: linear-gradient(135deg, var(--success) 0%, #059669 100%);">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="section-title">Pricing Details</div>
+                            <div class="section-desc">Purchase, selling price, MRP and tax configuration</div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <!-- Purchase Price -->
+                        <div class="form-group">
+                            <label class="form-label" for="purchase_price">
+                                Purchase Price <span class="required">*</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <span class="input-prefix">₹</span>
+                                <input 
+                                    type="number" 
+                                    id="purchase_price" 
+                                    name="purchase_price"
+                                    class="form-input" 
+                                    placeholder="0.00"
+                                    step="0.01"
+                                    min="0"
+                                >
+                            </div>
+                            <span class="error-message" id="purchase_price_error">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="error-text">Enter a valid purchase price</span>
+                            </span>
+                        </div>
+
+                        <!-- Selling Price -->
+                        <div class="form-group">
+                            <label class="form-label" for="selling_price">
+                                Selling Price <span class="required">*</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <span class="input-prefix">₹</span>
+                                <input 
+                                    type="number" 
+                                    id="selling_price" 
+                                    name="selling_price"
+                                    class="form-input" 
+                                    placeholder="0.00"
+                                    step="0.01"
+                                    min="0"
+                                >
+                            </div>
+                            <span class="error-message" id="selling_price_error">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="error-text">Selling price must be greater than purchase price</span>
+                            </span>
+                        </div>
+
+                        <!-- MRP -->
+                        <div class="form-group">
+                            <label class="form-label" for="mrp">
+                                MRP <span class="required">*</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <span class="input-prefix">₹</span>
+                                <input 
+                                    type="number" 
+                                    id="mrp" 
+                                    name="mrp"
+                                    class="form-input" 
+                                    placeholder="0.00"
+                                    step="0.01"
+                                    min="0"
+                                >
+                            </div>
+                            <span class="error-message" id="mrp_error">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="error-text">MRP must be greater than or equal to selling price</span>
+                            </span>
+                        </div>
+
+                        <!-- GST -->
+                        <div class="form-group">
+                            <label class="form-label" for="gst">GST (%)</label>
+                            <div class="input-wrapper">
+                                <input 
+                                    type="number" 
+                                    id="gst" 
+                                    name="gst"
+                                    class="form-input" 
+                                    placeholder="e.g., 5, 12, 18"
+                                    step="0.01"
+                                    min="0"
+                                    max="100"
+                                >
+                                <span class="input-prefix" style="left: auto; right: 14px;">%</span>
+                            </div>
+                            <span class="error-message" id="gst_error">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="error-text">GST must be between 0 and 100</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Stock & Status -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon" style="background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="section-title">Stock & Availability</div>
+                            <div class="section-desc">Current inventory levels and product status</div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <!-- Current Stock -->
+                        <div class="form-group">
+                            <label class="form-label" for="current_stock">
+                                Current Stock <span class="required">*</span>
+                            </label>
+                            <input 
+                                type="number" 
+                                id="current_stock" 
+                                name="current_stock"
+                                class="form-input" 
+                                placeholder="e.g., 50"
+                                min="0"
+                                step="1"
+                            >
+                            <span class="error-message" id="current_stock_error">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="error-text">Enter a valid stock quantity</span>
+                            </span>
+                        </div>
+
+                        <!-- Minimum Stock -->
+                        <div class="form-group">
+                            <label class="form-label" for="minimum_stock">
+                                Minimum Stock <span class="required">*</span>
+                            </label>
+                            <input 
+                                type="number" 
+                                id="minimum_stock" 
+                                name="minimum_stock"
+                                class="form-input" 
+                                placeholder="e.g., 10"
+                                min="0"
+                                step="1"
+                            >
+                            <span class="error-message" id="minimum_stock_error">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="error-text">Enter a valid minimum stock level</span>
+                            </span>
+                        </div>
+
+                        <!-- Retailer -->
+                        <div class="form-group">
+                            <label class="form-label" for="retailer">
+                                Retailer <span class="required">*</span>
+                            </label>
+                            <div class="select-wrapper">
+                                <select id="retailer" name="retailer" class="form-select">
+                                    <option value="" disabled selected>Select retailer</option>
+                                    <option value="1">Main Store</option>
+                                    <option value="2">Branch 1</option>
+                                    <option value="3">Branch 2</option>
+                                </select>
+                            </div>
+                            <span class="error-message" id="retailer_error">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="error-text">Please select a retailer</span>
+                            </span>
+                        </div>
+
+                        <!-- Active Status Toggle -->
+                        <div class="form-group">
+                            <label class="form-label">Product Status</label>
+                            <div class="toggle-group">
+                                <div class="toggle-switch active" id="statusToggle" onclick="toggleStatus()"></div>
+                                <div>
+                                    <div class="toggle-label" id="statusLabel">Active</div>
+                                    <div class="toggle-hint">Product will be visible for billing</div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="is_active" id="is_active" value="true">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="history.back()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Save Product
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </main>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span id="toastMessage">Product saved successfully!</span>
     </div>
 
-    {% if messages %}
-        <div class="messages-container">
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+    <script>
+        (function() {
+            const form = document.getElementById('addProductForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
 
-    <!-- Note: Changed action name to a more generic one if applicable, keep your exact url name if needed -->
-    <form method="POST" action="{% url 'add_new_supplier' %}" id="purchaseForm" enctype="multipart/form-data">
-        {% csrf_token %}
+            // Fields
+            const fields = {
+                product_name: document.getElementById('product_name'),
+                barcode: document.getElementById('barcode'),
+                hsn_code: document.getElementById('hsn_code'),
+                category: document.getElementById('category'),
+                brand: document.getElementById('brand'),
+                unit: document.getElementById('unit'),
+                purchase_price: document.getElementById('purchase_price'),
+                selling_price: document.getElementById('selling_price'),
+                mrp: document.getElementById('mrp'),
+                gst: document.getElementById('gst'),
+                current_stock: document.getElementById('current_stock'),
+                minimum_stock: document.getElementById('minimum_stock'),
+                retailer: document.getElementById('retailer')
+            };
 
-        <div class="form-body">
-            <!-- Top Form Fields -->
-            <div class="form-grid">
-                
-                <!-- Retailer Selection -->
-                <div class="form-group">
-                  <label for="retailer">Retailer Name <span class="required">*</span></label>
-                  <select class="form-control" name="retailer" id="retailer" required>
-                      <option value="" disabled selected>Select a Retailer</option>
-                      {% for retailer in retailers %}
-                          <option value="{{ retailer.id }}">{{ retailer.shop_name }}</option>
-                      {% endfor %}
-                  </select>
-                </div>
+            // Toggle status
+            window.toggleStatus = function() {
+                const toggle = document.getElementById('statusToggle');
+                const label = document.getElementById('statusLabel');
+                const input = document.getElementById('is_active');
+                const isActive = toggle.classList.toggle('active');
+                label.textContent = isActive ? 'Active' : 'Inactive';
+                input.value = isActive ? 'true' : 'false';
+            };
 
-                <!-- Supplier Name -->
-                <div class="form-group">
-                    <label for="supplierName">Supplier Name <span class="required">*</span></label>
-                    <input type="text" class="form-control" name="supplier_name" id="supplierName" placeholder="Enter supplier name" required>
-                </div>
+            // Show/Hide error
+            function showError(fieldId, message) {
+                const input = document.getElementById(fieldId);
+                const errorEl = document.getElementById(fieldId + '_error');
+                input.classList.add('error');
+                if (errorEl) {
+                    const textSpan = errorEl.querySelector('.error-text');
+                    if (textSpan) textSpan.textContent = message;
+                    errorEl.classList.add('show');
+                }
+            }
 
-                <!-- Contact Person (Optional) -->
-                <div class="form-group">
-                    <label for="contactPerson">Contact Person</label>
-                    <input type="text" class="form-control" name="contact_person" id="contactPerson" placeholder="Enter contact person name">
-                </div>
+            function clearError(fieldId) {
+                const input = document.getElementById(fieldId);
+                const errorEl = document.getElementById(fieldId + '_error');
+                input.classList.remove('error');
+                if (errorEl) errorEl.classList.remove('show');
+            }
 
-                <!-- Mobile -->
-                <div class="form-group">
-                    <label for="mobile">Mobile <span class="required">*</span></label>
-                    <input type="text" class="form-control" name="mobile" id="mobile" placeholder="Enter mobile number" required>
-                </div>
+            function clearAllErrors() {
+                Object.keys(fields).forEach(id => clearError(id));
+            }
 
-                <!-- Alternate Mobile (Optional) -->
-                <div class="form-group">
-                    <label for="alternateMobile">Alternate Mobile</label>
-                    <input type="text" class="form-control" name="alternate_mobile" id="alternateMobile" placeholder="Enter alternate mobile number">
-                </div>
+            // Real-time clear on input
+            Object.keys(fields).forEach(id => {
+                const el = fields[id];
+                if (el) {
+                    el.addEventListener('input', () => clearError(id));
+                    el.addEventListener('change', () => clearError(id));
+                }
+            });
 
-                <!-- Email (Optional) -->
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" class="form-control" name="email" id="email" placeholder="Enter email address">
-                </div>
+            // Validation rules
+            function validate() {
+                let isValid = true;
+                clearAllErrors();
 
-                <!-- GST Number (Optional) -->
-                <div class="form-group">
-                    <label for="gstNumber">GST Number</label>
-                    <input type="text" class="form-control" name="gst_number" id="gstNumber" placeholder="Enter GSTIN">
-                </div>
+                // Product Name
+                const pname = fields.product_name.value.trim();
+                if (!pname) {
+                    showError('product_name', 'Product name is required');
+                    isValid = false;
+                } else if (pname.length < 2) {
+                    showError('product_name', 'Product name must be at least 2 characters');
+                    isValid = false;
+                }
 
-                <!-- PAN Number (Optional) -->
-                <div class="form-group">
-                    <label for="panNumber">PAN Number</label>
-                    <input type="text" class="form-control" name="pan_number" id="panNumber" placeholder="Enter PAN card number">
-                </div>
+                // Barcode (optional, but if filled must be valid)
+                const barcode = fields.barcode.value.trim();
+                if (barcode && barcode.length > 100) {
+                    showError('barcode', 'Barcode must not exceed 100 characters');
+                    isValid = false;
+                }
 
-                <!-- City -->
-                <div class="form-group">
-                    <label for="city">City <span class="required">*</span></label>
-                    <input type="text" class="form-control" name="city" id="city" placeholder="Enter city" required>
-                </div>
+                // HSN Code
+                if (!fields.hsn_code.value.trim()) {
+                    showError('hsn_code', 'HSN code is required');
+                    isValid = false;
+                }
 
-                <!-- State -->
-                <div class="form-group">
-                    <label for="state">State <span class="required">*</span></label>
-                    <input type="text" class="form-control" name="state" id="state" placeholder="Enter state" required>
-                </div>
+                // Dropdowns
+                ['category', 'brand', 'unit', 'retailer'].forEach(field => {
+                    if (!fields[field].value) {
+                        showError(field, 'Please select a ' + field.replace('_', ' '));
+                        isValid = false;
+                    }
+                });
 
-                <!-- Pincode -->
-                <div class="form-group">
-                    <label for="pincode">Pincode <span class="required">*</span></label>
-                    <input type="text" class="form-control" name="pincode" id="pincode" placeholder="Enter pincode" required>
-                </div>
+                // Prices
+                const pPrice = parseFloat(fields.purchase_price.value);
+                const sPrice = parseFloat(fields.selling_price.value);
+                const mrp = parseFloat(fields.mrp.value);
 
-                <!-- Opening Balance -->
-                <div class="form-group">
-                    <label for="openingBalance">Opening Balance</label>
-                    <input type="number" step="0.01" class="form-control" name="opening_balance" id="openingBalance" value="0.00">
-                </div>
+                if (isNaN(pPrice) || pPrice <= 0) {
+                    showError('purchase_price', 'Enter a valid purchase price greater than 0');
+                    isValid = false;
+                }
 
-                <!-- Credit Limit -->
-                <div class="form-group">
-                    <label for="creditLimit">Credit Limit</label>
-                    <input type="number" step="0.01" class="form-control" name="credit_limit" id="creditLimit" value="0.00">
-                </div>
+                if (isNaN(sPrice) || sPrice <= 0) {
+                    showError('selling_price', 'Enter a valid selling price greater than 0');
+                    isValid = false;
+                } else if (sPrice < pPrice) {
+                    showError('selling_price', 'Selling price must be greater than or equal to purchase price');
+                    isValid = false;
+                }
 
-                <!-- Credit Days -->
-                <div class="form-group">
-                    <label for="creditDays">Credit Days</label>
-                    <input type="number" class="form-control" name="credit_days" id="creditDays" value="0">
-                </div>
+                if (isNaN(mrp) || mrp <= 0) {
+                    showError('mrp', 'Enter a valid MRP greater than 0');
+                    isValid = false;
+                } else if (mrp < sPrice) {
+                    showError('mrp', 'MRP must be greater than or equal to selling price');
+                    isValid = false;
+                }
 
-                <!-- Full Width Address Field -->
-                <div class="form-group col-full">
-                    <label for="address">Address <span class="required">*</span></label>
-                    <textarea class="form-control" name="address" id="address" rows="3" placeholder="Enter complete address" required></textarea>
-                </div>
+                // GST
+                const gst = parseFloat(fields.gst.value);
+                if (fields.gst.value && (isNaN(gst) || gst < 0 || gst > 100)) {
+                    showError('gst', 'GST must be between 0 and 100');
+                    isValid = false;
+                }
 
-                <!-- Full Width Notes Field (Optional) -->
-                <div class="form-group col-full">
-                    <label for="notes">Notes</label>
-                    <textarea class="form-control" name="notes" id="notes" rows="3" placeholder="Add any special instructions or remarks"></textarea>
-                </div>
+                // Stock
+                const cStock = parseInt(fields.current_stock.value);
+                const mStock = parseInt(fields.minimum_stock.value);
 
-                <!-- Status Checkbox -->
-                <div class="form-group checkbox-group">
-                    <label for="isActive">
-                        <input type="checkbox" name="is_active" id="isActive" checked> Is Active
-                    </label>
-                </div>
-            </div>
-        </div>
+                if (isNaN(cStock) || cStock < 0) {
+                    showError('current_stock', 'Current stock must be 0 or greater');
+                    isValid = false;
+                }
 
-        <!-- Form Footer -->
-        <div class="form-footer">
-            <button type="submit" class="btn btn-primary" id="submitBtn">
-                <i class="fas fa-check"></i> Save Supplier
-            </button>
-        </div>
-    </form>
-</div>
-{% endblock %}
+                if (isNaN(mStock) || mStock < 0) {
+                    showError('minimum_stock', 'Minimum stock must be 0 or greater');
+                    isValid = false;
+                }
 
-{% block js %}
-<script>
-    // ===== SIDEBAR TOGGLE =====
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
+                return isValid;
+            }
 
-    function toggleSidebar() {
-        sidebar.classList.toggle('collapsed');
-        mainContent.classList.toggle('expanded');
-        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-    }
+            // Toast
+            function showToast(msg, isError) {
+                toastMessage.textContent = msg;
+                toast.className = 'toast ' + (isError ? 'error-toast' : '') + ' show';
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
 
-    function openMobileSidebar() {
-        sidebar.classList.add('open');
-        sidebarOverlay.classList.add('active');
-    }
+            // Form Submit
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
 
-    function closeMobileSidebar() {
-        sidebar.classList.remove('open');
-        sidebarOverlay.classList.remove('active');
-    }
+                if (!validate()) {
+                    // Focus first invalid field
+                    const firstError = document.querySelector('.form-input.error, .form-select.error');
+                    if (firstError) firstError.focus();
+                    return;
+                }
 
-    if (localStorage.getItem('sidebarCollapsed') === 'true' && window.innerWidth > 768) {
-        sidebar.classList.add('collapsed');
-        mainContent.classList.add('expanded');
-    }
+                // Show saving state
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="animation: spin 1s linear infinite;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    Saving...
+                `;
 
-    // ===== THEME TOGGLE =====
-    const html = document.documentElement;
-    const themeIcon = document.getElementById('themeIcon');
+                showToast('Product saved successfully! Redirecting...', false);
 
-    function toggleTheme() {
-        const current = html.getAttribute('data-theme');
-        const next = current === 'light' ? 'dark' : 'light';
-        html.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
-        themeIcon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-    }
-
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    html.setAttribute('data-theme', savedTheme);
-    themeIcon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-
-
-    /* ============================================================
-        USER PROFILE DROPDOWN
-        ============================================================ */
-    const userProfile = document.getElementById('userProfile');
-    const userDropdownMenu = document.getElementById('userDropdownMenu');
-
-    userProfile.addEventListener('click', function (e) {
-        e.stopPropagation();
-        userDropdownMenu.classList.toggle('show');
-        userProfile.classList.toggle('open');
-    });
-
-    // Close dropdown when clicking anywhere else
-    document.addEventListener('click', function (e) {
-        if (!userProfile.contains(e.target)) {
-            userDropdownMenu.classList.remove('show');
-            userProfile.classList.remove('open');
-        }
-    });
-
-    // Close dropdown on Escape
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-            userDropdownMenu.classList.remove('show');
-            userProfile.classList.remove('open');
-            closeMobileSidebar();
-        }
-    });
-
-    window.addEventListener('resize', () => {
-        if (window.innerWidth > 768) {
-            closeMobileSidebar();
-        }
-    });
-</script>
-{% endblock %}
+                // Submit to backend after brief delay
+                setTimeout(() => {
+                    form.submit();
+                }, 800);
+            });
+        })();
+    </script>
+</body>
+</html>

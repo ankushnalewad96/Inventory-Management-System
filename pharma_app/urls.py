@@ -12,8 +12,9 @@ urlpatterns = [
     path('logout/', views.user_logout, name='user_logout'),
 
     #Products URLs
-    path("product-list/", views.products, name="product_list"),
+    path("product-list/", views.product_list, name="product_list"),
     path("add-product/", views.add_product, name="add_product"),
+    path("product-mapping/", views.product_mapping, name="product_mapping"),
 
     #Order URLs
     path('add-order/', views.add_order, name='add_new_order'),

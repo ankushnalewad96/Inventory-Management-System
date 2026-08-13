@@ -1,0 +1,18 @@
+[2026-08-13 20:08:16,284] WARNING views Invalid related object reference while adding product: retailer=retailer.id, category=category.id, brand=brand.id, unit=unit.id
+[2026-08-13 20:11:56,878] WARNING views Invalid related object reference while adding product: retailer=retailer.id, category=category.id, brand=brand.id, unit=unit.id
+[2026-08-13 20:14:16,690] INFO views Product added by user=admin: product=Maggi Noodles 4-Pack, retailer=Abc Genral Store
+[2026-08-13 20:15:56,579] INFO views Supplier 'Supplier' (ID: 1) created by retailer 1
+[2026-08-13 20:16:33,389] INFO views Supplier 'Supplier1' (ID: 2) created by retailer 1
+[2026-08-13 20:18:43,541] WARNING views User without a retailer profile attempted to add an order: user=admin
+[2026-08-13 20:29:14,629] WARNING views User without a retailer profile attempted to add an order: user=admin
+[2026-08-13 20:30:33,967] WARNING views User without a retailer profile attempted to add an order: user=admin
+[2026-08-13 20:32:12,235] WARNING views User without a retailer profile attempted to add an order
+[2026-08-13 20:32:12,251] WARNING views Invalid item data while creating purchase order: Cannot assign "'1'": "Purchase.retailer" must be a "Retailer" instance.
+[2026-08-13 21:41:11,751] WARNING views User without a retailer profile attempted to add an order
+[2026-08-13 21:41:11,751] WARNING views Invalid item data while creating purchase order: Cannot assign "'1'": "Purchase.supplier" must be a "Supplier" instance.
+[2026-08-13 21:43:21,382] WARNING views User without a retailer profile attempted to add an order
+[2026-08-13 21:43:21,546] INFO views Purchase order created by user=admin: bill_number=BILL-2026-001, retailer=Abc Genral Store
+[2026-08-13 21:45:36,216] INFO views Product added by user=admin: product=Amul Taaza Fresh Milk 1L, retailer=Abc Genral Store
+[2026-08-13 21:49:54,320] INFO views Product added by user=admin: product=Haldiram Bhujia Sev 400g, retailer=Abc Genral Store
+[2026-08-13 22:05:58,413] WARNING views User without a retailer profile attempted to add an order
+[2026-08-13 22:05:58,534] INFO views Purchase order created by user=admin: bill_number=BILL-2026-001, retailer=Abc Genral Store

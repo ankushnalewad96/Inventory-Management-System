@@ -34,7 +34,7 @@ def dashboard(request):
     return render(request, "dashboard.html", context)
 
 
-@staff_member_required
+# @staff_member_required
 def retailer_register(request):
     """
     Handles retailer account creation.
@@ -316,6 +316,30 @@ def add_product(request):
     return render(request, "add_product.html", context)
 
 
+def product_mapping(request):
+    return render(request,"product_mapping.html")
+
+
+@login_required(login_url='/user-login/')
+def product_list(request):
+    """
+    Displays the retailer's product catalog in a tabular format,
+    including category, brand, and unit details, ordered alphabetically
+    by product name.
+    """
+    try:
+        products = Product.objects.select_related(
+            "category", "brand", "unit", "retailer"
+        ).order_by("product_name")
+    except Exception:
+        logger.exception("Failed to fetch product list.")
+        messages.error(request, "Something went wrong while loading the product list.")
+        products = Product.objects.none()
+
+    context = {"products": products}
+    return render(request, "product_list.html", context)
+
+
 GST_RATE_MAP = {
     "none": 0,
     "gst5": 5,
@@ -342,11 +366,13 @@ def add_order(request):
     products = Product.objects.filter(is_active=True).order_by("product_name")
     units = Unit.objects.all()
     supplier_list = Supplier.objects.filter(is_active = True).order_by("supplier_name")
+    retailer_list = Retailer.objects.filter(is_active = True).order_by("shop_name")
 
     context = {
         "products": products,
         "units": units,
         "supplier_list": supplier_list,
+        "retailer_list": retailer_list,
     }
 
     return render(request, "add_order.html",context)
@@ -355,18 +381,26 @@ def add_order(request):
 def _handle_add_order(request):
     """Validates form data and creates the Purchase + PurchaseItem records."""
 
-    retailer = getattr(request.user, "retailer", None)
-    if retailer is None:
+    if request.user.is_superuser:
+        retailer_id = request.POST.get("retailer", "").strip()
+        print(">>>>>>>>>>>>>>>>> retailer             ", retailer_id) 
+    else:
+        retailer_id = getattr(request.user, "retailer", None)
+
+       
+    if retailer_id is None:
         logger.warning("User without a retailer profile attempted to add an order: user=%s", request.user.username)
         messages.error(request, "No retailer profile is linked to your account.")
         return redirect("add_new_order")
 
-    supplier_name = request.POST.get("supplier", "").strip()
+    retailer = Retailer.objects.get(id = retailer_id)
+
+    supplier_id = request.POST.get("supplier", "").strip()
     bill_number = request.POST.get("bill_number", "").strip()
     bill_date = request.POST.get("bill_date", "").strip()
     bill_time = request.POST.get("bill_time") or None
     logger.warning("User without a retailer profile attempted to add an order")
-    if not supplier_name or not bill_number or not bill_date:
+    if not supplier_id or not bill_number or not bill_date:
         messages.error(request, "Supplier, bill number, and bill date are required.")
         return redirect("add_new_order")
 
@@ -390,7 +424,7 @@ def _handle_add_order(request):
         with transaction.atomic():
             purchase = Purchase.objects.create(
                 retailer=retailer,
-                supplier=supplier_name,
+                supplier=Supplier.objects.get(id = supplier_id),
                 bill_number=bill_number,
                 bill_date=bill_date,
                 bill_time=bill_time,
@@ -622,8 +656,6 @@ def add_supplier(request):
     return redirect("add_new_supplier")
 
 
-def products(request):
-    return render(request,"products.html")
 
 # @login_required(login_url='/user-login/')
 # def add_supplier(request):

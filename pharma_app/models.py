@@ -109,25 +109,6 @@ class Supplier(models.Model):
     def __str__(self):
         return self.supplier_name
 
-# Product Category Model
-class Category(models.Model):
-    """
-    Category Model - Stores product categories defined by each retailer.
-
-    Each retailer can create their own set of categories to organize
-    their products (e.g., Groceries, Electronics, Clothing). This allows
-    products to be grouped and filtered by category on a per-retailer basis.
-    """
-    retailer = models.ForeignKey(
-        Retailer,
-        on_delete=models.CASCADE
-    )
-
-    category_name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.category_name
-
 
 # Product Brand Model
 class Brand(models.Model):
@@ -147,6 +128,26 @@ class Brand(models.Model):
 
     def __str__(self):
         return self.brand_name
+
+
+# Product Category Model
+class Category(models.Model):
+    """
+    Category Model - Stores product categories defined by each retailer.
+
+    Each retailer can create their own set of categories to organize
+    their products (e.g., Groceries, Electronics, Clothing). This allows
+    products to be grouped and filtered by category on a per-retailer basis.
+    """
+    retailer = models.ForeignKey(
+        Retailer,
+        on_delete=models.CASCADE
+    )
+
+    category_name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.category_name
 
 
 # Unit of Measurement Model
@@ -228,7 +229,7 @@ class Product(models.Model):
         return self.product_name
 
 
-# Purchase Bill Model
+# Purchase Bill Model 
 class Purchase(models.Model):
     """
     Purchase Model - Stores purchase bill/invoice details from suppliers.
@@ -296,7 +297,7 @@ class Purchase(models.Model):
         return self.bill_number
 
 
-# Purchase Item Model
+# Purchase Item Model 
 class PurchaseItem(models.Model):
     """
     PurchaseItem Model - Stores individual product line items for a purchase.

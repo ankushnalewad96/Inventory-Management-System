@@ -158,7 +158,7 @@ LOGGING = {
     },
 
     "loggers": {
-        "retailer_app": {   # replace with your actual app name
+        "pharma_app": {   # replace with your actual app name
             "handlers": ["file", "console"],
             "level": "INFO",
             "propagate": False,

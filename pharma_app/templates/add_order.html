@@ -52,6 +52,21 @@
                     </div>
                 </div>
 
+                {% if request.user.is_superuser %}
+                <div class="form-group">
+                    <label>Retailer Name <span class="required">*</span></label>
+                    <div class="supplier-search">
+                        <i class="fas fa-search"></i>
+                        <select class="form-control" id="supplierSelect" name="retailer" required>
+                            <option value="">Select Retailer</option>
+                            {% for retailer in retailer_list %}
+                                <option value="{{ retailer.id }}">{{ retailer.shop_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                {% endif %}
+
                 <div class="form-group">
                     <label>Bill Number <span class="required">*</span></label>
                     <input type="text" class="form-control" name="bill_number" id="billNumber" placeholder="Enter bill number" value="BILL-2026-001" required>
@@ -101,6 +116,7 @@
                         <option value="maharashtra" selected>Maharashtra</option>
                         <option value="gujarat">Gujarat</option>
                         <option value="karnataka">Karnataka</option>
+                        <option value="uttarpradesh">Uttar Pradesh</option>
                         <option value="tamilnadu">Tamil Nadu</option>
                         <option value="delhi">Delhi</option>
                         <option value="rajasthan">Rajasthan</option>
