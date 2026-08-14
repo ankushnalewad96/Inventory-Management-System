@@ -15,10 +15,21 @@ urlpatterns = [
     path("product-list/", views.product_list, name="product_list"),
     path("add-product/", views.add_product, name="add_product"),
     path("product-mapping/", views.product_mapping, name="product_mapping"),
+    path(
+        "products/update/",
+        views.update_product,
+        name="update_product",
+    ),
+    path(
+        "products/delete/<int:product_id>/",
+        views.delete_product,
+        name="delete_product",
+    ),
 
     #Order URLs
     path('add-order/', views.add_order, name='add_new_order'),
     path('purchase-product-list/', views.purchase_list, name='purchase_product_list'),
+    path("purchases-details/<int:purchase_id>/", views.purchase_detail, name="purchase_detail"),
 
     #Supplier URLs
     path('add-supplier/', views.add_supplier, name='add_new_supplier'),

@@ -266,7 +266,6 @@ class Purchase(models.Model):
             related_name="supplier"
         )
     
-    # supplier = models.CharField(max_length=150)
     bill_number = models.CharField(max_length=100)
     bill_date = models.DateField()
     bill_time = models.TimeField(blank=True, null=True)
@@ -291,7 +290,30 @@ class Purchase(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["-bill_date", "-created_at"]
+        ordering = [
+            "-bill_date",
+            "-created_at"
+        ]
+
+        indexes = [
+            # Retailer's purchases sorted by latest bill date
+            models.Index(
+                fields=["retailer", "-bill_date"],
+                name="purchase_retailer_date_idx"
+            ),
+
+            # Supplier-wise purchase filtering and date sorting
+            models.Index(
+                fields=["retailer", "supplier", "-bill_date"],
+                name="purchase_supplier_date_idx"
+            ),
+
+            # Payment status filtering and date sorting
+            models.Index(
+                fields=["retailer", "payment_status", "-bill_date"],
+                name="purchase_status_date_idx"
+            ),
+        ]
 
     def __str__(self):
         return self.bill_number

@@ -9,8 +9,18 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.db import IntegrityError, transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.db import DatabaseError
+from django.db.models import Prefetch
+
+
+
+
 
 logger = logging.getLogger("pharma_app")
+
+
 
 
 # Create your views here.
@@ -320,24 +330,309 @@ def product_mapping(request):
     return render(request,"product_mapping.html")
 
 
-@login_required(login_url='/user-login/')
+
+import logging
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db import DatabaseError
+from django.db.models import Q, F, Count
+from django.shortcuts import redirect, render
+
+from .models import Product
+
+
+logger = logging.getLogger(__name__)
+
+
+@login_required(login_url="/user-login/")
 def product_list(request):
     """
-    Displays the retailer's product catalog in a tabular format,
-    including category, brand, and unit details, ordered alphabetically
-    by product name.
-    """
-    try:
-        products = Product.objects.select_related(
-            "category", "brand", "unit", "retailer"
-        ).order_by("product_name")
-    except Exception:
-        logger.exception("Failed to fetch product list.")
-        messages.error(request, "Something went wrong while loading the product list.")
-        products = Product.objects.none()
+    Display the product catalog with server-side filtering,
+    dynamic statistics and pagination.
 
-    context = {"products": products}
-    return render(request, "product_list.html", context)
+    Access rules:
+    - Superadmin can view products from all retailers.
+    - Retailer users can view only their own products.
+
+    Filters:
+    - All
+    - Active
+    - Inactive
+    - Low Stock
+    - Out of Stock
+    - Product name
+    - Barcode
+    - HSN
+    - Brand
+    - Category
+    """
+
+    try:
+        # ---------------------------------------------------------
+        # Base queryset
+        # ---------------------------------------------------------
+        products = (
+            Product.objects
+            .select_related(
+                "category",
+                "brand",
+                "unit",
+                "retailer",
+            )
+        )
+
+        # ---------------------------------------------------------
+        # Retailer access control
+        # ---------------------------------------------------------
+        if not request.user.is_superuser:
+
+            retailer = getattr(
+                request.user,
+                "retailer",
+                None,
+            )
+
+            if retailer is None:
+                logger.warning(
+                    "Product list access denied. "
+                    "User has no retailer association. user_id=%s",
+                    request.user.id,
+                )
+
+                messages.error(
+                    request,
+                    "Your account is not associated with a retailer.",
+                )
+
+                return redirect("dashboard")
+
+            products = products.filter(
+                retailer=retailer
+            )
+
+        # ---------------------------------------------------------
+        # Read GET parameters
+        # ---------------------------------------------------------
+        search = request.GET.get(
+            "search",
+            "",
+        ).strip()
+
+        status = request.GET.get(
+            "status",
+            "all",
+        ).strip().lower()
+
+        # ---------------------------------------------------------
+        # Search
+        # ---------------------------------------------------------
+        if search:
+            products = products.filter(
+                Q(product_name__icontains=search)
+                | Q(barcode__icontains=search)
+                | Q(hsn_code__icontains=search)
+                | Q(brand__brand_name__icontains=search)
+                | Q(category__category_name__icontains=search)
+            )
+
+        # ---------------------------------------------------------
+        # Status filter
+        # ---------------------------------------------------------
+        if status == "active":
+
+            products = products.filter(
+                is_active=True
+            )
+
+        elif status == "inactive":
+
+            products = products.filter(
+                is_active=False
+            )
+
+        elif status == "low_stock":
+
+            products = products.filter(
+                current_stock__gt=0,
+                current_stock__lte=F(
+                    "minimum_stock"
+                ),
+            )
+
+        elif status == "out_of_stock":
+
+            products = products.filter(
+                current_stock=0
+            )
+
+        # ---------------------------------------------------------
+        # Dynamic statistics
+        # ---------------------------------------------------------
+        stats = products.aggregate(
+            total_products=Count("id"),
+
+            active_products=Count(
+                "id",
+                filter=Q(
+                    is_active=True
+                ),
+            ),
+
+            low_stock_count=Count(
+                "id",
+                filter=Q(
+                    current_stock__gt=0,
+                    current_stock__lte=F(
+                        "minimum_stock"
+                    ),
+                ),
+            ),
+
+            out_of_stock_count=Count(
+                "id",
+                filter=Q(
+                    current_stock=0
+                ),
+            ),
+        )
+
+        # ---------------------------------------------------------
+        # Pagination
+        # ---------------------------------------------------------
+        products = products.order_by(
+            "product_name"
+        )
+
+        paginator = Paginator(
+            products,
+            25,
+        )
+
+        page_number = request.GET.get(
+            "page"
+        )
+
+        page_obj = paginator.get_page(
+            page_number
+        )
+
+        # ---------------------------------------------------------
+        # Context
+        # ---------------------------------------------------------
+        context = {
+            "products": page_obj,
+            "page_obj": page_obj,
+
+            "total_products": (
+                stats["total_products"] or 0
+            ),
+
+            "active_products": (
+                stats["active_products"] or 0
+            ),
+
+            "low_stock_count": (
+                stats["low_stock_count"] or 0
+            ),
+
+            "out_of_stock_count": (
+                stats["out_of_stock_count"] or 0
+            ),
+
+            "search": search,
+            "status": status,
+        }
+
+        return render(
+            request,
+            "product_list.html",
+            context,
+        )
+
+    except DatabaseError:
+        logger.exception(
+            "Database error while loading product list. "
+            "user_id=%s",
+            request.user.id,
+        )
+
+        messages.error(
+            request,
+            "Unable to load products. Please try again.",
+        )
+
+        context = {
+            "products": Product.objects.none(),
+            "page_obj": None,
+            "total_products": 0,
+            "active_products": 0,
+            "low_stock_count": 0,
+            "out_of_stock_count": 0,
+            "search": "",
+            "status": "all",
+        }
+
+        return render(
+            request,
+            "product_list.html",
+            context,
+        )
+
+    except Exception:
+        logger.exception(
+            "Unexpected error while loading product list. "
+            "user_id=%s",
+            request.user.id,
+        )
+
+        messages.error(
+            request,
+            "Something went wrong while loading the product list.",
+        )
+
+        context = {
+            "products": Product.objects.none(),
+            "page_obj": None,
+            "total_products": 0,
+            "active_products": 0,
+            "low_stock_count": 0,
+            "out_of_stock_count": 0,
+            "search": "",
+            "status": "all",
+        }
+
+        return render(
+            request,
+            "product_list.html",
+            context,
+        )
+
+
+
+
+
+
+
+# @login_required(login_url='/user-login/')
+# def product_list(request):
+#     """
+#     Displays the retailer's product catalog in a tabular format,
+#     including category, brand, and unit details, ordered alphabetically
+#     by product name.
+#     """
+#     try:
+#         products = Product.objects.select_related(
+#             "category", "brand", "unit", "retailer"
+#         ).order_by("product_name")
+#     except Exception:
+#         logger.exception("Failed to fetch product list.")
+#         messages.error(request, "Something went wrong while loading the product list.")
+#         products = Product.objects.none()
+
+#     context = {"products": products}
+#     return render(request, "product_list.html", context)
 
 
 GST_RATE_MAP = {
@@ -383,7 +678,6 @@ def _handle_add_order(request):
 
     if request.user.is_superuser:
         retailer_id = request.POST.get("retailer", "").strip()
-        print(">>>>>>>>>>>>>>>>> retailer             ", retailer_id) 
     else:
         retailer_id = getattr(request.user, "retailer", None)
 
@@ -540,19 +834,243 @@ def _create_purchase_items(request, purchase):
         )
 
 
+
+
 @login_required(login_url='/user-login/')
 def purchase_list(request):
-    """Displays all purchase orders, most recent first."""
+
     try:
-        purchases = Purchase.objects.select_related("retailer").order_by("-bill_date", "-created_at")
-        supplier_list = Supplier.objects.filter(is_active = True).order_by("supplier_name")
+        purchases = (
+            Purchase.objects
+            .select_related("retailer", "supplier")
+            .all()
+            .order_by("-bill_date", "-created_at")
+        )
+
+        # -------------------------
+        # GET FILTER PARAMETERS
+        # -------------------------
+
+        from_date = request.GET.get("from_date", "").strip()
+        to_date = request.GET.get("to_date", "").strip()
+        status = request.GET.get("status", "").strip()
+        supplier_id = request.GET.get("supplier", "").strip()
+        # search = request.GET.get("search", "").strip()
+
+        # -------------------------
+        # DATE FILTER
+        # -------------------------
+
+        if from_date:
+            purchases = purchases.filter(
+                bill_date__gte=from_date
+            )
+
+        if to_date:
+            purchases = purchases.filter(
+                bill_date__lte=to_date
+            )
+
+        # -------------------------
+        # STATUS FILTER
+        # -------------------------
+
+        if status:
+            purchases = purchases.filter(
+                payment_status=status
+            )
+
+        # -------------------------
+        # SUPPLIER FILTER
+        # -------------------------
+
+        if supplier_id:
+            purchases = purchases.filter(
+                supplier_id=supplier_id
+            )
+
+        # -------------------------
+        # SEARCH
+        # -------------------------
+
+        # if search:
+        #     purchases = purchases.filter(
+        #         Q(bill_number__icontains=search) |
+        #         Q(supplier__supplier_name__icontains=search)
+        #     )
+
+        # -------------------------
+        # PAGINATION
+        # -------------------------
+
+        paginator = Paginator(purchases, 25)
+
+        page_number = request.GET.get("page")
+
+        page_obj = paginator.get_page(page_number)
+
+        # -------------------------
+        # SUPPLIER DROPDOWN
+        # -------------------------
+
+        supplier_list = (
+            Supplier.objects
+            .filter(is_active=True)
+            .order_by("supplier_name")
+        )
+
     except Exception:
         logger.exception("Failed to fetch purchase list.")
-        messages.error(request, "Something went wrong while loading purchases.")
-        purchases = Purchase.objects.none()
 
-    context = {"purchases": purchases, "supplier_list":supplier_list}
-    return render(request, "purchase_list.html", context)
+        messages.error(
+            request,
+            "Something went wrong while loading purchases."
+        )
+
+        page_obj = Paginator(
+            Purchase.objects.none(),
+            25
+        ).get_page(1)
+
+        supplier_list = Supplier.objects.none()
+
+    context = {
+        "purchases": page_obj,
+        "page_obj": page_obj,
+        "supplier_list": supplier_list,
+    }
+
+    return render(
+        request,
+        "purchase_list.html",
+        context
+    )
+
+
+@login_required(login_url="/user-login/")
+def purchase_detail(request, purchase_id):
+    """
+    Display complete purchase details including all purchase items.
+
+    Access rules:
+    - Django superadmin can view purchases belonging to any retailer.
+    - Retailer users can view only purchases belonging to their retailer.
+    """
+
+    try:
+        # ---------------------------------------------------------
+        # PurchaseItem queryset
+        # ---------------------------------------------------------
+        items_queryset = (
+            PurchaseItem.objects
+            .select_related(
+                "product",
+                "unit",
+            )
+            .order_by("id")
+        )
+
+        # ---------------------------------------------------------
+        # Base Purchase queryset
+        # ---------------------------------------------------------
+        purchase_queryset = (
+            Purchase.objects
+            .select_related(
+                "retailer",
+                "supplier",
+            )
+            .prefetch_related(
+                Prefetch(
+                    "items",
+                    queryset=items_queryset,
+                )
+            )
+        )
+
+        # ---------------------------------------------------------
+        # Access control
+        # ---------------------------------------------------------
+        if request.user.is_superuser:
+            # Superadmin can view purchases of any retailer.
+            purchase = get_object_or_404(
+                purchase_queryset,
+                pk=purchase_id,
+            )
+
+        else:
+            # Retailer user can view only their own retailer's
+            # purchase.
+            retailer = getattr(request.user, "retailer", None)
+
+            if retailer is None:
+                logger.warning(
+                    "Retailer not associated with user. "
+                    "user_id=%s, purchase_id=%s",
+                    request.user.id,
+                    purchase_id,
+                )
+
+                messages.error(
+                    request,
+                    "Your account is not associated with a retailer.",
+                )
+
+                return redirect("purchase_list")
+
+            purchase = get_object_or_404(
+                purchase_queryset,
+                pk=purchase_id,
+                retailer=retailer,
+            )
+
+        # ---------------------------------------------------------
+        # Prefetched purchase items
+        # ---------------------------------------------------------
+        items = purchase.items.all()
+
+        # ---------------------------------------------------------
+        # Context
+        # ---------------------------------------------------------
+        context = {
+            "purchase": purchase,
+            "items": items,
+        }
+
+        return render(
+            request,
+            "purchase_detail.html",
+            context,
+        )
+
+    except DatabaseError:
+        logger.exception(
+            "Database error while loading purchase details. "
+            "purchase_id=%s, user_id=%s",
+            purchase_id,
+            request.user.id,
+        )
+
+        messages.error(
+            request,
+            "Unable to load purchase details. Please try again.",
+        )
+
+        return redirect("purchase_list")
+
+    except Exception:
+        logger.exception(
+            "Unexpected error while loading purchase details. "
+            "purchase_id=%s, user_id=%s",
+            purchase_id,
+            request.user.id,
+        )
+
+        messages.error(
+            request,
+            "Something went wrong while loading purchase details.",
+        )
+
+        return redirect("purchase_list")
 
 
 @login_required(login_url='/user-login/')
@@ -656,439 +1174,413 @@ def add_supplier(request):
     return redirect("add_new_supplier")
 
 
+import logging
+from decimal import Decimal, InvalidOperation
+
+from django.contrib import messages
+from django.db import transaction
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect
+from django.views.decorators.http import require_POST
+
+from .models import Product
+
+
+logger = logging.getLogger(__name__)
+
+
+@require_POST
+def update_product(request):
+    """
+    Update editable product fields from the product view/edit modal.
+
+    Editable fields:
+        - purchase_price
+        - selling_price
+        - mrp
+        - gst
+        - current_stock
+        - minimum_stock
+        - is_active
+    """
+
+    product_id = request.POST.get("product_id")
+
+    # ---------------------------------------------------------
+    # 1. Validate Product ID
+    # ---------------------------------------------------------
+    if not product_id:
+        logger.warning(
+            "Product update failed: product_id missing. user=%s",
+            request.user if request.user.is_authenticated else "Anonymous",
+        )
+
+        return _product_update_response(
+            request,
+            success=False,
+            message="Product ID is required.",
+            status=400,
+        )
+
+    # ---------------------------------------------------------
+    # 2. Fetch Product
+    # ---------------------------------------------------------
+    try:
+        product = Product.objects.get(pk=product_id)
+
+    except Product.DoesNotExist:
+        logger.warning(
+            "Product update failed: product not found. product_id=%s user=%s",
+            product_id,
+            request.user if request.user.is_authenticated else "Anonymous",
+        )
+
+        return _product_update_response(
+            request,
+            success=False,
+            message="Product not found.",
+            status=404,
+        )
+
+    except (TypeError, ValueError):
+        logger.warning(
+            "Product update failed: invalid product_id=%s user=%s",
+            product_id,
+            request.user if request.user.is_authenticated else "Anonymous",
+        )
+
+        return _product_update_response(
+            request,
+            success=False,
+            message="Invalid product ID.",
+            status=400,
+        )
+
+    # ---------------------------------------------------------
+    # 3. Read submitted values
+    # ---------------------------------------------------------
+    purchase_price_raw = request.POST.get("purchase_price")
+    selling_price_raw = request.POST.get("selling_price")
+    mrp_raw = request.POST.get("mrp")
+    gst_raw = request.POST.get("gst")
+    current_stock_raw = request.POST.get("current_stock")
+    minimum_stock_raw = request.POST.get("minimum_stock")
+    is_active_raw = request.POST.get("is_active")
+
+    try:
+        # -----------------------------------------------------
+        # 4. Convert numeric values
+        # -----------------------------------------------------
+        purchase_price = Decimal(purchase_price_raw)
+        selling_price = Decimal(selling_price_raw)
+        mrp = Decimal(mrp_raw)
+        gst = Decimal(gst_raw)
+
+        current_stock = int(current_stock_raw)
+        minimum_stock = int(minimum_stock_raw)
+
+    except (InvalidOperation, TypeError, ValueError):
+        logger.warning(
+            "Product update failed: invalid numeric values. "
+            "product_id=%s user=%s",
+            product_id,
+            request.user if request.user.is_authenticated else "Anonymous",
+        )
+
+        return _product_update_response(
+            request,
+            success=False,
+            message="One or more numeric values are invalid.",
+            status=400,
+        )
+
+    # ---------------------------------------------------------
+    # 5. Validate values
+    # ---------------------------------------------------------
+    if purchase_price <= 0:
+        return _product_update_response(
+            request,
+            success=False,
+            message="Purchase price must be greater than 0.",
+            status=400,
+        )
+
+    if selling_price <= 0:
+        return _product_update_response(
+            request,
+            success=False,
+            message="Selling price must be greater than 0.",
+            status=400,
+        )
+
+    if selling_price < purchase_price:
+        return _product_update_response(
+            request,
+            success=False,
+            message="Selling price must be greater than or equal to purchase price.",
+            status=400,
+        )
+
+    if mrp <= 0:
+        return _product_update_response(
+            request,
+            success=False,
+            message="MRP must be greater than 0.",
+            status=400,
+        )
+
+    if mrp < selling_price:
+        return _product_update_response(
+            request,
+            success=False,
+            message="MRP must be greater than or equal to selling price.",
+            status=400,
+        )
+
+    if gst < 0 or gst > 100:
+        return _product_update_response(
+            request,
+            success=False,
+            message="GST must be between 0 and 100.",
+            status=400,
+        )
+
+    if current_stock < 0:
+        return _product_update_response(
+            request,
+            success=False,
+            message="Current stock cannot be negative.",
+            status=400,
+        )
+
+    if minimum_stock < 0:
+        return _product_update_response(
+            request,
+            success=False,
+            message="Minimum stock cannot be negative.",
+            status=400,
+        )
+
+    # ---------------------------------------------------------
+    # 6. Convert active status
+    # ---------------------------------------------------------
+    is_active = str(is_active_raw).lower() == "true"
+
+    # ---------------------------------------------------------
+    # 7. Update inside transaction
+    # ---------------------------------------------------------
+    try:
+        with transaction.atomic():
+
+            changed_fields = []
+
+            if product.purchase_price != purchase_price:
+                product.purchase_price = purchase_price
+                changed_fields.append("purchase_price")
+
+            if product.selling_price != selling_price:
+                product.selling_price = selling_price
+                changed_fields.append("selling_price")
+
+            if product.mrp != mrp:
+                product.mrp = mrp
+                changed_fields.append("mrp")
+
+            if product.gst != gst:
+                product.gst = gst
+                changed_fields.append("gst")
+
+            if product.current_stock != current_stock:
+                product.current_stock = current_stock
+                changed_fields.append("current_stock")
+
+            if product.minimum_stock != minimum_stock:
+                product.minimum_stock = minimum_stock
+                changed_fields.append("minimum_stock")
+
+            if product.is_active != is_active:
+                product.is_active = is_active
+                changed_fields.append("is_active")
+
+            # Save only when something actually changed.
+            if changed_fields:
+                product.save(
+                    update_fields=changed_fields
+                )
+
+        # -----------------------------------------------------
+        # 8. Success logging
+        # -----------------------------------------------------
+        logger.info(
+            "Product updated successfully. "
+            "product_id=%s product_name=%s changed_fields=%s user=%s",
+            product.id,
+            product.product_name,
+            changed_fields,
+            request.user if request.user.is_authenticated else "Anonymous",
+        )
+
+        return _product_update_response(
+            request,
+            success=True,
+            message="Product updated successfully.",
+            status=200,
+        )
+
+    except Exception:
+        # -----------------------------------------------------
+        # 9. Unexpected error
+        # -----------------------------------------------------
+        logger.exception(
+            "Unexpected error while updating product. "
+            "product_id=%s user=%s",
+            product_id,
+            request.user if request.user.is_authenticated else "Anonymous",
+        )
+
+        return _product_update_response(
+            request,
+            success=False,
+            message="An unexpected error occurred while updating the product.",
+            status=500,
+        )
+
+
+def _product_update_response(request, success, message, status):
+    """
+    Return JSON for AJAX requests and redirect response
+    for normal browser POST requests.
+    """
+
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+    if is_ajax:
+        return JsonResponse(
+            {
+                "success": success,
+                "message": message,
+            },
+            status=status,
+        )
+
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+
+    return redirect("product_list")
+
+
+@require_POST
+def delete_product(request, product_id):
+    """
+    Delete a product by product ID.
+
+    The endpoint accepts only POST requests and returns
+    a JSON response suitable for AJAX requests.
+    """
+
+    user = (
+        request.user
+        if request.user.is_authenticated
+        else "Anonymous"
+    )
+
+    # ---------------------------------------------------------
+    # 1. Validate product ID
+    # ---------------------------------------------------------
+    if not product_id:
+        logger.warning(
+            "Product deletion failed: product_id missing. user=%s",
+            user,
+        )
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Product ID is required.",
+            },
+            status=400,
+        )
+
+    # ---------------------------------------------------------
+    # 2. Get product
+    # ---------------------------------------------------------
+    try:
+        product = Product.objects.get(pk=product_id)
+
+    except Product.DoesNotExist:
+
+        logger.warning(
+            "Product deletion failed: product not found. "
+            "product_id=%s user=%s",
+            product_id,
+            user,
+        )
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Product not found.",
+            },
+            status=404,
+        )
+
+    # ---------------------------------------------------------
+    # 3. Store product information before deletion
+    # ---------------------------------------------------------
+    product_name = product.product_name
+
+    # ---------------------------------------------------------
+    # 4. Delete product
+    # ---------------------------------------------------------
+    try:
+
+        with transaction.atomic():
+
+            product.delete()
+
+        # -----------------------------------------------------
+        # 5. Success logger
+        # -----------------------------------------------------
+        logger.info(
+            "Product deleted successfully. "
+            "product_id=%s product_name=%s user=%s",
+            product_id,
+            product_name,
+            user,
+        )
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": (
+                    f'Product "{product_name}" '
+                    "deleted successfully."
+                ),
+            },
+            status=200,
+        )
+
+    except Exception:
+
+        logger.exception(
+            "Unexpected error while deleting product. "
+            "product_id=%s product_name=%s user=%s",
+            product_id,
+            product_name,
+            user,
+        )
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "An unexpected error occurred "
+                    "while deleting the product."
+                ),
+            },
+            status=500,
+        )
 
-# @login_required(login_url='/user-login/')
-# def add_supplier(request):
-#     """
-#     Create a new supplier.
-
-#     Features:
-#     - Transaction safe
-#     - Logging
-#     - Duplicate supplier validation
-#     - Proper exception handling
-#     """
-
-#     if request.method != "POST":
-#         retailers = Retailer.objects.filter(is_active=True)
-
-#         return render(
-#             request,
-#             "test.html",
-#             {
-#                 "retailers": retailers
-#             }
-#         )
-
-#     try:
-
-#         with transaction.atomic():
-#             retailer = Retailer.objects.get(
-#                 id=request.POST.get("retailer"),
-#                 is_active=True
-#             )
-
-#             supplier_name = request.POST.get("supplier_name", "").strip()
-#             if not supplier_name:
-#                 messages.error(request, "Supplier Name is required.")
-#                 return redirect("add_supplier")
-
-#             if Supplier.objects.filter(
-#                 retailer=retailer,
-#                 supplier_name__iexact=supplier_name
-#             ).exists():
-
-#                 messages.error(
-#                     request,
-#                     "Supplier already exists."
-#                 )
-
-#                 logger.warning(
-#                     "Duplicate supplier '%s' attempted by retailer %s",
-#                     supplier_name,
-#                     retailer.id
-#                 )
-
-#                 return redirect("add_supplier")
-
-#             supplier = Supplier.objects.create(
-
-#                 retailer=retailer,
-
-#                 supplier_name=supplier_name,
-
-#                 contact_person=request.POST.get(
-#                     "contact_person"
-#                 ),
-
-#                 mobile=request.POST.get(
-#                     "mobile"
-#                 ),
-
-#                 alternate_mobile=request.POST.get(
-#                     "alternate_mobile"
-#                 ),
-
-#                 email=request.POST.get(
-#                     "email"
-#                 ),
-
-#                 gst_number=request.POST.get(
-#                     "gst_number"
-#                 ),
-
-#                 pan_number=request.POST.get(
-#                     "pan_number"
-#                 ),
-
-#                 address=request.POST.get(
-#                     "address"
-#                 ),
-
-#                 city=request.POST.get(
-#                     "city"
-#                 ),
-
-#                 state=request.POST.get(
-#                     "state"
-#                 ),
-
-#                 pincode=request.POST.get(
-#                     "pincode"
-#                 ),
-
-#                 opening_balance=Decimal(
-#                     request.POST.get(
-#                         "opening_balance",
-#                         0
-#                     ) or 0
-#                 ),
-
-#                 credit_limit=Decimal(
-#                     request.POST.get(
-#                         "credit_limit",
-#                         0
-#                     ) or 0
-#                 ),
-
-#                 credit_days=request.POST.get(
-#                     "credit_days",
-#                     0
-#                 ) or 0,
-
-#                 is_active=request.POST.get(
-#                     "is_active"
-#                 ) == "True",
-
-#                 notes=request.POST.get(
-#                     "notes"
-#                 )
-
-#             )
-
-#             logger.info(
-#                 "Supplier '%s' created successfully by retailer %s",
-#                 supplier.supplier_name,
-#                 retailer.id
-#             )
-
-#             messages.success(
-#                 request,
-#                 "Supplier added successfully."
-#             )
-
-#             return redirect("supplier_list")
-
-#     except Retailer.DoesNotExist:
-
-#         logger.error(
-#             "Retailer not found while creating supplier."
-#         )
-
-#         messages.error(
-#             request,
-#             "Retailer does not exist."
-#         )
-
-#     except InvalidOperation:
-
-#         logger.exception(
-#             "Invalid decimal value while creating supplier."
-#         )
-
-#         messages.error(
-#             request,
-#             "Invalid amount entered."
-#         )
-
-#     except IntegrityError:
-
-#         logger.exception(
-#             "Database integrity error while creating supplier."
-#         )
-
-#         messages.error(
-#             request,
-#             "Supplier already exists."
-#         )
-
-#     except Exception as e:
-
-#         logger.exception(
-#             "Unexpected error while creating supplier: %s",
-#             str(e)
-#         )
-
-#         messages.error(
-#             request,
-#             "Something went wrong. Please try again."
-#         )
-
-#     return redirect("add_supplier")
-
-# def retailer_register(request):
-
-#     if request.method == "POST":
-
-#         username = request.POST.get("username")
-#         password = request.POST.get("password")
-#         email = request.POST.get("email")
-
-#         shop_name = request.POST.get("shop_name")
-#         owner_name = request.POST.get("owner_name")
-#         mobile = request.POST.get("mobile")
-#         gst_number = request.POST.get("gst_number")
-#         pan_number = request.POST.get("pan_number")
-#         address = request.POST.get("address")
-#         city = request.POST.get("city")
-#         state = request.POST.get("state")
-#         pincode = request.POST.get("pincode")
-
-#         if CustomUser.objects.filter(username=username).exists():
-#             messages.error(request, "Username already exists.")
-#             return redirect("retailer_register")
-
-#         if CustomUser.objects.filter(email=email).exists():
-#             messages.error(request, "Email already exists.")
-#             return redirect("retailer_register")
-
-#         user = CustomUser.objects.create_user(
-#             username=username,
-#             email=email,
-#             password=password,
-#             user_type="retailer",
-#         )
-
-#         Retailer.objects.create(
-#             user=user,
-#             shop_name=shop_name,
-#             owner_name=owner_name,
-#             mobile=mobile,
-#             email=email,
-#             gst_number=gst_number,
-#             pan_number=pan_number,
-#             address="address",
-#             city=city,
-#             state=state,
-#             pincode=pincode,
-#         )
-
-#         messages.success(request, "Retailer Registered Successfully.")
-#         return redirect("user_login")
-
-#     return render(request, "register.html")
-
-
-# def _login(request):
-#     if request.method == 'POST':
-#         username = request.POST.get('username', '').strip()
-#         password = request.POST.get('password', '')
-
-#         if not username or not password:
-#             messages.error(request, "Both username and password are required fields.")
-#             return render(request, 'login.html')
-
-#         # Authenticate details against hashed DB entries
-#         user = authenticate(request, username=username, password=password)
-        
-#         if user is not None:
-#             login(request, user)
-#             messages.success(request, f"Access Granted. Welcome, {user.username}.")
-#             return redirect('dashboard')
-#         else:
-#             messages.error(request, "Invalid authentication credentials supplied.")
-
-#     return render(request, 'login.html')
-
-
-# def user_logout(request):
-#     logout(request)
-#     return redirect('user_login')
-
-
-# def add_product(request):
-
-#     retailers = Retailer.objects.all()
-#     categories = Category.objects.all()
-#     brands = Brand.objects.all()
-#     units = Unit.objects.all()
-
-#     if request.method == "POST":
-
-#         Product.objects.create(
-
-#             retailer=Retailer.objects.get(
-#                 id=request.POST["retailer"]
-#             ),
-
-#             category=Category.objects.get(
-#                 id=request.POST["category"]
-#             ),
-
-#             brand=Brand.objects.get(
-#                 id=request.POST["brand"]
-#             ),
-
-#             product_name=request.POST["product_name"],
-#             barcode=request.POST["barcode"],
-#             hsn_code=request.POST["hsn_code"],
-#             unit=Unit.objects.get(id=request.POST["unit"]),
-#             purchase_price=request.POST["purchase_price"],
-#             selling_price=request.POST["selling_price"],
-#             mrp=request.POST["mrp"],
-#             minimum_stock=request.POST["minimum_stock"],
-#             current_stock=request.POST["current_stock"],
-#             gst=request.POST["gst"],
-#         )
-
-#         messages.success(request, "Product Added Successfully")
-
-#         return redirect("dashboard")
-#     print(categories,"          :::::::::::::::::::::::::")
-#     context = {
-#         "retailers": retailers,
-#         "categories": categories,
-#         "brands": brands,
-#         "units": units,
-#     }
-
-#     return render(request, "add_product.html", context)
-
-
-# def add_order(request):
-#     if request.method == 'POST':
-#         try:
-#             # Get Purchase data
-#             supplier_name = request.POST.get('supplier')
-#             bill_number = request.POST.get('bill_number')
-#             bill_date = request.POST.get('bill_date')
-#             bill_time = request.POST.get('bill_time') or None
-            
-#             # Create Purchase instance
-#             purchase = Purchase.objects.create(
-#                 retailer_id=request.user.retailer.id,  # Assuming user has retailer relationship
-#                 supplier=supplier_name,
-#                 bill_number=bill_number,
-#                 bill_date=bill_date,
-#                 bill_time=bill_time,
-#                 invoice_date=bill_date,  # Using bill date as invoice date
-#                 payment_terms=request.POST.get('payment_terms', ''),
-#                 due_date=request.POST.get('due_date') or None,
-#                 state_of_supply=request.POST.get('state_of_supply', ''),
-#                 warehouse=request.POST.get('warehouse', ''),
-#                 subtotal=Decimal(request.POST.get('subtotal', 0)),
-#                 discount=Decimal(request.POST.get('discount', 0)),
-#                 gst=Decimal(request.POST.get('gst', 0)),
-#                 grand_total=Decimal(request.POST.get('grand_total', 0)),
-#                 paid_amount=Decimal(request.POST.get('paid_amount', 0)),  # Default
-#                 due_amount=(Decimal(request.POST.get('grand_total', 0))-Decimal(request.POST.get('paid_amount', 0))),  # Default to grand total
-#                 payment_type=request.POST.get('payment_type', ''),
-#                 payment_status='Unpaid',
-#                 remarks='',
-#             )
-
-#             # Handle bill file upload
-#             if request.FILES.get('bill_file'):
-#                 purchase.bill_file = request.FILES['bill_file']
-#                 purchase.save()
-
-#             # Process items
-#             items_data = []
-#             for key, value in request.POST.items():
-#                 if key.startswith('item_name_'):
-#                     index = key.split('_')[-1]
-                    
-#                     # Get all fields for this item
-#                     name = request.POST.get(f'item_name_{index}')
-
-#                     if not name:
-#                         continue
-                    
-#                     mrp = Decimal(request.POST.get(f'item_mrp_{index}', 0))
-#                     qty = Decimal(request.POST.get(f'item_qty_{index}', 0))
-#                     raw_free_qty = request.POST.get(f'item_free_qty_{index}', '0')
-#                     free_qty = Decimal(raw_free_qty) if raw_free_qty.strip() else Decimal('0')
-#                     unit = request.POST.get(f'item_unit_{index}', 'none')
-#                     price = Decimal(request.POST.get(f'item_price_{index}', 0))
-#                     tax_code = request.POST.get(f'item_tax_{index}', 'none')
-                    
-#                     # Calculate tax rate from code
-#                     tax_rates = {
-#                         'none': 0,
-#                         'gst5': 5,
-#                         'gst12': 12,
-#                         'gst18': 18,
-#                         'gst28': 28
-#                     }
-#                     gst_rate = tax_rates.get(tax_code, 0)
-                    
-#                     # Calculate amount
-#                     amount = qty * price
-#                     tax_amount = amount * (Decimal(str(gst_rate)) / Decimal('100'))
-#                     total_amount = amount + tax_amount
-                    
-#                     # Create PurchaseItem
-#                     purchase_item = PurchaseItem.objects.create(
-#                         purchase=purchase,
-#                         product_id=1,  # You'll need to map product by name
-#                         unit_id=1,  # You'll need to map unit by name
-#                         quantity=qty,
-#                         free_quantity=free_qty,
-#                         purchase_price=price,
-#                         selling_price=0,  # You might want to set this
-#                         mrp=mrp,
-#                         gst=gst_rate,
-#                         discount=0,
-#                         amount=total_amount,
-#                         remarks=name,  # Store product name in remarks if product not found
-#                     )
-                    
-#                     items_data.append({
-#                         'name': name,
-#                         'quantity': qty,
-#                         'price': price,
-#                         'amount': total_amount
-#                     })
-
-#             messages.success(request, f'Purchase order {bill_number} created successfully!')
-#             # return redirect('purchase_detail', pk=purchase.id)
-#             return redirect('dashboard')
-            
-#         except Exception as e:
-#             messages.error(request, f'Error saving purchase: {str(e)}')
-#             return redirect('add_new_order')
     
-#     return render(request, 'add_order.html')
-
-
-# def purchase_list(request):
-#     """
-#     Simple view to display all purchase orders
-#     """
-#     purchases = Purchase.objects.all().order_by('-bill_date', '-created_at')
-    
-#     context = {
-#         'purchases': purchases,
-#     }
-#     return render(request, 'purchase_list.html', context)
-

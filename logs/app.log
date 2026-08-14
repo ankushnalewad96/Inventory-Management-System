@@ -16,3 +16,285 @@
 [2026-08-13 21:49:54,320] INFO views Product added by user=admin: product=Haldiram Bhujia Sev 400g, retailer=Abc Genral Store
 [2026-08-13 22:05:58,413] WARNING views User without a retailer profile attempted to add an order
 [2026-08-13 22:05:58,534] INFO views Purchase order created by user=admin: bill_number=BILL-2026-001, retailer=Abc Genral Store
+[2026-08-14 16:11:04,333] WARNING views User without a retailer profile attempted to add an order
+[2026-08-14 16:11:04,353] WARNING views Invalid item data while creating purchase order: Product 'Maggi Noodles 4-Pack' was not found. Please add it to inventory first.
+[2026-08-14 16:14:45,602] WARNING views User without a retailer profile attempted to add an order
+[2026-08-14 16:14:45,691] INFO views Purchase order created by user=admin: bill_number=BILL-2026-001, retailer=Abc Genral Store
+[2026-08-14 17:42:07,806] ERROR views Unexpected error while loading purchase details. purchase_id=3, user_id=1
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 756, in purchase_detail
+    return render(
+        request,
+        "purchase_detail.html",
+        context,
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\defaulttags.py", line 511, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\urls\base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\urls\resolvers.py", line 842, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'purchase_list' not found. 'purchase_list' is not a valid view function or pattern name.
+[2026-08-14 23:06:16,506] ERROR views Unexpected error while loading product list. user_id=1
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 548, in product_list
+    return render(
+        request,
+        "product_list.html",
+        context,
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader_tags.py", line 66, in render
+    result = block.nodelist.render(context)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\defaulttags.py", line 511, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\urls\base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\urls\resolvers.py", line 842, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'update_product' not found. 'update_product' is not a valid view function or pattern name.
+[2026-08-14 23:06:55,899] INFO views Product updated successfully. product_id=2 product_name=Amul Taaza Fresh Milk 1L changed_fields=['minimum_stock'] user=admin
+[2026-08-14 23:07:29,552] INFO views Product updated successfully. product_id=3 product_name=Haldiram Bhujia Sev 400g changed_fields=['purchase_price', 'gst', 'current_stock'] user=admin
+[2026-08-14 23:07:57,523] INFO views Product updated successfully. product_id=1 product_name=Maggi Noodles 4-Pack changed_fields=['current_stock', 'is_active'] user=admin
+[2026-08-14 23:16:39,048] INFO views Product deleted successfully. product_id=2 product_name=Amul Taaza Fresh Milk 1L user=admin
+[2026-08-14 23:26:21,413] ERROR views Unexpected error while loading product list. user_id=1
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 548, in product_list
+    return render(
+        request,
+        "product_list.html",
+        context,
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader_tags.py", line 66, in render
+    result = block.nodelist.render(context)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\defaulttags.py", line 249, in render
+    nodelist.append(node.render_annotated(context))
+                    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\defaulttags.py", line 511, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\urls\base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\urls\resolvers.py", line 842, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'product_delete' not found. 'product_delete' is not a valid view function or pattern name.
+[2026-08-14 23:26:24,070] ERROR views Unexpected error while loading product list. user_id=1
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 548, in product_list
+    return render(
+        request,
+        "product_list.html",
+        context,
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader_tags.py", line 66, in render
+    result = block.nodelist.render(context)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\defaulttags.py", line 249, in render
+    nodelist.append(node.render_annotated(context))
+                    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\defaulttags.py", line 511, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\urls\base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\urls\resolvers.py", line 842, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'product_delete' not found. 'product_delete' is not a valid view function or pattern name.
+[2026-08-14 23:26:44,438] ERROR views Unexpected error while loading product list. user_id=1
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 548, in product_list
+    return render(
+        request,
+        "product_list.html",
+        context,
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader_tags.py", line 66, in render
+    result = block.nodelist.render(context)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\defaulttags.py", line 249, in render
+    nodelist.append(node.render_annotated(context))
+                    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\defaulttags.py", line 511, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\urls\base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\urls\resolvers.py", line 842, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'product_delete' not found. 'product_delete' is not a valid view function or pattern name.
+[2026-08-14 23:27:36,791] INFO views Product deleted successfully. product_id=1 product_name=Maggi Noodles 4-Pack user=admin

@@ -106,46 +106,96 @@
         <p>42 orders this month</p>
     </div>
 
-    <div class="filters-bar">
+    <form method="GET" class="filters-bar">
         <div class="filter-group">
             <label>From</label>
-            <input type="date" class="filter-input">
+            <input
+                type="date"
+                name="from_date"
+                class="filter-input"
+                value="{{ request.GET.from_date|default:'' }}"
+            >
         </div>
+
         <div class="filter-group">
             <label>To</label>
-            <input type="date" class="filter-input">
+            <input
+                type="date"
+                name="to_date"
+                class="filter-input"
+                value="{{ request.GET.to_date|default:'' }}"
+            >
         </div>
+
         <div class="filter-group">
             <label>Status</label>
-            <select class="filter-select">
-                <option>All Status</option>
-                <option>Paid</option>
-                <option>Partial</option>
-                <option>Unpaid</option>
+            <select name="status" class="filter-select">
+
+                <option value="">All Status</option>
+
+                <option value="Paid"
+                    {% if request.GET.status == "Paid" %}selected{% endif %}>
+                    Paid
+                </option>
+
+                <option value="Partial"
+                    {% if request.GET.status == "Partial" %}selected{% endif %}>
+                    Partial
+                </option>
+
+                <option value="Unpaid"
+                    {% if request.GET.status == "Unpaid" %}selected{% endif %}>
+                    Unpaid
+                </option>
+
             </select>
         </div>
+
         <div class="filter-group">
             <label>Supplier</label>
-            <select class="filter-select">
-                <option>All Suppliers</option>
+
+            <select name="supplier" class="filter-select">
+
+                <option value="">All Suppliers</option>
+
                 {% for supplier in supplier_list %}
-                    <option value="{{ supplier.id }}">{{ supplier.supplier_name }}</option>
+                    <option
+                        value="{{ supplier.id }}"
+                        {% if request.GET.supplier == supplier.id|stringformat:"s" %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ supplier.supplier_name }}
+                    </option>
                 {% endfor %}
+
             </select>
         </div>
-        <div class="search-filter">
-            <i class="fas fa-search"></i>
-            <input type="text" placeholder="Search orders, suppliers...">
-        </div>
+
         <div class="export-btns">
-            <button class="export-btn" onclick="downloadCSV()">
-                <i class="fas fa-download"></i> Download
+
+            <button type="submit" class="export-btn">
+                <i class="fas fa-filter"></i>
+                Filter
             </button>
-            <button class="export-btn" onclick="window.print()">
-                <i class="fas fa-print"></i> Print
+
+            <a href="{% url 'purchase_product_list' %}" class="export-btn">
+                <i class="fas fa-times"></i>
+                Clear
+            </a>
+
+            <button
+                type="button"
+                class="export-btn"
+                onclick="window.print()"
+            >
+                <i class="fas fa-print"></i>
+                Print
             </button>
+
         </div>
-    </div>
+
+    </form>
 
     <div class="table-container">
         <table class="data-table">
@@ -204,15 +254,12 @@
                         </td>
                         <td>
                             <div class="action-btns">
-                                <a href="#" class="action-icon-btn" title="View Details">
+                                <a href="{% url 'purchase_detail' purchase.id %}" class="action-icon-btn" title="View Details">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 <a href="#" class="action-icon-btn" title="Print" target="_blank">
                                     <i class="fas fa-print"></i>
                                 </a>
-                                <button class="action-icon-btn" title="Share" onclick="sharePurchase('{{ purchase.bill_number }}')">
-                                    <i class="fas fa-share-alt"></i>
-                                </button>
                             </div>
                         </td>
                     </tr>
@@ -229,15 +276,86 @@
         </table>
     </div>
 
+    <!-- ============================ -->
+
     <div class="table-footer">
-        <div class="showing-text">Showing 6 of 42 orders</div>
-        <div class="pagination">
-            <button class="page-btn"><i class="fas fa-chevron-left"></i></button>
-            <button class="page-btn active">1</button>
-            <button class="page-btn">2</button>
-            <button class="page-btn">3</button>
-            <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+
+        <!-- Showing text -->
+        <div class="showing-text">
+            Showing
+            {{ page_obj.start_index }}
+            -
+            {{ page_obj.end_index }}
+            of
+            {{ page_obj.paginator.count }}
+            orders
         </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+
+            <!-- Previous Button -->
+            {% if page_obj.has_previous %}
+                <a
+                    href="?page={{ page_obj.previous_page_number }}{% if request.GET.from_date %}&from_date={{ request.GET.from_date }}{% endif %}{% if request.GET.to_date %}&to_date={{ request.GET.to_date }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.supplier %}&supplier={{ request.GET.supplier }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                    class="page-btn"
+                    title="Previous"
+                >
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            {% else %}
+                <button class="page-btn" disabled>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            {% endif %}
+
+
+            <!-- Page Numbers -->
+            {% for num in page_obj.paginator.page_range %}
+
+                {% if num == page_obj.number %}
+
+                    <!-- Current Page -->
+                    <button class="page-btn active">
+                        {{ num }}
+                    </button>
+
+                {% else %}
+
+                    <!-- Other Pages -->
+                    <a
+                        href="?page={{ num }}{% if request.GET.from_date %}&from_date={{ request.GET.from_date }}{% endif %}{% if request.GET.to_date %}&to_date={{ request.GET.to_date }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.supplier %}&supplier={{ request.GET.supplier }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                        class="page-btn"
+                    >
+                        {{ num }}
+                    </a>
+
+                {% endif %}
+
+            {% endfor %}
+
+
+            <!-- Next Button -->
+            {% if page_obj.has_next %}
+
+                <a
+                    href="?page={{ page_obj.next_page_number }}{% if request.GET.from_date %}&from_date={{ request.GET.from_date }}{% endif %}{% if request.GET.to_date %}&to_date={{ request.GET.to_date }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.supplier %}&supplier={{ request.GET.supplier }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+                    class="page-btn"
+                    title="Next"
+                >
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+
+            {% else %}
+
+                <button class="page-btn" disabled>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+
+            {% endif %}
+
+        </div>
+
     </div>
 </div>
 

@@ -3,107 +3,501 @@
 {% block title %}Product List - My Django Site{% endblock %}
 
 {% block css %}
-<!-- <link rel="stylesheet" href="{% static 'css/add_order.css' %}"> -->
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link rel="stylesheet" href="{% static 'css/product_list.css' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 {% endblock %}
 
 {% block page_title %}
-    <h1>Product List</h1>
-    <!-- <p>A quick pulse on your cash position</p> -->
+    <h1>Product Inventory</h1>
+    <p>Manage and track all products in your general store</p>
+    
 {% endblock %}
 
 {% block body %}
-    <div class="quick-actions">
-        <a href="{% url 'add_product' %}"><button class="action-btn primary">
-            <i class="fas fa-plus"></i>
-            Add Product
-        </button></a>
+<!-- Stats Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ total_products|default:"0" }}</span>
+            <span class="stat-label">Total Products</span>
+        </div>
     </div>
-    <div class="table-container">
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ active_products|default:"0" }}</span>
+            <span class="stat-label">Active Products</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon red">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+            </svg>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ out_of_stock_count|default:"0" }}</span>
+            <span class="stat-label">Out of Stock</span>
+        </div>
+    </div>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+
+    <!-- Search -->
+    <form method="GET" class="search-box">
+
+        <svg
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+        </svg>
+
+        <input
+            type="text"
+            name="search"
+            value="{{ search }}"
+            placeholder="Search by name, barcode or HSN..."
+        >
+
+        <input
+            type="hidden"
+            name="status"
+            value="{{ status }}"
+        >
+
+    </form>
+
+
+    <!-- Status Filters -->
+    <div class="filter-group">
+
+        <a
+            href="?status=all{% if search %}&search={{ search|urlencode }}{% endif %}"
+            class="filter-chip {% if status == 'all' %}active{% endif %}"
+        >
+            All
+        </a>
+
+        <a
+            href="?status=active{% if search %}&search={{ search|urlencode }}{% endif %}"
+            class="filter-chip {% if status == 'active' %}active{% endif %}"
+        >
+            Active
+        </a>
+
+        <a
+            href="?status=inactive{% if search %}&search={{ search|urlencode }}{% endif %}"
+            class="filter-chip {% if status == 'inactive' %}active{% endif %}"
+        >
+            Inactive
+        </a>
+
+        <a
+            href="?status=out_of_stock{% if search %}&search={{ search|urlencode }}{% endif %}"
+            class="filter-chip {% if status == 'out_of_stock' %}active{% endif %}"
+        >
+            Out of Stock
+        </a>
+
+    </div>
+
+    <a href="{% url 'add_product' %}" class="btn-add">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        Add Product
+    </a>
+
+</div>
+
+
+<!-- Table -->
+<div class="table-container">
+    <div class="table-header">
+        <span class="table-title">Product List</span>
+        <span class="table-count">{{ products|length }} products found</span>
+    </div>
+
+    <div class="table-wrap">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Sr.No.</th>
-                    <th>Product Name</th>
-                    <th>Category</th>
+                    <th>Product</th>
                     <th>Brand</th>
+                    <th>Category</th>
                     <th>Unit</th>
-                    <th>Purchase Price</th>
-                    <th>Selling Price</th>
-                    <th>MRP</th>
-                    <th>Current Stock</th>
-                    <th>Min Stock</th>
-                    <th>GST (%)</th>
-                    <th>Status</th>
-                    <th>Action</th>
+                    <th class="right">Purchase</th>
+                    <th class="right">Selling</th>
+                    <th class="right">MRP</th>
+                    <th class="center">Stock</th>
+                    <th class="center">Minimum Stock</th>
+                    <th class="center">GST</th>
+                    <th class="center">Status</th>
+                    <th class="center" style="width: 120px;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for product in products %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ product.product_name }}</td>
-                        <td>{{ product.category.category_name }}</td>
-                        <td>{{ product.brand.brand_name }}</td>
-                        <td>{{ product.unit.short_name }}</td>
-                        <td>{{ product.purchase_price }}</td>
-                        <td>{{ product.selling_price }}</td>
-                        <td>{{ product.mrp }}</td>
-                        <td>
-                            {% if product.current_stock <= product.minimum_stock %}
-                                <span class="text-danger fw-bold">{{ product.current_stock }}</span>
-                            {% else %}
+                <tr>
+                    <td>
+                        <div class="product-info">
+                            <span class="product-name">{{ product.product_name }}</span>
+                            <span class="product-meta">HSN: {{ product.hsn_code }} {% if product.barcode %}| Barcode: {{ product.barcode }}{% endif %}</span>
+                        </div>
+                    </td>
+                    <td>{{ product.brand.brand_name|default:"—" }}</td>
+                    <td>{{ product.category.category_name|default:"—" }}</td>
+                    <td>{{ product.unit.short_name|default:product.unit|default:"—" }}</td>
+                    <td class="right">
+                        <div class="price">₹{{ product.purchase_price }}</div>
+                    </td>
+                    <td class="right">
+                        <div class="price">₹{{ product.selling_price }}</div>
+                    </td>
+                    <td class="right">
+                        <div class="price-muted">₹{{ product.mrp }}</div>
+                    </td>
+                    <td class="center">
+                        {% if product.current_stock == 0 %}
+                            <span class="stock-value low">
                                 {{ product.current_stock }}
-                            {% endif %}
-                        </td>
-                        <td>{{ product.minimum_stock }}</td>
-                        <td>{{ product.gst }}</td>
-                        <td>
-                            {% if product.is_active %}
-                                <span class="badge bg-success">Active</span>
-                            {% else %}
-                                <span class="badge bg-secondary">Inactive</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <a href="#"
-                                class="text-primary" title="View">
-                                    <i class="bi bi-eye-fill"></i>
-                                </a>
-                                <a href="#"
-                                class="text-warning" title="Edit">
-                                    <i class="bi bi-pencil-fill"></i>
-                                </a>
-                                <a href="#"
-                                class="text-danger"
-                                title="Delete"
-                                onclick="return confirm('Are you sure you want to delete this product?');">
-                                    <i class="bi bi-trash-fill"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="11" class="text-center">No products found.</td>
-                    </tr>
-                    {% endfor %}
+                            </span>
+                        {% elif product.current_stock <= product.minimum_stock %}
+                            <span class="stock-value medium">
+                                {{ product.current_stock }}
+                            </span>
+                        {% else %}
+                            <span class="stock-value high">
+                                {{ product.current_stock }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="center">
+                       <span>{{product.minimum_stock}}</span>
+                    </td>
+                    <td class="center">
+                        <span class="price-muted">{{ product.gst }}%</span>
+                    </td>
+                    <td class="center">
+                        {% if product.is_active %}
+                            <span class="badge badge-success"><span class="badge-dot"></span> Active</span>
+                        {% else %}
+                            <span class="badge badge-inactive"><span class="badge-dot"></span> Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="center">
+                    <div class="actions">
+                        <a href="javascript:void(0)" 
+                            class="action-btn view" 
+                            title="View"
+                            onclick="openProductModal({
+                                id: '{{ product.id }}',
+                                name: '{{ product.product_name|escapejs }}',
+                                hsn: '{{ product.hsn_code }}',
+                                barcode: '{{ product.barcode|default:''|escapejs }}',
+                                category: '{{ product.category.category_name|default:'—'|escapejs }}',
+                                brand: '{{ product.brand.brand_name|default:'—'|escapejs }}',
+                                unit: '{{ product.unit.short_name|default:product.unit|default:'—'|escapejs }}',
+                                purchasePrice: '{{ product.purchase_price }}',
+                                sellingPrice: '{{ product.selling_price }}',
+                                gst: '{{ product.gst }}',
+                                currentStock: '{{ product.current_stock }}',
+                                minimumStock: '{{ product.minimum_stock }}',
+                                mrp: '{{ product.mrp }}',
+                                isActive: {% if product.is_active %}true{% else %}false{% endif %}
+                            })">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </a>
+                        
+                        <button 
+                            type="button" 
+                            class="action-btn delete" 
+                            title="Delete"
+                            data-url="{% url 'delete_product' product.id %}"
+                            data-name="{{ product.product_name|escapejs }}"
+                            onclick="handleDelete(this)"
+                        >
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </button>
+                    </div>
+                </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="12">
+                        <div class="empty-state">
+                            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                            </svg>
+                            <h3>No Products Found</h3>
+                            <p>Get started by adding your first product to the inventory.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
 
-    <div class="table-footer">
-        <div class="showing-text">Showing 6 of 42 orders</div>
-        <div class="pagination">
-            <button class="page-btn"><i class="fas fa-chevron-left"></i></button>
-            <button class="page-btn active">1</button>
-            <button class="page-btn">2</button>
-            <button class="page-btn">3</button>
-            <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+<!-- Modal Overlay -->
+<div class="modal-overlay" id="productModal">
+    <div class="modal-container">
+        
+        <!-- Header -->
+        <div class="modal-header">
+            <div class="modal-title-group">
+                <h2 id="modalProductName">Product Name</h2>
+                <span class="modal-subtitle" id="modalProductMeta">HSN: — | Barcode: —</span>
+            </div>
+            <button type="button" class="modal-close" onclick="closeModal()">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+            <form id="productEditForm" method="POST" action="{% url 'update_product' %}">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" id="modalProductId">
+
+                <div class="modal-layout">
+                    
+                    <!-- Left: Static Info -->
+                    <div class="modal-info-panel">
+                        <div class="modal-section-title">Product Info</div>
+                        <div class="info-list">
+                            <div class="info-item">
+                                <span class="info-item-label">Category</span>
+                                <span class="info-item-value" id="modalCategory">—</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-label">Brand</span>
+                                <span class="info-item-value" id="modalBrand">—</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-label">Unit</span>
+                                <span class="info-item-value" id="modalUnit">—</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-item-label">HSN Code</span>
+                                <span class="info-item-value" id="modalHsn">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Editable Fields -->
+                    <div class="modal-edit-panel" id="editPanel">
+                        <div class="modal-section-title">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            Editable Fields
+                        </div>
+
+                        <div class="edit-grid">
+                            <div class="modal-form-group">
+                                <label class="modal-form-label" for="modalPurchasePrice">Purchase Price (₹)</label>
+                                <input type="number" id="modalPurchasePrice" name="purchase_price" class="modal-form-input" step="0.01" min="0" readonly>
+                            </div>
+
+                            <div class="modal-form-group">
+                                <label class="modal-form-label" for="modalSellingPrice">Selling Price (₹)</label>
+                                <input type="number" id="modalSellingPrice" name="selling_price" class="modal-form-input" step="0.01" min="0" readonly>
+                            </div>
+
+                            <div class="modal-form-group">
+                                <label class="modal-form-label" for="modalMrp">MRP (₹)</label>
+                                <input type="number" id="modalMrp" name="mrp" class="modal-form-input" step="0.01" min="0" readonly>
+                            </div>
+
+                            <div class="modal-form-group">
+                                <label class="modal-form-label" for="modalGst">GST (%)</label>
+                                <input type="number" id="modalGst" name="gst" class="modal-form-input" step="0.01" min="0" max="100" readonly>
+                            </div>
+
+                            <div class="modal-form-group">
+                                <label class="modal-form-label" for="modalCurrentStock">Current Stock</label>
+                                <input type="number" id="modalCurrentStock" name="current_stock" class="modal-form-input" min="0" readonly>
+                            </div>
+
+                            <div class="modal-form-group">
+                                <label class="modal-form-label" for="modalMinimumStock">Minimum Stock</label>
+                                <input type="number" id="modalMinimumStock" name="minimum_stock" class="modal-form-input" min="0" readonly>
+                            </div>
+                        </div>
+
+                        <!-- Status Toggle -->
+                        <div class="modal-form-group status-group">
+                            <label class="modal-form-label">Status</label>
+                            <div class="modal-toggle-row">
+                                <div class="modal-toggle disabled" id="statusToggle" onclick="toggleModalStatus()">
+                                    <div class="modal-toggle-knob"></div>
+                                </div>
+                                <span class="modal-toggle-label" id="statusToggleLabel">Active</span>
+                            </div>
+                            <input type="hidden" name="is_active" id="modalIsActive" value="true">
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+            <button type="button" class="btn-modal btn-secondary" onclick="closeModal()">Close</button>
+            <button type="button" class="btn-modal btn-edit" id="modalEditBtn" onclick="enableEditMode()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Edit
+            </button>
+            <button type="button" class="btn-modal btn-save" id="modalSaveBtn" onclick="saveProduct()" style="display: none;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+                Save Changes
+            </button>
+        </div>
+
     </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="modalToast">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <span id="modalToastMessage">Saved successfully!</span>
+</div>
+
+<div class="toast" id="modalToast">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <span id="modalToastMessage">Deleted successfully!</span>
+</div>
+
+
+    <!-- Pagination -->
+    <div class="table-footer">
+
+    <div class="showing-text">
+
+        {% if page_obj.paginator.count > 0 %}
+
+            Showing
+            {{ page_obj.start_index }}
+            -
+            {{ page_obj.end_index }}
+            of
+            {{ page_obj.paginator.count }}
+            products
+
+        {% else %}
+
+            Showing 0 of 0 products
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="pagination">
+
+        {% if page_obj.has_previous %}
+
+            <a
+                href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search|urlencode }}{% endif %}{% if status %}&status={{ status }}{% endif %}"
+                class="page-btn"
+            >
+                <i class="fas fa-chevron-left"></i>
+            </a>
+
+        {% else %}
+
+            <button
+                class="page-btn"
+                disabled
+            >
+                <i class="fas fa-chevron-left"></i>
+            </button>
+
+        {% endif %}
+
+
+        {% for num in page_obj.paginator.page_range %}
+
+            {% if num == page_obj.number %}
+
+                <button class="page-btn active">
+                    {{ num }}
+                </button>
+
+            {% else %}
+
+                <a
+                    href="?page={{ num }}{% if search %}&search={{ search|urlencode }}{% endif %}{% if status %}&status={{ status }}{% endif %}"
+                    class="page-btn"
+                >
+                    {{ num }}
+                </a>
+
+            {% endif %}
+
+        {% endfor %}
+
+
+        {% if page_obj.has_next %}
+
+            <a
+                href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search|urlencode }}{% endif %}{% if status %}&status={{ status }}{% endif %}"
+                class="page-btn"
+            >
+                <i class="fas fa-chevron-right"></i>
+            </a>
+
+        {% else %}
+
+            <button
+                class="page-btn"
+                disabled
+            >
+                <i class="fas fa-chevron-right"></i>
+            </button>
+
+        {% endif %}
+
+    </div>
+</div>
+
 {% endblock %}
 
 {% block js %}
@@ -180,10 +574,253 @@
         }
     });
 
+    // Django CSRF helper
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Toast (reuses your existing toast element if present, else falls back to alert)
+    function showToast(message, isError = false) {
+        let toast = document.getElementById('modalToast') || document.getElementById('toast');
+        
+        if (toast) {
+            const msgEl = toast.querySelector('#modalToastMessage') || toast.querySelector('#toastMessage') || toast;
+            if (msgEl !== toast) msgEl.textContent = message;
+            
+            toast.className = 'toast ' + (isError ? 'error-toast' : '') + ' show';
+            setTimeout(() => toast.classList.remove('show'), 3500);
+        } else {
+            // fallback if no toast element exists yet
+            alert(message);
+        }
+    }
+
+    // Delete handler
+    async function handleDelete(btn) {
+        const url = btn.dataset.url;
+        const name = btn.dataset.name;
+        const row = btn.closest('tr');
+
+        if (!confirm(`Are you sure you want to delete "${name}"?`)) {
+            return;
+        }
+
+        // Optional: dim the row while deleting
+        if (row) {
+            row.style.opacity = '0.5';
+            row.style.pointerEvents = 'none';
+        }
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({ '_method': 'delete' }) // optional; remove if your view doesn't need it
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                showToast(data.message, false);
+                
+                // Smoothly remove the row
+                if (row) {
+                    row.style.transition = 'all 0.3s ease';
+                    row.style.transform = 'translateX(20px)';
+                    row.style.opacity = '0';
+                    setTimeout(() => row.remove(), 300);
+                }
+            } else {
+                throw new Error(data.message || 'Delete failed');
+            }
+
+        } catch (err) {
+            showToast(err.message || 'Something went wrong. Please try again.', true);
+            if (row) {
+                row.style.opacity = '1';
+                row.style.pointerEvents = '';
+            }
+        }
+    }
+
     window.addEventListener('resize', () => {
         if (window.innerWidth > 768) {
             closeMobileSidebar();
         }
     });
+
+
+(function() {
+    let isEditMode = false;
+
+    const modal = document.getElementById('productModal');
+    const editBtn = document.getElementById('modalEditBtn');
+    const saveBtn = document.getElementById('modalSaveBtn');
+    const editPanel = document.getElementById('editPanel');
+    const toast = document.getElementById('modalToast');
+    const toastMsg = document.getElementById('modalToastMessage');
+
+    // All editable inputs
+    const editableInputs = [
+        document.getElementById('modalPurchasePrice'),
+        document.getElementById('modalSellingPrice'),
+        document.getElementById('modalMrp'),
+        document.getElementById('modalGst'),
+        document.getElementById('modalCurrentStock'),
+        document.getElementById('modalMinimumStock')
+    ];
+
+    // Open modal
+    window.openProductModal = function(data) {
+        document.getElementById('modalProductName').textContent = data.name;
+        document.getElementById('modalProductMeta').textContent = `HSN: ${data.hsn} | Barcode: ${data.barcode || '—'}`;
+        document.getElementById('modalCategory').textContent = data.category;
+        document.getElementById('modalBrand').textContent = data.brand;
+        document.getElementById('modalUnit').textContent = data.unit;
+        document.getElementById('modalHsn').textContent = data.hsn;
+
+        document.getElementById('modalProductId').value = data.id;
+        document.getElementById('modalPurchasePrice').value = data.purchasePrice;
+        document.getElementById('modalSellingPrice').value = data.sellingPrice;
+        document.getElementById('modalMrp').value = data.mrp;
+        document.getElementById('modalGst').value = data.gst;
+        document.getElementById('modalCurrentStock').value = data.currentStock;
+        document.getElementById('modalMinimumStock').value = data.minimumStock;
+        document.getElementById('modalIsActive').value = data.isActive ? 'true' : 'false';
+
+        const toggle = document.getElementById('statusToggle');
+        const label = document.getElementById('statusToggleLabel');
+        if (data.isActive) {
+            toggle.classList.add('active');
+            label.textContent = 'Active';
+        } else {
+            toggle.classList.remove('active');
+            label.textContent = 'Inactive';
+        }
+
+        disableEditMode();
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeModal = function() {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        setTimeout(disableEditMode, 300);
+    };
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+    });
+
+    // Toggle status
+    window.toggleModalStatus = function() {
+        if (!isEditMode) return;
+        const toggle = document.getElementById('statusToggle');
+        const label = document.getElementById('statusToggleLabel');
+        const isActive = toggle.classList.toggle('active');
+        label.textContent = isActive ? 'Active' : 'Inactive';
+        document.getElementById('modalIsActive').value = isActive ? 'true' : 'false';
+    };
+
+    // Enable edit
+    window.enableEditMode = function() {
+        isEditMode = true;
+        editableInputs.forEach(input => input.removeAttribute('readonly'));
+        document.getElementById('statusToggle').classList.remove('disabled');
+        editPanel.classList.add('editing');
+        editBtn.style.display = 'none';
+        saveBtn.style.display = 'inline-flex';
+        editableInputs[0].focus();
+    };
+
+    function disableEditMode() {
+        isEditMode = false;
+        editableInputs.forEach(input => input.setAttribute('readonly', true));
+        document.getElementById('statusToggle').classList.add('disabled');
+        editPanel.classList.remove('editing');
+        editBtn.style.display = 'inline-flex';
+        saveBtn.style.display = 'none';
+    }
+
+    function showToast(msg) {
+        toastMsg.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Save
+    window.saveProduct = function() {
+        const pPrice = parseFloat(document.getElementById('modalPurchasePrice').value);
+        const sPrice = parseFloat(document.getElementById('modalSellingPrice').value);
+        const mrp = parseFloat(document.getElementById('modalMrp').value);
+        const gst = parseFloat(document.getElementById('modalGst').value);
+        const cStock = parseInt(document.getElementById('modalCurrentStock').value);
+        const mStock = parseInt(document.getElementById('modalMinimumStock').value);
+
+        // Validation
+        if (isNaN(pPrice) || pPrice <= 0) { alert('Purchase price must be greater than 0'); return; }
+        if (isNaN(sPrice) || sPrice <= 0) { alert('Selling price must be greater than 0'); return; }
+        if (sPrice < pPrice) { alert('Selling price must be >= Purchase price'); return; }
+        if (isNaN(mrp) || mrp <= 0) { alert('MRP must be greater than 0'); return; }
+        if (mrp < sPrice) { alert('MRP must be >= Selling price'); return; }
+        if (isNaN(gst) || gst < 0 || gst > 100) { alert('GST must be between 0 and 100'); return; }
+        if (isNaN(cStock) || cStock < 0) { alert('Current stock must be >= 0'); return; }
+        if (isNaN(mStock) || mStock < 0) { alert('Minimum stock must be >= 0'); return; }
+
+        const form = document.getElementById('productEditForm');
+        const formData = new FormData(form);
+
+        saveBtn.disabled = true;
+        const originalHTML = saveBtn.innerHTML;
+        saveBtn.innerHTML = `
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="animation: spin 1s linear infinite;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Saving...
+        `;
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => {
+            if (response.ok) {
+                showToast('Product updated successfully!');
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                throw new Error('Server error');
+            }
+        })
+        .catch(() => {
+            form.submit();
+        })
+        .finally(() => {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalHTML;
+        });
+    };
+})();
+
 </script>
 {% endblock %}
