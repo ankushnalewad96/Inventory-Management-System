@@ -1,0 +1,936 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create New Sale{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/sale_create.css' %}">
+{% endblock %}
+
+
+{% block page_title %}
+    <h1 class="page-title">
+        <i class="fas fa-file-invoice-dollar"></i>
+        Create New Sale
+    </h1>
+    <p class="page-subtitle">Generate a new sales invoice for your customer</p>
+{% endblock %}
+
+{% block body %}
+<!-- Main Content Container -->
+<div class="sale-create-wrapper">
+    <!-- Sale Form -->
+    <form id="saleForm" method="post" action="{% url 'sale_create' %}" novalidate>
+        {% csrf_token %}
+
+        <div class="sale-grid">
+
+            <!-- ========== SECTION A & B ========== -->
+            <div class="info-cards-row">
+
+                <!-- Section A: Customer Info -->
+                <div class="card card-customer">
+                    <div class="card-header">
+                        <div class="card-header-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="card-header-text">
+                            <h3>Customer Information</h3>
+                            <span>Select or add a customer</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="customer-select-row">
+                            <div class="form-group form-group-lg">
+                                <label for="customer_select">Select Customer <span class="required">*</span></label>
+                                <div class="select-with-action">
+                                    <select id="customer_select" name="customer" class="form-control select2-customer" required>
+                                        <option value="">-- Search Customer --</option>
+                                        {% for customer in customers %}
+                                        <option value="{{ customer.id }}" 
+                                                data-mobile="{{ customer.mobile|default:'' }}"
+                                                data-address="{{ customer.address|default:'' }}"
+                                                data-gst="{{ customer.gst_number|default:'' }}"
+                                                data-credit-limit="{{ customer.credit_limit }}"
+                                                data-outstanding="{{ customer.opening_balance }}">
+                                            {{ customer.customer_name }} {% if customer.mobile %}- {{ customer.mobile }}{% endif %}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="button" class="btn btn-icon btn-primary" id="btnAddCustomer" title="Add New Customer">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="customer-details-grid" id="customerDetails">
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fas fa-phone"></i> Mobile</span>
+                                <span class="detail-value" id="custMobile">--</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Address</span>
+                                <span class="detail-value" id="custAddress">--</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fas fa-file-alt"></i> GST Number</span>
+                                <span class="detail-value" id="custGST">--</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fas fa-credit-card"></i> Credit Limit</span>
+                                <span class="detail-value" id="custCreditLimit">--</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fas fa-wallet"></i> Outstanding Balance</span>
+                                <span class="detail-value text-danger" id="custOutstanding">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section B: Invoice Info -->
+                <div class="card card-invoice">
+                    <div class="card-header">
+                        <div class="card-header-icon">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div class="card-header-text">
+                            <h3>Invoice Details</h3>
+                            <span>Invoice number and date</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="invoice-fields">
+                            <div class="form-group">
+                                <label for="invoice_number">Invoice Number</label>
+                                <div class="input-icon-wrapper">
+                                    <i class="fas fa-hashtag"></i>
+                                    <input type="text" id="invoice_number" name="invoice_number" 
+                                           class="form-control" value="{{ next_invoice_number }}" readonly>
+                                </div>
+                                <small class="form-text">Auto-generated invoice number</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="invoice_date">Invoice Date <span class="required">*</span></label>
+                                <div class="input-icon-wrapper">
+                                    <i class="fas fa-calendar"></i>
+                                    <input type="date" id="invoice_date" name="invoice_date" 
+                                           class="form-control" value="{{ today|date:'Y-m-d' }}" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== SECTION C: Product Entry Table ========== -->
+            <div class="card card-products">
+                <div class="card-header">
+                    <div class="card-header-icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <div class="card-header-text">
+                        <h3>Product Items</h3>
+                        <span>Add products to the invoice</span>
+                    </div>
+                    <div class="card-header-action">
+                        <button type="button" class="btn btn-success btn-sm" id="btnAddRow">
+                            <i class="fas fa-plus"></i> Add Product
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body card-body-table">
+                    <div class="table-responsive">
+                        <table class="table table-sale-items" id="saleItemsTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 28%;">Product <span class="required">*</span></th>
+                                    <th style="width: 8%;">Unit</th>
+                                    <th style="width: 10%;">Stock</th>
+                                    <th style="width: 10%;">Selling Price</th>
+                                    <th style="width: 8%;">MRP</th>
+                                    <th style="width: 7%;">GST %</th>
+                                    <th style="width: 9%;">Qty <span class="required">*</span></th>
+                                    <th style="width: 9%;">Discount</th>
+                                    <th style="width: 10%;">Amount</th>
+                                    <th style="width: 4%;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="saleItemsBody">
+                                <!-- Dynamic rows will be added here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <h4>No Products Added</h4>
+                        <p>Click "Add Product" to start adding items to this invoice</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== SECTION D: Summary & Payment ========== -->
+            <div class="summary-payment-row">
+
+                <!-- Payment Section -->
+                <div class="card card-payment">
+                    <div class="card-header">
+                        <div class="card-header-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="card-header-text">
+                            <h3>Payment Details</h3>
+                            <span>Enter payment information</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="payment-grid">
+                            <div class="form-group">
+                                <label for="payment_type">Payment Type <span class="required">*</span></label>
+                                <select id="payment_type" name="payment_type" class="form-control" required>
+                                    <option value="">-- Select --</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="UPI">UPI</option>
+                                    <option value="Bank Transfer">Bank Transfer</option>
+                                    <option value="Cheque">Cheque</option>
+                                    <option value="Credit">Credit</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="paid_amount">Paid Amount <span class="required">*</span></label>
+                                <div class="input-prefix">
+                                    <span class="prefix">₹</span>
+                                    <input type="number" id="paid_amount" name="paid_amount" 
+                                           class="form-control" step="0.01" min="0" value="0.00" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="due_amount">Due Amount</label>
+                                <div class="input-prefix">
+                                    <span class="prefix">₹</span>
+                                    <input type="number" id="due_amount" name="due_amount" 
+                                           class="form-control" step="0.01" readonly value="0.00">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="payment_status">Payment Status</label>
+                                <div class="status-badge" id="paymentStatusBadge">
+                                    <span class="badge badge-unpaid">Unpaid</span>
+                                </div>
+                                <input type="hidden" id="payment_status" name="payment_status" value="Unpaid">
+                            </div>
+                        </div>
+                        <div class="form-group form-group-remarks">
+                            <label for="remarks">Remarks</label>
+                            <textarea id="remarks" name="remarks" class="form-control" rows="3" 
+                                      placeholder="Enter any additional notes..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Section -->
+                <div class="card card-summary">
+                    <div class="card-header">
+                        <div class="card-header-icon">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <div class="card-header-text">
+                            <h3>Bill Summary</h3>
+                            <span>Auto-calculated totals</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="summary-list">
+                            <div class="summary-item">
+                                <span class="summary-label">Subtotal</span>
+                                <span class="summary-value" id="summarySubtotal">₹ 0.00</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Total Discount</span>
+                                <span class="summary-value text-success" id="summaryDiscount">- ₹ 0.00</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Total GST</span>
+                                <span class="summary-value" id="summaryGST">+ ₹ 0.00</span>
+                            </div>
+                            <div class="summary-divider"></div>
+                            <div class="summary-item summary-grand">
+                                <span class="summary-label">Grand Total</span>
+                                <span class="summary-value" id="summaryGrandTotal">₹ 0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== ACTION BUTTONS ========== -->
+            <div class="action-bar">
+                <div class="action-bar-left">
+                    <button type="button" class="btn btn-outline-secondary" id="btnCancel">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+                <div class="action-bar-right">
+                    <button type="submit" class="btn btn-primary" id="btnSaveSale" name="action" value="save">
+                        <i class="fas fa-save"></i> Save Sale
+                    </button>
+                    <button type="submit" class="btn btn-success" id="btnSavePrint" name="action" value="save_print">
+                        <i class="fas fa-print"></i> Save & Print
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<!-- ========== ADD CUSTOMER MODAL ========== -->
+<div class="modal-overlay" id="customerModal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-plus"></i> Add New Customer</h3>
+            <button type="button" class="modal-close" id="closeCustomerModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="customerForm">
+                {% csrf_token %}
+                <div class="modal-form-grid">
+                    <div class="form-group">
+                        <label>Customer Name <span class="required">*</span></label>
+                        <input type="text" name="customer_name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mobile Number</label>
+                        <input type="tel" name="mobile" class="form-control" maxlength="15" pattern="[0-9]*">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>GST Number</label>
+                        <input type="text" name="gst_number" class="form-control" maxlength="20">
+                    </div>
+                    <div class="form-group form-group-full">
+                        <label>Address</label>
+                        <textarea name="address" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Opening Balance</label>
+                        <input type="number" name="opening_balance" class="form-control" step="0.01" min="0" value="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>Credit Limit</label>
+                        <input type="number" name="credit_limit" class="form-control" step="0.01" min="0" value="0.00">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" id="cancelCustomerModal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="saveCustomerModal">
+                <i class="fas fa-save"></i> Save Customer
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+{% endblock %}
+
+{% block js %}
+<!-- ========== JAVASCRIPT ========== -->
+<script>
+(function() {
+    'use strict';
+
+    // ===== State =====
+    let rowCounter = 0;
+    const productsData = {}; // Cache for product data
+
+    // ===== DOM Elements =====
+    const customerSelect = document.getElementById('customer_select');
+    const customerDetails = document.getElementById('customerDetails');
+    const saleItemsBody = document.getElementById('saleItemsBody');
+    const emptyState = document.getElementById('emptyState');
+    const btnAddRow = document.getElementById('btnAddRow');
+    const saleForm = document.getElementById('saleForm');
+    const paidAmountInput = document.getElementById('paid_amount');
+    const paymentTypeSelect = document.getElementById('payment_type');
+    const toastContainer = document.getElementById('toastContainer');
+
+    // ===== Initialize Select2 for Customer =====
+    if (typeof $ !== 'undefined' && $.fn.select2) {
+        $('.select2-customer').select2({
+            placeholder: '-- Search Customer --',
+            allowClear: true,
+            width: '100%'
+        });
+
+        // Re-initialize on dynamically added selects
+        window.initProductSelect2 = function(element) {
+            $(element).select2({
+                placeholder: 'Search product...',
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $(element).closest('td')
+            });
+        };
+    }
+
+    // ===== Customer Selection Handler =====
+    $(customerSelect).on('select2:select', function(e) {
+        const data = e.params.data.element.dataset;
+        updateCustomerDetails(data);
+    });
+
+    $(customerSelect).on('select2:clear', function() {
+        clearCustomerDetails();
+    });
+
+    function updateCustomerDetails(data) {
+        document.getElementById('custMobile').textContent = data.mobile || '--';
+        document.getElementById('custAddress').textContent = data.address || '--';
+        document.getElementById('custGST').textContent = data.gst || '--';
+        document.getElementById('custCreditLimit').textContent = data.creditLimit ? '₹ ' + parseFloat(data.creditLimit).toFixed(2) : '--';
+        document.getElementById('custOutstanding').textContent = data.outstanding ? '₹ ' + parseFloat(data.outstanding).toFixed(2) : '--';
+        customerDetails.style.opacity = '1';
+    }
+
+    function clearCustomerDetails() {
+        document.getElementById('custMobile').textContent = '--';
+        document.getElementById('custAddress').textContent = '--';
+        document.getElementById('custGST').textContent = '--';
+        document.getElementById('custCreditLimit').textContent = '--';
+        document.getElementById('custOutstanding').textContent = '--';
+    }
+
+    // ===== Add Product Row =====
+    btnAddRow.addEventListener('click', function() {
+        addProductRow();
+    });
+
+    function addProductRow() {
+        rowCounter++;
+        const rowId = 'row_' + rowCounter;
+
+        const tr = document.createElement('tr');
+        tr.id = rowId;
+        tr.dataset.rowId = rowCounter;
+
+        tr.innerHTML = `
+            <td>
+                <select class="form-control product-select" name="items[${rowCounter}][product]" required>
+                    <option value="">-- Select Product --</option>
+                    {% for product in products %}
+                    <option value="{{ product.id }}"
+                            data-unit="{{ product.unit.name|default:'' }}"
+                            data-unit-id="{{ product.unit.id|default:'' }}"
+                            data-stock="{{ product.available_stock|default:0 }}"
+                            data-selling-price="{{ product.selling_price|default:0 }}"
+                            data-mrp="{{ product.mrp|default:0 }}"
+                            data-gst="{{ product.gst_percentage|default:0 }}">
+                        {{ product.name }} | {{ product.barcode|default:product.code }} | {{ product.code }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="items[${rowCounter}][unit]" class="unit-id-input">
+            </td>
+            <td>
+                <input type="text" class="form-control unit-display" readonly tabindex="-1">
+            </td>
+            <td>
+                <span class="stock-badge stock-ok">
+                    <i class="fas fa-cubes"></i>
+                    <span class="stock-value">0</span>
+                </span>
+            </td>
+            <td>
+                <input type="number" class="form-control selling-price-input" name="items[${rowCounter}][selling_price]" 
+                       step="0.01" min="0" value="0.00" required>
+            </td>
+            <td>
+                <input type="number" class="form-control mrp-input" name="items[${rowCounter}][mrp]" 
+                       step="0.01" min="0" value="0.00" readonly tabindex="-1">
+            </td>
+            <td>
+                <input type="number" class="form-control gst-input" name="items[${rowCounter}][gst]" 
+                       step="0.01" min="0" max="100" value="0.00" readonly tabindex="-1">
+            </td>
+            <td>
+                <input type="number" class="form-control qty-input" name="items[${rowCounter}][quantity]" 
+                       step="0.01" min="0.01" value="1" required>
+            </td>
+            <td>
+                <input type="number" class="form-control discount-input" name="items[${rowCounter}][discount]" 
+                       step="0.01" min="0" value="0.00">
+            </td>
+            <td class="amount-cell">
+                ₹ <span class="row-amount">0.00</span>
+            </td>
+            <td>
+                <button type="button" class="btn-remove-row" title="Remove Item">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </td>
+        `;
+
+        saleItemsBody.appendChild(tr);
+        emptyState.style.display = 'none';
+
+        // Initialize Select2 for this row's product select
+        const productSelect = tr.querySelector('.product-select');
+        if (typeof $ !== 'undefined' && $.fn.select2) {
+            initProductSelect2(productSelect);
+        }
+
+        // Bind events
+        bindRowEvents(tr);
+
+        // Focus the product select
+        setTimeout(() => {
+            if (typeof $ !== 'undefined' && $.fn.select2) {
+                $(productSelect).select2('open');
+            } else {
+                productSelect.focus();
+            }
+        }, 100);
+    }
+
+    function bindRowEvents(row) {
+        const productSelect = row.querySelector('.product-select');
+        const qtyInput = row.querySelector('.qty-input');
+        const sellingPriceInput = row.querySelector('.selling-price-input');
+        const discountInput = row.querySelector('.discount-input');
+        const removeBtn = row.querySelector('.btn-remove-row');
+
+        // Product selection
+        if (typeof $ !== 'undefined' && $.fn.select2) {
+            $(productSelect).on('select2:select', function(e) {
+                const data = e.params.data.element.dataset;
+                populateProductData(row, data);
+                calculateRow(row);
+                calculateTotals();
+            });
+
+            $(productSelect).on('select2:clear', function() {
+                clearProductData(row);
+                calculateRow(row);
+                calculateTotals();
+            });
+        } else {
+            productSelect.addEventListener('change', function() {
+                const option = this.options[this.selectedIndex];
+                if (option.value) {
+                    populateProductData(row, option.dataset);
+                } else {
+                    clearProductData(row);
+                }
+                calculateRow(row);
+                calculateTotals();
+            });
+        }
+
+        // Input changes
+        qtyInput.addEventListener('input', function() {
+            validateStock(row);
+            calculateRow(row);
+            calculateTotals();
+        });
+
+        qtyInput.addEventListener('blur', function() {
+            validateStock(row, true);
+        });
+
+        sellingPriceInput.addEventListener('input', function() {
+            calculateRow(row);
+            calculateTotals();
+        });
+
+        discountInput.addEventListener('input', function() {
+            calculateRow(row);
+            calculateTotals();
+        });
+
+        // Remove row
+        removeBtn.addEventListener('click', function() {
+            row.remove();
+            if (saleItemsBody.children.length === 0) {
+                emptyState.style.display = 'block';
+            }
+            calculateTotals();
+        });
+    }
+
+    function populateProductData(row, data) {
+        row.querySelector('.unit-display').value = data.unit || '';
+        row.querySelector('.unit-id-input').value = data.unitId || '';
+        row.querySelector('.stock-value').textContent = data.stock || '0';
+        row.querySelector('.selling-price-input').value = data.sellingPrice || '0.00';
+        row.querySelector('.mrp-input').value = data.mrp || '0.00';
+        row.querySelector('.gst-input').value = data.gst || '0.00';
+
+        // Update stock badge color
+        const stockBadge = row.querySelector('.stock-badge');
+        const stock = parseFloat(data.stock) || 0;
+        stockBadge.classList.remove('stock-ok', 'stock-low', 'stock-error-badge');
+        if (stock <= 0) {
+            stockBadge.classList.add('stock-error-badge');
+        } else if (stock < 10) {
+            stockBadge.classList.add('stock-low');
+        } else {
+            stockBadge.classList.add('stock-ok');
+        }
+    }
+
+    function clearProductData(row) {
+        row.querySelector('.unit-display').value = '';
+        row.querySelector('.unit-id-input').value = '';
+        row.querySelector('.stock-value').textContent = '0';
+        row.querySelector('.selling-price-input').value = '0.00';
+        row.querySelector('.mrp-input').value = '0.00';
+        row.querySelector('.gst-input').value = '0.00';
+        row.querySelector('.stock-badge').classList.remove('stock-ok', 'stock-low', 'stock-error-badge');
+        row.querySelector('.stock-badge').classList.add('stock-ok');
+    }
+
+    // ===== Stock Validation =====
+    function validateStock(row, showToast = false) {
+        const stockValue = parseFloat(row.querySelector('.stock-value').textContent) || 0;
+        const qtyInput = row.querySelector('.qty-input');
+        const qty = parseFloat(qtyInput.value) || 0;
+
+        if (qty > stockValue) {
+            row.classList.add('stock-error');
+            qtyInput.style.borderColor = 'var(--danger)';
+            if (showToast) {
+                showToastMessage('Insufficient stock! Available: ' + stockValue, 'error');
+            }
+            return false;
+        } else {
+            row.classList.remove('stock-error');
+            qtyInput.style.borderColor = '';
+            return true;
+        }
+    }
+
+    // ===== Row Calculation =====
+    function calculateRow(row) {
+        const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
+        const sellingPrice = parseFloat(row.querySelector('.selling-price-input').value) || 0;
+        const discount = parseFloat(row.querySelector('.discount-input').value) || 0;
+        const gstPercent = parseFloat(row.querySelector('.gst-input').value) || 0;
+
+        const grossAmount = qty * sellingPrice;
+        const taxableAmount = Math.max(0, grossAmount - discount);
+        const gstAmount = taxableAmount * (gstPercent / 100);
+        const finalAmount = taxableAmount + gstAmount;
+
+        row.querySelector('.row-amount').textContent = finalAmount.toFixed(2);
+    }
+
+    // ===== Totals Calculation =====
+    function calculateTotals() {
+        let subtotal = 0;
+        let totalDiscount = 0;
+        let totalGST = 0;
+        let grandTotal = 0;
+
+        const rows = saleItemsBody.querySelectorAll('tr');
+        rows.forEach(row => {
+            const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
+            const sellingPrice = parseFloat(row.querySelector('.selling-price-input').value) || 0;
+            const discount = parseFloat(row.querySelector('.discount-input').value) || 0;
+            const gstPercent = parseFloat(row.querySelector('.gst-input').value) || 0;
+
+            const grossAmount = qty * sellingPrice;
+            const taxableAmount = Math.max(0, grossAmount - discount);
+            const gstAmount = taxableAmount * (gstPercent / 100);
+            const finalAmount = taxableAmount + gstAmount;
+
+            subtotal += grossAmount;
+            totalDiscount += discount;
+            totalGST += gstAmount;
+            grandTotal += finalAmount;
+        });
+
+        // Update summary display
+        document.getElementById('summarySubtotal').textContent = '₹ ' + subtotal.toFixed(2);
+        document.getElementById('summaryDiscount').textContent = '- ₹ ' + totalDiscount.toFixed(2);
+        document.getElementById('summaryGST').textContent = '+ ₹ ' + totalGST.toFixed(2);
+        document.getElementById('summaryGrandTotal').textContent = '₹ ' + grandTotal.toFixed(2);
+
+        // Update hidden inputs for form submission
+        updatePaymentCalculations(grandTotal);
+    }
+
+    // ===== Payment Calculations =====
+    function updatePaymentCalculations(grandTotal) {
+        const paid = parseFloat(paidAmountInput.value) || 0;
+        const due = Math.max(0, grandTotal - paid);
+
+        document.getElementById('due_amount').value = due.toFixed(2);
+
+        // Update payment status badge
+        const statusBadge = document.getElementById('paymentStatusBadge');
+        const statusInput = document.getElementById('payment_status');
+
+        let statusClass = 'badge-unpaid';
+        let statusText = 'Unpaid';
+        let statusValue = 'Unpaid';
+
+        if (grandTotal <= 0) {
+            statusClass = 'badge-unpaid';
+            statusText = 'Unpaid';
+            statusValue = 'Unpaid';
+        } else if (paid >= grandTotal) {
+            statusClass = 'badge-paid';
+            statusText = 'Paid';
+            statusValue = 'Paid';
+        } else if (paid > 0) {
+            statusClass = 'badge-partial';
+            statusText = 'Partial';
+            statusValue = 'Partial';
+        }
+
+        statusBadge.innerHTML = '<span class="badge ' + statusClass + '">' + statusText + '</span>';
+        statusInput.value = statusValue;
+    }
+
+    paidAmountInput.addEventListener('input', function() {
+        const grandTotal = parseFloat(document.getElementById('summaryGrandTotal').textContent.replace('₹ ', '')) || 0;
+        updatePaymentCalculations(grandTotal);
+    });
+
+    // ===== Form Validation =====
+    saleForm.addEventListener('submit', function(e) {
+        let isValid = true;
+        let errors = [];
+
+        // Validate customer
+        if (!customerSelect.value) {
+            isValid = false;
+            errors.push('Please select a customer');
+            customerSelect.closest('.form-group').classList.add('has-error');
+        }
+
+        // Validate invoice date
+        const invoiceDate = document.getElementById('invoice_date');
+        if (!invoiceDate.value) {
+            isValid = false;
+            errors.push('Please select an invoice date');
+        }
+
+        // Validate items
+        const rows = saleItemsBody.querySelectorAll('tr');
+        if (rows.length === 0) {
+            isValid = false;
+            errors.push('Please add at least one product');
+        }
+
+        rows.forEach((row, index) => {
+            const productSelect = row.querySelector('.product-select');
+            const qtyInput = row.querySelector('.qty-input');
+            const sellingPriceInput = row.querySelector('.selling-price-input');
+            const stockValue = parseFloat(row.querySelector('.stock-value').textContent) || 0;
+            const qty = parseFloat(qtyInput.value) || 0;
+
+            // Check product selected
+            if (!productSelect.value) {
+                isValid = false;
+                errors.push('Row ' + (index + 1) + ': Please select a product');
+                productSelect.style.borderColor = 'var(--danger)';
+            }
+
+            // Check quantity > 0
+            if (qty <= 0) {
+                isValid = false;
+                errors.push('Row ' + (index + 1) + ': Quantity must be greater than 0');
+                qtyInput.style.borderColor = 'var(--danger)';
+            }
+
+            // Check stock availability (STRICT)
+            if (qty > stockValue) {
+                isValid = false;
+                errors.push('Row ' + (index + 1) + ': Insufficient stock! Available: ' + stockValue);
+                row.classList.add('stock-error');
+                qtyInput.style.borderColor = 'var(--danger)';
+            }
+
+            // Check selling price
+            const sellingPrice = parseFloat(sellingPriceInput.value) || 0;
+            if (sellingPrice < 0) {
+                isValid = false;
+                errors.push('Row ' + (index + 1) + ': Selling price cannot be negative');
+            }
+
+            // Check discount not exceeding gross
+            const discount = parseFloat(row.querySelector('.discount-input').value) || 0;
+            const grossAmount = qty * sellingPrice;
+            if (discount > grossAmount) {
+                isValid = false;
+                errors.push('Row ' + (index + 1) + ': Discount cannot exceed gross amount');
+            }
+        });
+
+        // Validate payment type
+        if (!paymentTypeSelect.value) {
+            isValid = false;
+            errors.push('Please select a payment type');
+        }
+
+        // Validate paid amount
+        const paidAmount = parseFloat(paidAmountInput.value) || 0;
+        const grandTotal = parseFloat(document.getElementById('summaryGrandTotal').textContent.replace('₹ ', '')) || 0;
+
+        if (paidAmount < 0) {
+            isValid = false;
+            errors.push('Paid amount cannot be negative');
+        }
+
+        if (paidAmount > grandTotal) {
+            isValid = false;
+            errors.push('Paid amount cannot exceed grand total');
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+            errors.forEach(error => showToastMessage(error, 'error'));
+            return false;
+        }
+
+        // Add hidden inputs for totals
+        addHiddenInput('subtotal', document.getElementById('summarySubtotal').textContent.replace('₹ ', ''));
+        addHiddenInput('discount', document.getElementById('summaryDiscount').textContent.replace('- ₹ ', ''));
+        addHiddenInput('gst', document.getElementById('summaryGST').textContent.replace('+ ₹ ', ''));
+        addHiddenInput('grand_total', document.getElementById('summaryGrandTotal').textContent.replace('₹ ', ''));
+    });
+
+    function addHiddenInput(name, value) {
+        let input = saleForm.querySelector('input[name="' + name + '"]');
+        if (!input) {
+            input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            saleForm.appendChild(input);
+        }
+        input.value = value;
+    }
+
+    // ===== Toast Notifications =====
+    function showToastMessage(message, type = 'error') {
+        const toast = document.createElement('div');
+        toast.className = 'toast toast-' + type;
+
+        const iconMap = {
+            error: 'fa-exclamation-circle',
+            success: 'fa-check-circle',
+            warning: 'fa-exclamation-triangle'
+        };
+
+        toast.innerHTML = '<i class="fas ' + (iconMap[type] || iconMap.error) + '"></i><span>' + message + '</span>';
+        toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+    // ===== Customer Modal =====
+    const customerModal = document.getElementById('customerModal');
+    const btnAddCustomer = document.getElementById('btnAddCustomer');
+    const closeCustomerModal = document.getElementById('closeCustomerModal');
+    const cancelCustomerModal = document.getElementById('cancelCustomerModal');
+    const saveCustomerModal = document.getElementById('saveCustomerModal');
+    const customerForm = document.getElementById('customerForm');
+
+    btnAddCustomer.addEventListener('click', () => {
+        customerModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+
+    function closeModal() {
+        customerModal.classList.remove('active');
+        document.body.style.overflow = '';
+        customerForm.reset();
+    }
+
+    closeCustomerModal.addEventListener('click', closeModal);
+    cancelCustomerModal.addEventListener('click', closeModal);
+
+    customerModal.addEventListener('click', function(e) {
+        if (e.target === customerModal) closeModal();
+    });
+
+    saveCustomerModal.addEventListener('click', function() {
+        // Frontend validation
+        const customerName = customerForm.querySelector('[name="customer_name"]').value.trim();
+        if (!customerName) {
+            showToastMessage('Customer name is required', 'error');
+            return;
+        }
+
+        const mobile = customerForm.querySelector('[name="mobile"]').value.trim();
+        if (mobile && !/^\d{10,15}$/.test(mobile.replace(/\D/g, ''))) {
+            showToastMessage('Please enter a valid mobile number', 'error');
+            return;
+        }
+
+        const email = customerForm.querySelector('[name="email"]').value.trim();
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showToastMessage('Please enter a valid email address', 'error');
+            return;
+        }
+
+        // Here you would typically make an AJAX call to save the customer
+        // For now, show success and close
+        showToastMessage('Customer added successfully!', 'success');
+        closeModal();
+
+        // In production, after AJAX success:
+        // 1. Add new option to customer_select
+        // 2. Trigger select2 update
+        // 3. Select the new customer
+    });
+
+    // ===== Cancel Button =====
+    document.getElementById('btnCancel').addEventListener('click', function() {
+        if (confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
+            window.location.href = "#";
+        }
+    });
+
+    // ===== Keyboard Shortcuts =====
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + Enter to save
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('btnSaveSale').click();
+        }
+        // Ctrl/Cmd + P to save and print
+        if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+            e.preventDefault();
+            document.getElementById('btnSavePrint').click();
+        }
+    });
+
+    // ===== Initialize =====
+    // Add first row automatically
+    if (saleItemsBody.children.length === 0) {
+        addProductRow();
+    }
+
+})();
+</script>
+
+{% endblock %}

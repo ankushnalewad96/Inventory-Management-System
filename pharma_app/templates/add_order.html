@@ -204,7 +204,7 @@
 
                     <div class="form-group" style="max-width:240px;">
                         <label>Paid Amount</label>
-                        <input type="text" class="form-control" name="paid_amount" id="paidamount" placeholder="Enter paid amount" required>
+                        <input type="number" class="form-control" name="paid_amount" id="paidamount" placeholder="Enter paid amount" value="0" min="0" step="0.01" required>
                     </div>
 
                     <div>
@@ -217,27 +217,166 @@
 
                 <div class="bottom-right">
                     <div class="summary-box">
-                        <div class="summary-row">
-                            <span class="summary-label">Subtotal</span>
-                            <span class="summary-value" id="summarySubtotal">₹0.00</span>
-                            <input type="hidden" name="subtotal" id="subtotalInput" value="0">
-                        </div>
-                        <div class="summary-row">
-                            <span class="summary-label">Tax</span>
-                            <span class="summary-value" id="summaryTax">₹0.00</span>
-                            <input type="hidden" name="gst" id="taxInput" value="0">
-                        </div>
-                        <div class="summary-row">
-                            <span class="summary-label">Discount</span>
-                            <span class="summary-value" id="summaryDiscount">₹0.00</span>
-                            <input type="hidden" name="discount" id="discountInput" value="0">
-                        </div>
-                        <div class="summary-row grand-total">
-                            <span class="summary-label">Grand Total</span>
-                            <span class="summary-value" id="summaryGrandTotal">₹0.00</span>
-                            <input type="hidden" name="grand_total" id="grandTotalInput" value="0">
+
+                    <!-- Subtotal -->
+                    <div class="summary-row">
+                        <span class="summary-label">Subtotal</span>
+
+                        <span class="summary-value" id="summarySubtotal">
+                            ₹0.00
+                        </span>
+
+                        <input
+                            type="hidden"
+                            name="subtotal"
+                            id="subtotalInput"
+                            value="0"
+                        >
+                    </div>
+
+
+                    <!-- Tax -->
+                    <div class="summary-row">
+                        <span class="summary-label">Tax</span>
+
+                        <span class="summary-value" id="summaryTax">
+                            ₹0.00
+                        </span>
+
+                        <input
+                            type="hidden"
+                            name="gst"
+                            id="taxInput"
+                            value="0"
+                        >
+                    </div>
+
+
+                    <!-- Discount -->
+                    <div class="summary-row">
+                        <span class="summary-label">Discount</span>
+
+                        <div class="summary-value">
+                            <input
+                                type="number"
+                                class="form-control"
+                                name="discount"
+                                id="discountInput"
+                                value="0"
+                                min="0"
+                                step="0.01"
+                                style="width:120px;text-align:right;"
+                                placeholder="0.00"
+                            >
                         </div>
                     </div>
+
+
+                    <!-- Transport Charge -->
+                    <div class="summary-row">
+                        <span class="summary-label">Transport Charge</span>
+
+                        <div class="summary-value">
+                            <input
+                                type="number"
+                                class="form-control"
+                                name="transport_charge"
+                                id="transportChargeInput"
+                                value="0"
+                                min="0"
+                                step="0.01"
+                                style="width:120px;text-align:right;"
+                                placeholder="0.00"
+                            >
+                        </div>
+                    </div>
+
+
+                    <!-- Other Charges -->
+                    <div class="summary-row">
+                        <span class="summary-label">Other Charges</span>
+
+                        <div class="summary-value">
+                            <input
+                                type="number"
+                                class="form-control"
+                                name="other_charge"
+                                id="otherChargeInput"
+                                value="0"
+                                min="0"
+                                step="0.01"
+                                style="width:120px;text-align:right;"
+                                placeholder="0.00"
+                            >
+                        </div>
+                    </div>
+
+
+                    <!-- Grand Total -->
+                    <div class="summary-row grand-total">
+                        <span class="summary-label">Grand Total</span>
+
+                        <span class="summary-value" id="summaryGrandTotal">
+                            ₹0.00
+                        </span>
+
+                        <input
+                            type="hidden"
+                            name="grand_total"
+                            id="grandTotalInput"
+                            value="0"
+                        >
+                    </div>
+
+
+                    <!-- Paid Amount -->
+                    <div class="summary-row">
+                        <span class="summary-label">Paid Amount</span>
+
+                        <span class="summary-value">
+                            <span id="summaryPaidAmount">₹0.00</span>
+                        </span>
+                    </div>
+
+
+                    <!-- Due Amount -->
+                    <div class="summary-row">
+                        <span class="summary-label">Due Amount</span>
+
+                        <span class="summary-value" id="summaryDueAmount">
+                            ₹0.00
+                        </span>
+
+                        <input
+                            type="hidden"
+                            name="due_amount"
+                            id="dueAmountInput"
+                            value="0"
+                        >
+                    </div>
+
+
+                    <!-- Payment Status -->
+                    <div class="summary-row">
+                        <span class="summary-label">Payment Status</span>
+
+                        <span
+                            class="summary-value"
+                            id="summaryPaymentStatus"
+                        >
+                            Unpaid
+                        </span>
+
+                        <input
+                            type="hidden"
+                            name="payment_status"
+                            id="paymentStatusInput"
+                            value="Unpaid"
+                        >
+                    </div>
+
+                </div>
+                    
 
                     <div class="tax-section">
                         <label>Tax</label>
@@ -265,7 +404,1573 @@
 
 {% block js %}
 
+
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    /* =========================================================
+       GLOBAL VARIABLES
+       ========================================================= */
+
+    let rowCounter = 0;
+
+    const taxRates = {
+        none: 0,
+        gst5: 5,
+        gst12: 12,
+        gst18: 18,
+        gst28: 28
+    };
+
+
+    /* =========================================================
+       COMMON HELPERS
+       ========================================================= */
+
+    function getNumber(value) {
+        const number = parseFloat(value);
+        return Number.isFinite(number) ? number : 0;
+    }
+
+
+    function formatMoney(value) {
+        return '₹' + getNumber(value).toFixed(2);
+    }
+
+
+    function formatQuantity(value) {
+        value = getNumber(value);
+
+        if (Number.isInteger(value)) {
+            return value.toString();
+        }
+
+        return value.toFixed(2);
+    }
+
+
+    function setText(id, value) {
+        const element = document.getElementById(id);
+
+        if (element) {
+            element.textContent = value;
+        }
+    }
+
+
+    function setValue(id, value) {
+        const element = document.getElementById(id);
+
+        if (element) {
+            element.value = value;
+        }
+    }
+
+
+    /* =========================================================
+       ADD ROW
+       =========================================================
+       THIS IS BASED ON YOUR ORIGINAL addRow() STRUCTURE.
+       CLASS NAMES / DATA-FIELDS / NAME VALUES ARE PRESERVED.
+       ========================================================= */
+
+    window.addRow = function () {
+
+        rowCounter++;
+
+        const tbody =
+            document.getElementById('itemsBody');
+
+        if (!tbody) {
+            console.error('itemsBody element not found.');
+            return;
+        }
+
+
+        const tr =
+            document.createElement('tr');
+
+
+        tr.dataset.rowId =
+            rowCounter;
+
+
+        tr.innerHTML = `
+
+            <!-- Row Number -->
+            <td class="row-num">
+                ${rowCounter}
+            </td>
+
+
+            <!-- Product -->
+            <td>
+                <select
+                    class="item-select product-select"
+                    name="item_name_${rowCounter}"
+                    required
+                >
+
+                    <option value="">
+                        Select Product
+                    </option>
+
+                    {% for product in products %}
+                        <option
+                            value="{{ product.product_name|escapejs }}"
+                            data-mrp="{{ product.mrp|default:'0' }}"
+                            data-price="{{ product.purchase_price|default:'0' }}"
+                            data-unit="{% if product.unit %}{{ product.unit.id }}{% endif %}"
+                            data-gst="{{ product.gst|default:'0' }}"
+                        >
+                            {{ product.product_name|escapejs }}
+                        </option>
+                    {% endfor %}
+
+                </select>
+            </td>
+
+
+            <!-- MRP -->
+            <td>
+                <input
+                    type="number"
+                    class="item-input mrp-input"
+                    placeholder="0.00"
+                    data-field="mrp"
+                    name="item_mrp_${rowCounter}"
+                    step="0.01"
+                    min="0"
+                >
+            </td>
+
+
+            <!-- Quantity -->
+            <td>
+                <input
+                    type="number"
+                    class="item-input qty-input"
+                    placeholder="0"
+                    data-field="qty"
+                    name="item_qty_${rowCounter}"
+                    min="0"
+                    step="0.01"
+                    required
+                >
+            </td>
+
+
+            <!-- Free Quantity -->
+            <td>
+                <input
+                    type="number"
+                    class="item-input qty-input"
+                    placeholder="0"
+                    data-field="freeQty"
+                    name="item_free_qty_${rowCounter}"
+                    min="0"
+                    step="0.01"
+                >
+            </td>
+
+
+            <!-- Unit -->
+            <td>
+                <select
+                    class="item-select unit-select"
+                    name="item_unit_${rowCounter}"
+                >
+
+                    {% for unit in units %}
+                        <option
+                            value="{{ unit.id }}"
+                        >
+                            {{ unit.short_name }}
+                        </option>
+                    {% endfor %}
+
+                </select>
+            </td>
+
+
+            <!-- Purchase Price -->
+            <td>
+                <input
+                    type="number"
+                    class="item-input price-input"
+                    placeholder="0.00"
+                    data-field="price"
+                    name="item_price_${rowCounter}"
+                    step="0.01"
+                    min="0"
+                    required
+                >
+            </td>
+
+
+            <!-- GST -->
+            <td>
+                <select
+                    class="item-select"
+                    data-field="tax"
+                    name="item_tax_${rowCounter}"
+                >
+
+                    <option value="none" selected>
+                        Select
+                    </option>
+
+                    <option value="gst5">
+                        GST 5%
+                    </option>
+
+                    <option value="gst12">
+                        GST 12%
+                    </option>
+
+                    <option value="gst18">
+                        GST 18%
+                    </option>
+
+                    <option value="gst28">
+                        GST 28%
+                    </option>
+
+                </select>
+            </td>
+
+
+            <!-- Item Amount -->
+            <td
+                class="amount-cell"
+                data-field="amount"
+            >
+                ₹0.00
+            </td>
+
+
+            <!-- Remove -->
+            <td class="center">
+
+                <button
+                    type="button"
+                    class="remove-btn"
+                    onclick="removeRow(this)"
+                    title="Remove row"
+                >
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+
+            </td>
+        `;
+
+
+        tbody.appendChild(tr);
+
+
+        /* -----------------------------------------------------
+           Bind input/change events exactly like your old logic
+           ----------------------------------------------------- */
+
+        tr
+            .querySelectorAll(
+                'input[data-field], select[data-field]'
+            )
+            .forEach(function (element) {
+
+                element.addEventListener(
+                    'input',
+                    calculateRow
+                );
+
+                element.addEventListener(
+                    'change',
+                    calculateRow
+                );
+            });
+
+
+        /* -----------------------------------------------------
+           Product selection
+           ----------------------------------------------------- */
+
+        const productSelect =
+            tr.querySelector('.product-select');
+
+
+        if (productSelect) {
+
+            productSelect.addEventListener(
+                'change',
+                function () {
+
+                    populateProductDetails(
+                        tr,
+                        productSelect
+                    );
+
+                    calculateRow({
+                        target: productSelect
+                    });
+                }
+            );
+        }
+
+
+        calculateTotals();
+
+
+        return tr;
+    };
+
+
+    /* =========================================================
+       POPULATE PRODUCT DETAILS
+       ========================================================= */
+
+    function populateProductDetails(
+        row,
+        productSelect
+    ) {
+
+        const selectedOption =
+            productSelect.options[
+                productSelect.selectedIndex
+            ];
+
+
+        if (!selectedOption) {
+            return;
+        }
+
+
+        /* -----------------------------------------------------
+           MRP
+           ----------------------------------------------------- */
+
+        const mrpInput =
+            row.querySelector(
+                '[data-field="mrp"]'
+            );
+
+
+        if (mrpInput) {
+
+            mrpInput.value =
+                selectedOption.dataset.mrp || '0';
+        }
+
+
+        /* -----------------------------------------------------
+           Purchase Price
+           ----------------------------------------------------- */
+
+        const priceInput =
+            row.querySelector(
+                '[data-field="price"]'
+            );
+
+
+        if (priceInput) {
+
+            priceInput.value =
+                selectedOption.dataset.price || '0';
+        }
+
+
+        /* -----------------------------------------------------
+           Unit
+           ----------------------------------------------------- */
+
+        const unitSelect =
+            row.querySelector(
+                '.unit-select'
+            );
+
+
+        const unitId =
+            selectedOption.dataset.unit;
+
+
+        if (
+            unitSelect &&
+            unitId
+        ) {
+
+            unitSelect.value =
+                unitId;
+        }
+
+
+        /* -----------------------------------------------------
+           GST
+           ----------------------------------------------------- */
+
+        const gst =
+            getNumber(
+                selectedOption.dataset.gst
+            );
+
+
+        const taxSelect =
+            row.querySelector(
+                '[data-field="tax"]'
+            );
+
+
+        if (taxSelect) {
+
+            if (gst === 5) {
+
+                taxSelect.value = 'gst5';
+
+            } else if (gst === 12) {
+
+                taxSelect.value = 'gst12';
+
+            } else if (gst === 18) {
+
+                taxSelect.value = 'gst18';
+
+            } else if (gst === 28) {
+
+                taxSelect.value = 'gst28';
+
+            } else {
+
+                taxSelect.value = 'none';
+            }
+        }
+    }
+
+
+    /* =========================================================
+       CALCULATE SINGLE ITEM ROW
+       ========================================================= */
+
+    window.calculateRow = function (event) {
+
+        let row = null;
+
+
+        /* -----------------------------------------------------
+           Event came from an input/select
+           ----------------------------------------------------- */
+
+        if (
+            event &&
+            event.target
+        ) {
+
+            row =
+                event.target.closest('tr');
+        }
+
+
+        if (!row) {
+            return;
+        }
+
+
+        /* -----------------------------------------------------
+           Quantity
+           ----------------------------------------------------- */
+
+        const qty =
+            getNumber(
+                row.querySelector(
+                    '[data-field="qty"]'
+                )?.value
+            );
+
+
+        /* -----------------------------------------------------
+           Purchase Price
+           ----------------------------------------------------- */
+
+        const price =
+            getNumber(
+                row.querySelector(
+                    '[data-field="price"]'
+                )?.value
+            );
+
+
+        /* -----------------------------------------------------
+           GST
+           ----------------------------------------------------- */
+
+        const taxSelect =
+            row.querySelector(
+                '[data-field="tax"]'
+            );
+
+
+        const taxType =
+            taxSelect
+                ? taxSelect.value
+                : 'none';
+
+
+        const taxRate =
+            taxRates[taxType] || 0;
+
+
+        /* -----------------------------------------------------
+           Item Subtotal
+           ----------------------------------------------------- */
+
+        const itemSubtotal =
+            qty * price;
+
+
+        /* -----------------------------------------------------
+           Item GST
+           ----------------------------------------------------- */
+
+        const itemGST =
+            itemSubtotal *
+            taxRate /
+            100;
+
+
+        /* -----------------------------------------------------
+           Item Total
+           ----------------------------------------------------- */
+
+        const itemTotal =
+            itemSubtotal +
+            itemGST;
+
+
+        /* -----------------------------------------------------
+           Display item amount
+           ----------------------------------------------------- */
+
+        const amountCell =
+            row.querySelector(
+                '[data-field="amount"]'
+            );
+
+
+        if (amountCell) {
+
+            amountCell.textContent =
+                formatMoney(itemTotal);
+        }
+
+
+        /* -----------------------------------------------------
+           Recalculate complete purchase
+           ----------------------------------------------------- */
+
+        calculateTotals();
+    };
+
+
+    /* =========================================================
+       CALCULATE ALL PURCHASE TOTALS
+       ========================================================= */
+
+    window.calculateTotals = function () {
+
+        const tbody =
+            document.getElementById(
+                'itemsBody'
+            );
+
+
+        if (!tbody) {
+            return;
+        }
+
+
+        const rows =
+            tbody.querySelectorAll('tr');
+
+
+        let totalQty = 0;
+
+        let totalFreeQty = 0;
+
+        let subtotal = 0;
+
+        let totalGST = 0;
+
+
+        /* =====================================================
+           LOOP THROUGH ALL ITEMS
+           ===================================================== */
+
+        rows.forEach(function (row) {
+
+            const qty =
+                getNumber(
+                    row.querySelector(
+                        '[data-field="qty"]'
+                    )?.value
+                );
+
+
+            const freeQty =
+                getNumber(
+                    row.querySelector(
+                        '[data-field="freeQty"]'
+                    )?.value
+                );
+
+
+            const price =
+                getNumber(
+                    row.querySelector(
+                        '[data-field="price"]'
+                    )?.value
+                );
+
+
+            const taxSelect =
+                row.querySelector(
+                    '[data-field="tax"]'
+                );
+
+
+            const taxType =
+                taxSelect
+                    ? taxSelect.value
+                    : 'none';
+
+
+            const taxRate =
+                taxRates[taxType] || 0;
+
+
+            /* -------------------------------------------------
+               Item subtotal
+               ------------------------------------------------- */
+
+            const itemSubtotal =
+                qty * price;
+
+
+            /* -------------------------------------------------
+               Item GST
+               ------------------------------------------------- */
+
+            const itemGST =
+                itemSubtotal *
+                taxRate /
+                100;
+
+
+            /* -------------------------------------------------
+               Add to totals
+               ------------------------------------------------- */
+
+            totalQty += qty;
+
+            totalFreeQty += freeQty;
+
+            subtotal += itemSubtotal;
+
+            totalGST += itemGST;
+
+
+            /* -------------------------------------------------
+               Update item amount
+               ------------------------------------------------- */
+
+            const amountCell =
+                row.querySelector(
+                    '[data-field="amount"]'
+                );
+
+
+            if (amountCell) {
+
+                amountCell.textContent =
+                    formatMoney(
+                        itemSubtotal + itemGST
+                    );
+            }
+
+        });
+
+
+        /* =====================================================
+           DISCOUNT
+           ===================================================== */
+
+        const discountInput =
+            document.getElementById(
+                'discountInput'
+            );
+
+
+        let discount =
+            getNumber(
+                discountInput?.value
+            );
+
+
+        if (discount < 0) {
+
+            discount = 0;
+
+            if (discountInput) {
+                discountInput.value = '0';
+            }
+        }
+
+
+        if (discount > subtotal) {
+
+            discount = subtotal;
+
+            if (discountInput) {
+
+                discountInput.value =
+                    discount.toFixed(2);
+            }
+        }
+
+
+        /* =====================================================
+           TRANSPORT CHARGE
+           ===================================================== */
+
+        const transportInput =
+            document.getElementById(
+                'transportChargeInput'
+            );
+
+
+        let transportCharge =
+            getNumber(
+                transportInput?.value
+            );
+
+
+        if (transportCharge < 0) {
+
+            transportCharge = 0;
+
+            if (transportInput) {
+                transportInput.value = '0';
+            }
+        }
+
+
+        /* =====================================================
+           OTHER CHARGE
+           ===================================================== */
+
+        const otherChargeInput =
+            document.getElementById(
+                'otherChargeInput'
+            );
+
+
+        let otherCharge =
+            getNumber(
+                otherChargeInput?.value
+            );
+
+
+        if (otherCharge < 0) {
+
+            otherCharge = 0;
+
+            if (otherChargeInput) {
+                otherChargeInput.value = '0';
+            }
+        }
+
+
+        /* =====================================================
+           GRAND TOTAL
+           
+           Subtotal
+           - Discount
+           + GST
+           + Transport
+           + Other Charges
+           ===================================================== */
+
+        let grandTotal =
+            subtotal
+            - discount
+            + totalGST
+            + transportCharge
+            + otherCharge;
+
+
+        if (grandTotal < 0) {
+            grandTotal = 0;
+        }
+
+
+        /* =====================================================
+           PAID AMOUNT
+           ===================================================== */
+
+        const paidInput =
+            document.getElementById(
+                'paidamount'
+            );
+
+
+        let paidAmount =
+            getNumber(
+                paidInput?.value
+            );
+
+
+        if (paidAmount < 0) {
+
+            paidAmount = 0;
+
+            if (paidInput) {
+                paidInput.value = '0';
+            }
+        }
+
+
+        /* =====================================================
+           DUE AMOUNT
+           ===================================================== */
+
+        let dueAmount =
+            grandTotal -
+            paidAmount;
+
+
+        const displayDueAmount =
+            Math.max(
+                dueAmount,
+                0
+            );
+
+
+        /* =====================================================
+           PAYMENT STATUS
+           ===================================================== */
+
+        let paymentStatus = 'Unpaid';
+
+
+        if (
+            grandTotal > 0 &&
+            paidAmount >= grandTotal
+        ) {
+
+            paymentStatus = 'Paid';
+
+        } else if (
+            paidAmount > 0
+        ) {
+
+            paymentStatus = 'Partial';
+
+        } else {
+
+            paymentStatus = 'Unpaid';
+        }
+
+
+        /* =====================================================
+           UPDATE QUANTITY TOTALS
+           ===================================================== */
+
+        setText(
+            'totalQty',
+            formatQuantity(totalQty)
+        );
+
+
+        setText(
+            'totalFreeQty',
+            formatQuantity(totalFreeQty)
+        );
+
+
+        /* =====================================================
+           UPDATE SUMMARY
+           ===================================================== */
+
+        setText(
+            'summarySubtotal',
+            formatMoney(subtotal)
+        );
+
+
+        setText(
+            'summaryTax',
+            formatMoney(totalGST)
+        );
+
+
+        setText(
+            'summaryDiscount',
+            formatMoney(discount)
+        );
+
+
+        setText(
+            'summaryTransportCharge',
+            formatMoney(transportCharge)
+        );
+
+
+        setText(
+            'summaryOtherCharge',
+            formatMoney(otherCharge)
+        );
+
+
+        setText(
+            'summaryGrandTotal',
+            formatMoney(grandTotal)
+        );
+
+
+        setText(
+            'summaryPaidAmount',
+            formatMoney(paidAmount)
+        );
+
+
+        setText(
+            'summaryDueAmount',
+            formatMoney(displayDueAmount)
+        );
+
+
+        setText(
+            'summaryPaymentStatus',
+            paymentStatus
+        );
+
+
+        /* =====================================================
+           UPDATE HIDDEN INPUTS
+           ===================================================== */
+
+        setValue(
+            'subtotalInput',
+            subtotal.toFixed(2)
+        );
+
+
+        setValue(
+            'taxInput',
+            totalGST.toFixed(2)
+        );
+
+
+        setValue(
+            'grandTotalInput',
+            grandTotal.toFixed(2)
+        );
+
+
+        setValue(
+            'dueAmountInput',
+            displayDueAmount.toFixed(2)
+        );
+
+
+        setValue(
+            'paymentStatusInput',
+            paymentStatus
+        );
+
+
+        /* =====================================================
+           RETURN VALUES
+           ===================================================== */
+
+        return {
+            totalQty: totalQty,
+            totalFreeQty: totalFreeQty,
+            subtotal: subtotal,
+            discount: discount,
+            totalGST: totalGST,
+            transportCharge: transportCharge,
+            otherCharge: otherCharge,
+            grandTotal: grandTotal,
+            paidAmount: paidAmount,
+            dueAmount: displayDueAmount,
+            paymentStatus: paymentStatus
+        };
+    };
+
+
+    /* =========================================================
+       REMOVE ROW
+       ========================================================= */
+
+    window.removeRow = function (button) {
+
+        const tbody =
+            document.getElementById(
+                'itemsBody'
+            );
+
+
+        if (!tbody) {
+            return;
+        }
+
+
+        const rows =
+            tbody.querySelectorAll('tr');
+
+
+        /* -----------------------------------------------------
+           Don't allow deleting the last row
+           ----------------------------------------------------- */
+
+        if (rows.length <= 1) {
+
+            alert(
+                'At least one product row is required.'
+            );
+
+            return;
+        }
+
+
+        const row =
+            button.closest('tr');
+
+
+        if (row) {
+
+            row.remove();
+        }
+
+
+        /* -----------------------------------------------------
+           Renumber rows
+           ----------------------------------------------------- */
+
+        renumberRows();
+
+
+        /* -----------------------------------------------------
+           Recalculate totals
+           ----------------------------------------------------- */
+
+        calculateTotals();
+    };
+
+
+    /* =========================================================
+       RENUMBER ROWS
+       ========================================================= */
+
+    function renumberRows() {
+
+        const tbody =
+            document.getElementById(
+                'itemsBody'
+            );
+
+
+        if (!tbody) {
+            return;
+        }
+
+
+        const rows =
+            tbody.querySelectorAll('tr');
+
+
+        rows.forEach(
+            function (row, index) {
+
+                const numberCell =
+                    row.querySelector(
+                        '.row-num'
+                    );
+
+
+                if (numberCell) {
+
+                    numberCell.textContent =
+                        index + 1;
+                }
+            }
+        );
+    }
+
+
+    /* =========================================================
+       SUMMARY INPUT EVENTS
+       ========================================================= */
+
+    const discountInput =
+        document.getElementById(
+            'discountInput'
+        );
+
+
+    if (discountInput) {
+
+        discountInput.addEventListener(
+            'input',
+            calculateTotals
+        );
+
+        discountInput.addEventListener(
+            'change',
+            calculateTotals
+        );
+    }
+
+
+    const transportChargeInput =
+        document.getElementById(
+            'transportChargeInput'
+        );
+
+
+    if (transportChargeInput) {
+
+        transportChargeInput.addEventListener(
+            'input',
+            calculateTotals
+        );
+
+        transportChargeInput.addEventListener(
+            'change',
+            calculateTotals
+        );
+    }
+
+
+    const otherChargeInput =
+        document.getElementById(
+            'otherChargeInput'
+        );
+
+
+    if (otherChargeInput) {
+
+        otherChargeInput.addEventListener(
+            'input',
+            calculateTotals
+        );
+
+        otherChargeInput.addEventListener(
+            'change',
+            calculateTotals
+        );
+    }
+
+
+    const paidAmountInput =
+        document.getElementById(
+            'paidamount'
+        );
+
+
+    if (paidAmountInput) {
+
+        paidAmountInput.addEventListener(
+            'input',
+            calculateTotals
+        );
+
+        paidAmountInput.addEventListener(
+            'change',
+            calculateTotals
+        );
+    }
+
+
+    /* =========================================================
+       FORM VALIDATION
+       ========================================================= */
+
+    const form =
+        document.getElementById(
+            'purchaseForm'
+        );
+
+
+    if (form) {
+
+        form.addEventListener(
+            'submit',
+            function (event) {
+
+                /* ---------------------------------------------
+                   Calculate one final time
+                   --------------------------------------------- */
+
+                const totals =
+                    calculateTotals();
+
+
+                if (!totals) {
+
+                    event.preventDefault();
+
+                    alert(
+                        'Unable to calculate purchase totals.'
+                    );
+
+                    return;
+                }
+
+
+                /* ---------------------------------------------
+                   Get rows
+                   --------------------------------------------- */
+
+                const tbody =
+                    document.getElementById(
+                        'itemsBody'
+                    );
+
+
+                const rows =
+                    tbody
+                        ? tbody.querySelectorAll('tr')
+                        : [];
+
+
+                if (rows.length === 0) {
+
+                    event.preventDefault();
+
+                    alert(
+                        'Please add at least one product.'
+                    );
+
+                    return;
+                }
+
+
+                /* ---------------------------------------------
+                   Validate every item
+                   --------------------------------------------- */
+
+                for (
+                    let i = 0;
+                    i < rows.length;
+                    i++
+                ) {
+
+                    const row =
+                        rows[i];
+
+
+                    const productSelect =
+                        row.querySelector(
+                            '.product-select'
+                        );
+
+
+                    const qtyInput =
+                        row.querySelector(
+                            '[data-field="qty"]'
+                        );
+
+
+                    const priceInput =
+                        row.querySelector(
+                            '[data-field="price"]'
+                        );
+
+
+                    const product =
+                        productSelect
+                            ? productSelect.value.trim()
+                            : '';
+
+
+                    const qty =
+                        getNumber(
+                            qtyInput?.value
+                        );
+
+
+                    const price =
+                        getNumber(
+                            priceInput?.value
+                        );
+
+
+                    /* -----------------------------------------
+                       Product
+                       ----------------------------------------- */
+
+                    if (!product) {
+
+                        event.preventDefault();
+
+                        alert(
+                            'Please select a product in row ' +
+                            (i + 1) +
+                            '.'
+                        );
+
+                        productSelect?.focus();
+
+                        return;
+                    }
+
+
+                    /* -----------------------------------------
+                       Quantity
+                       ----------------------------------------- */
+
+                    if (qty <= 0) {
+
+                        event.preventDefault();
+
+                        alert(
+                            'Please enter a quantity greater than 0 in row ' +
+                            (i + 1) +
+                            '.'
+                        );
+
+                        qtyInput?.focus();
+
+                        return;
+                    }
+
+
+                    /* -----------------------------------------
+                       Purchase Price
+                       ----------------------------------------- */
+
+                    if (price <= 0) {
+
+                        event.preventDefault();
+
+                        alert(
+                            'Please enter a purchase price greater than 0 in row ' +
+                            (i + 1) +
+                            '.'
+                        );
+
+                        priceInput?.focus();
+
+                        return;
+                    }
+                }
+
+
+                /* =================================================
+                   DISCOUNT VALIDATION
+                   ================================================= */
+
+                if (
+                    totals.discount < 0
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        'Discount cannot be negative.'
+                    );
+
+                    return;
+                }
+
+
+                if (
+                    totals.discount >
+                    totals.subtotal
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        'Discount cannot be greater than subtotal.'
+                    );
+
+                    return;
+                }
+
+
+                /* =================================================
+                   PAID AMOUNT VALIDATION
+                   ================================================= */
+
+                if (
+                    totals.paidAmount < 0
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        'Paid amount cannot be negative.'
+                    );
+
+                    return;
+                }
+
+
+                if (
+                    totals.paidAmount >
+                    totals.grandTotal
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        'Paid amount cannot be greater than Grand Total.'
+                    );
+
+                    paidAmountInput?.focus();
+
+                    return;
+                }
+
+
+                /* =================================================
+                   PAYMENT TYPE VALIDATION
+                   ================================================= */
+
+                const paymentType =
+                    document.getElementById(
+                        'paymentType'
+                    );
+
+
+                if (
+                    totals.paidAmount > 0 &&
+                    paymentType &&
+                    !paymentType.value
+                ) {
+
+                    event.preventDefault();
+
+                    alert(
+                        'Please select Payment Type.'
+                    );
+
+                    paymentType.focus();
+
+                    return;
+                }
+
+
+                /* =================================================
+                   FINAL STATUS
+                   ================================================= */
+
+                let finalStatus =
+                    'Unpaid';
+
+
+                if (
+                    totals.grandTotal > 0 &&
+                    totals.paidAmount >=
+                    totals.grandTotal
+                ) {
+
+                    finalStatus =
+                        'Paid';
+
+                } else if (
+                    totals.paidAmount > 0
+                ) {
+
+                    finalStatus =
+                        'Partial';
+
+                } else {
+
+                    finalStatus =
+                        'Unpaid';
+                }
+
+
+                setValue(
+                    'paymentStatusInput',
+                    finalStatus
+                );
+
+
+                /* =================================================
+                   FINAL HIDDEN VALUES
+                   ================================================= */
+
+                setValue(
+                    'subtotalInput',
+                    totals.subtotal.toFixed(2)
+                );
+
+
+                setValue(
+                    'taxInput',
+                    totals.totalGST.toFixed(2)
+                );
+
+
+                setValue(
+                    'grandTotalInput',
+                    totals.grandTotal.toFixed(2)
+                );
+
+
+                setValue(
+                    'dueAmountInput',
+                    totals.dueAmount.toFixed(2)
+                );
+
+
+                /*
+                 * Do NOT use event.preventDefault()
+                 * here because validation passed.
+                 *
+                 * Form will submit normally.
+                 */
+            }
+        );
+    }
+
+
+    /* =========================================================
+       ADD INITIAL ROWS
+       ========================================================= */
+
+    /*
+     * If your HTML does NOT already call addRow(),
+     * this creates the initial two rows.
+     */
+
+    const tbody =
+        document.getElementById(
+            'itemsBody'
+        );
+
+
+    if (
+        tbody &&
+        tbody.children.length === 0
+    ) {
+
+        addRow();
+        addRow();
+    }
+
+
+    /* =========================================================
+       INITIAL CALCULATION
+       ========================================================= */
+
+    calculateTotals();
+
+});
+</script>
+
+<!-- <script>
     // ===== SIDEBAR TOGGLE =====
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -400,6 +2105,42 @@
         });
     }
 
+    /* ============================================================
+        USER PROFILE DROPDOWN
+        ============================================================ */
+    const userProfile = document.getElementById('userProfile');
+    const userDropdownMenu = document.getElementById('userDropdownMenu');
+
+    userProfile.addEventListener('click', function (e) {
+        e.stopPropagation();
+        userDropdownMenu.classList.toggle('show');
+        userProfile.classList.toggle('open');
+    });
+
+    // Close dropdown when clicking anywhere else
+    document.addEventListener('click', function (e) {
+        if (!userProfile.contains(e.target)) {
+            userDropdownMenu.classList.remove('show');
+            userProfile.classList.remove('open');
+        }
+    });
+
+    // Close dropdown on Escape
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            userDropdownMenu.classList.remove('show');
+            userProfile.classList.remove('open');
+            closeMobileSidebar();
+        }
+    });
+
+    // Close mobile sidebar on resize to desktop
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            closeMobileSidebar();
+        }
+    });
+
     function removeRow(btn) {
         const row = btn.closest('tr');
         row.remove();
@@ -423,63 +2164,547 @@
         rowCounter = rows.length;
     }
 
+
     function calculateRow(e) {
         const row = e.target.closest('tr');
-        const qty = parseFloat(row.querySelector('[data-field="qty"]').value) || 0;
-        const price = parseFloat(row.querySelector('[data-field="price"]').value) || 0;
-        const taxSelect = row.querySelector('[data-field="tax"]');
-        const taxRate = taxRates[taxSelect.value] || 0;
+        const qty =
+            parseFloat(
+                row.querySelector(
+                    '[data-field="qty"]'
+                )?.value
+            ) || 0;
 
-        let amount = qty * price;
-        const taxAmount = amount * (taxRate / 100);
-        amount += taxAmount;
+        const price =
+            parseFloat(
+                row.querySelector(
+                    '[data-field="price"]'
+                )?.value
+            ) || 0;
 
-        row.querySelector('[data-field="amount"]').textContent = '₹' + amount.toFixed(2);
+        const taxSelect =
+            row.querySelector(
+                '[data-field="tax"]'
+            );
+
+        const taxRate =
+            taxRates[taxSelect?.value] || 0;
+
+
+        // Item subtotal
+        const lineSubtotal =
+            qty * price;
+
+        // GST
+        const taxAmount =
+            lineSubtotal * (taxRate / 100);
+
+        // Final item amount
+        const lineTotal =
+            lineSubtotal + taxAmount;
+
+        row.querySelector(
+            '[data-field="amount"]'
+        ).textContent =
+            '₹' + lineTotal.toFixed(2);
+
         calculateTotals();
     }
 
+    // function calculateRow(e) {
+    //     const row = e.target.closest('tr');
+    //     const qty = parseFloat(row.querySelector('[data-field="qty"]').value) || 0;
+    //     const price = parseFloat(row.querySelector('[data-field="price"]').value) || 0;
+    //     const taxSelect = row.querySelector('[data-field="tax"]');
+    //     const taxRate = taxRates[taxSelect.value] || 0;
+
+    //     let amount = qty * price;
+    //     const taxAmount = amount * (taxRate / 100);
+    //     amount += taxAmount;
+
+    //     row.querySelector('[data-field="amount"]').textContent = '₹' + amount.toFixed(2);
+    //     calculateTotals();
+    // }
+
+    // function calculateTotals() {
+    //     const rows = document.querySelectorAll('#itemsBody tr');
+    //     let totalQty = 0;
+    //     let totalFreeQty = 0;
+    //     let totalAmount = 0;
+    //     let subtotal = 0;
+
+    //     rows.forEach(row => {
+    //         const qty = parseFloat(row.querySelector('[data-field="qty"]').value) || 0;
+    //         const freeQty = parseFloat(row.querySelector('[data-field="freeQty"]').value) || 0;
+    //         const price = parseFloat(row.querySelector('[data-field="price"]').value) || 0;
+    //         const taxSelect = row.querySelector('[data-field="tax"]');
+    //         const taxRate = taxRates[taxSelect.value] || 0;
+
+    //         const lineSubtotal = qty * price;
+    //         const lineTax = lineSubtotal * (taxRate / 100);
+    //         const lineTotal = lineSubtotal + lineTax;
+
+    //         totalQty += qty;
+    //         totalFreeQty += freeQty;
+    //         totalAmount += lineTotal;
+    //         subtotal += lineSubtotal;
+    //     });
+
+    //     const overallTax = totalAmount - subtotal;
+    //     document.getElementById('totalQty').textContent = totalQty;
+    //     document.getElementById('totalFreeQty').textContent = totalFreeQty;
+    //     document.getElementById('totalAmount').textContent = '₹' + totalAmount.toFixed(2);
+    //     document.getElementById('summarySubtotal').textContent = '₹' + subtotal.toFixed(2);
+    //     document.getElementById('summaryTax').textContent = '₹' + overallTax.toFixed(2);
+    //     document.getElementById('summaryGrandTotal').textContent = '₹' + totalAmount.toFixed(2);
+    //     document.getElementById('summaryDiscount').textContent = '₹0.00';
+
+    //     document.getElementById('subtotalInput').value = subtotal.toFixed(2);
+    //     document.getElementById('taxInput').value = overallTax.toFixed(2);
+    //     document.getElementById('grandTotalInput').value = totalAmount.toFixed(2);
+    //     document.getElementById('discountInput').value = '0.00';
+    // }
+
+    
+    
+    // =========================================================
+    // SUMMARY INPUT EVENTS
+    // =========================================================
+
+
     function calculateTotals() {
+
         const rows = document.querySelectorAll('#itemsBody tr');
+
         let totalQty = 0;
         let totalFreeQty = 0;
-        let totalAmount = 0;
+
         let subtotal = 0;
+        let overallTax = 0;
+
+
+        // =====================================================
+        // CALCULATE ITEM TOTALS
+        // =====================================================
 
         rows.forEach(row => {
-            const qty = parseFloat(row.querySelector('[data-field="qty"]').value) || 0;
-            const freeQty = parseFloat(row.querySelector('[data-field="freeQty"]').value) || 0;
-            const price = parseFloat(row.querySelector('[data-field="price"]').value) || 0;
-            const taxSelect = row.querySelector('[data-field="tax"]');
-            const taxRate = taxRates[taxSelect.value] || 0;
+
+            const qty =
+                parseFloat(
+                    row.querySelector('[data-field="qty"]')?.value
+                ) || 0;
+
+            const freeQty =
+                parseFloat(
+                    row.querySelector('[data-field="freeQty"]')?.value
+                ) || 0;
+
+            const price =
+                parseFloat(
+                    row.querySelector('[data-field="price"]')?.value
+                ) || 0;
+
+            const taxSelect =
+                row.querySelector('[data-field="tax"]');
+
+            const taxRate =
+                taxRates[taxSelect?.value] || 0;
+
+
+            // -----------------------------------------------
+            // Item subtotal
+            // -----------------------------------------------
 
             const lineSubtotal = qty * price;
-            const lineTax = lineSubtotal * (taxRate / 100);
-            const lineTotal = lineSubtotal + lineTax;
+
+
+            // -----------------------------------------------
+            // Item GST
+            // -----------------------------------------------
+
+            const lineTax =
+                lineSubtotal * (taxRate / 100);
+
+
+            // -----------------------------------------------
+            // Totals
+            // -----------------------------------------------
 
             totalQty += qty;
             totalFreeQty += freeQty;
-            totalAmount += lineTotal;
+
             subtotal += lineSubtotal;
+            overallTax += lineTax;
+
         });
 
-        const overallTax = totalAmount - subtotal;
-        document.getElementById('totalQty').textContent = totalQty;
-        document.getElementById('totalFreeQty').textContent = totalFreeQty;
-        document.getElementById('totalAmount').textContent = '₹' + totalAmount.toFixed(2);
-        document.getElementById('summarySubtotal').textContent = '₹' + subtotal.toFixed(2);
-        document.getElementById('summaryTax').textContent = '₹' + overallTax.toFixed(2);
-        document.getElementById('summaryGrandTotal').textContent = '₹' + totalAmount.toFixed(2);
-        document.getElementById('summaryDiscount').textContent = '₹0.00';
 
-        document.getElementById('subtotalInput').value = subtotal.toFixed(2);
-        document.getElementById('taxInput').value = overallTax.toFixed(2);
-        document.getElementById('grandTotalInput').value = totalAmount.toFixed(2);
-        document.getElementById('discountInput').value = '0.00';
+        // =====================================================
+        // DISCOUNT
+        // =====================================================
+
+        let discount =
+            parseFloat(
+                document.getElementById('discountInput')?.value
+            ) || 0;
+
+
+        // Discount cannot exceed subtotal
+
+        if (discount > subtotal) {
+
+            discount = subtotal;
+
+            document.getElementById(
+                'discountInput'
+            ).value = discount.toFixed(2);
+        }
+
+
+        // =====================================================
+        // TRANSPORT CHARGE
+        // =====================================================
+
+        const transportCharge =
+            parseFloat(
+                document.getElementById(
+                    'transportChargeInput'
+                )?.value
+            ) || 0;
+
+
+        // =====================================================
+        // OTHER CHARGES
+        // =====================================================
+
+        const otherCharge =
+            parseFloat(
+                document.getElementById(
+                    'otherChargeInput'
+                )?.value
+            ) || 0;
+
+
+        // =====================================================
+        // GRAND TOTAL
+        // =====================================================
+
+        let grandTotal =
+            subtotal
+            - discount
+            + overallTax
+            + transportCharge
+            + otherCharge;
+
+
+        // Prevent negative total
+
+        grandTotal =
+            Math.max(grandTotal, 0);
+
+
+        // =====================================================
+        // PAID AMOUNT
+        // =====================================================
+
+        let paidAmount =
+            parseFloat(
+                document.getElementById('paidamount')?.value
+            ) || 0;
+
+
+        // Paid amount cannot exceed grand total
+
+        if (paidAmount > grandTotal) {
+
+            paidAmount = grandTotal;
+
+            document.getElementById(
+                'paidamount'
+            ).value = paidAmount.toFixed(2);
+        }
+
+
+        // =====================================================
+        // DUE AMOUNT
+        // =====================================================
+
+        let dueAmount =
+            grandTotal - paidAmount;
+
+
+        dueAmount =
+            Math.max(dueAmount, 0);
+
+
+        // =====================================================
+        // PAYMENT STATUS
+        // =====================================================
+
+        let paymentStatus = 'Unpaid';
+
+
+        if (grandTotal > 0 && paidAmount >= grandTotal) {
+
+            paymentStatus = 'Paid';
+
+        } else if (paidAmount > 0) {
+
+            paymentStatus = 'Partial';
+
+        } else {
+
+            paymentStatus = 'Unpaid';
+        }
+
+
+        // =====================================================
+        // UPDATE ITEM TOTALS
+        // =====================================================
+
+        document.getElementById(
+            'totalQty'
+        ).textContent = totalQty;
+
+        document.getElementById(
+            'totalFreeQty'
+        ).textContent = totalFreeQty;
+
+
+        // =====================================================
+        // UPDATE SUMMARY DISPLAY
+        // =====================================================
+
+        document.getElementById(
+            'summarySubtotal'
+        ).textContent =
+            '₹' + subtotal.toFixed(2);
+
+
+        document.getElementById(
+            'summaryTax'
+        ).textContent =
+            '₹' + overallTax.toFixed(2);
+
+
+        document.getElementById(
+            'summaryDiscount'
+        ).textContent =
+            '₹' + discount.toFixed(2);
+
+
+        document.getElementById(
+            'summaryGrandTotal'
+        ).textContent =
+            '₹' + grandTotal.toFixed(2);
+
+
+        document.getElementById(
+            'summaryPaidAmount'
+        ).textContent =
+            '₹' + paidAmount.toFixed(2);
+
+
+        document.getElementById(
+            'summaryDueAmount'
+        ).textContent =
+            '₹' + dueAmount.toFixed(2);
+
+
+        document.getElementById(
+            'summaryPaymentStatus'
+        ).textContent =
+            paymentStatus;
+
+
+        // =====================================================
+        // UPDATE HIDDEN INPUTS
+        // =====================================================
+
+        document.getElementById(
+            'subtotalInput'
+        ).value =
+            subtotal.toFixed(2);
+
+
+        document.getElementById(
+            'taxInput'
+        ).value =
+            overallTax.toFixed(2);
+
+
+        document.getElementById(
+            'discountInput'
+        ).value =
+            discount.toFixed(2);
+
+
+        document.getElementById(
+            'grandTotalInput'
+        ).value =
+            grandTotal.toFixed(2);
+
+
+        document.getElementById(
+            'dueAmountInput'
+        ).value =
+            dueAmount.toFixed(2);
+
+
+        document.getElementById(
+            'paymentStatusInput'
+        ).value =
+            paymentStatus;
     }
+
+
+    // =========================================================
+    // SUMMARY INPUT EVENTS
+    // =========================================================
+
+    document.getElementById('discountInput').addEventListener(
+        'input',
+        calculateTotals
+    );
+
+    document.getElementById('transportChargeInput').addEventListener(
+        'input',
+        calculateTotals
+    );
+
+    document.getElementById('otherChargeInput').addEventListener(
+        'input',
+        calculateTotals
+    );
+
+    document.getElementById('paidamount').addEventListener(
+        'input',
+        calculateTotals
+    );
 
     document.getElementById('uploadBillBtn').addEventListener('click', function() {
         document.getElementById('billFileInput').click();
     });
+
+
+    // =========================================================
+    // PRODUCT SELECTION
+    // =========================================================
+
+    document.addEventListener('change', function(e) {
+
+        if (!e.target.classList.contains('product-select')) {
+            return;
+        }
+
+
+        const select = e.target;
+
+        const row = select.closest('tr');
+
+        if (!row) {
+            return;
+        }
+
+
+        const option =
+            select.options[select.selectedIndex];
+
+
+        if (!option || !option.value) {
+            return;
+        }
+
+
+        // =====================================================
+        // MRP
+        // =====================================================
+
+        const mrpInput =
+            row.querySelector(
+                '[data-field="mrp"]'
+            );
+
+        if (mrpInput) {
+
+            mrpInput.value =
+                option.dataset.mrp || '';
+        }
+
+
+        // =====================================================
+        // Purchase Price
+        // =====================================================
+
+        const priceInput =
+            row.querySelector(
+                '[data-field="price"]'
+            );
+
+        if (priceInput) {
+
+            priceInput.value =
+                option.dataset.price || '';
+        }
+
+
+        // =====================================================
+        // Unit
+        // =====================================================
+
+        const unitSelect =
+            row.querySelector(
+                '.unit-select'
+            );
+
+        if (unitSelect && option.dataset.unit) {
+
+            unitSelect.value =
+                option.dataset.unit;
+        }
+
+
+        // =====================================================
+        // GST
+        // =====================================================
+
+        const gstRate =
+            parseFloat(
+                option.dataset.gst
+            ) || 0;
+
+
+        const taxSelect =
+            row.querySelector(
+                '[data-field="tax"]'
+            );
+
+
+        if (taxSelect) {
+
+            if (gstRate === 5) {
+                taxSelect.value = 'gst5';
+
+            } else if (gstRate === 12) {
+                taxSelect.value = 'gst12';
+
+            } else if (gstRate === 18) {
+                taxSelect.value = 'gst18';
+
+            } else if (gstRate === 28) {
+                taxSelect.value = 'gst28';
+
+            } else {
+                taxSelect.value = 'none';
+            }
+        }
+
+
+        calculateRow({
+            target: priceInput || select
+        });
+    });
+
+    // The End
 
     document.getElementById('billFileInput').addEventListener('change', function() {
         if (this.files && this.files[0]) {
@@ -540,7 +2765,13 @@
 
         let hasError = false;
         rows.forEach((row, index) => {
-            const name = row.querySelector('[data-field="name"]').value.trim();
+            const productSelect =
+                row.querySelector('.product-select');
+
+            const name =
+                productSelect
+                    ? productSelect.value.trim()
+                    : '';
             const qty = parseFloat(row.querySelector('[data-field="qty"]').value) || 0;
             const price = parseFloat(row.querySelector('[data-field="price"]').value) || 0;
 
@@ -577,41 +2808,7 @@
     calculateTotals();
 
     
-    /* ============================================================
-        USER PROFILE DROPDOWN
-        ============================================================ */
-    const userProfile = document.getElementById('userProfile');
-    const userDropdownMenu = document.getElementById('userDropdownMenu');
-
-    userProfile.addEventListener('click', function (e) {
-        e.stopPropagation();
-        userDropdownMenu.classList.toggle('show');
-        userProfile.classList.toggle('open');
-    });
-
-    // Close dropdown when clicking anywhere else
-    document.addEventListener('click', function (e) {
-        if (!userProfile.contains(e.target)) {
-            userDropdownMenu.classList.remove('show');
-            userProfile.classList.remove('open');
-        }
-    });
-
-    // Close dropdown on Escape
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-            userDropdownMenu.classList.remove('show');
-            userProfile.classList.remove('open');
-            closeMobileSidebar();
-        }
-    });
-
-    // Close mobile sidebar on resize to desktop
-    window.addEventListener('resize', () => {
-        if (window.innerWidth > 768) {
-            closeMobileSidebar();
-        }
-    });
-</script>
+    
+</script> -->
 
 {% endblock %}

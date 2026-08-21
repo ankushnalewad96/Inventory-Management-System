@@ -9,10 +9,13 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.db import IntegrityError, transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
-from django.db.models import Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Q, F, Count
 from django.db import DatabaseError
 from django.db.models import Prefetch
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 
 
@@ -44,7 +47,6 @@ def dashboard(request):
     return render(request, "dashboard.html", context)
 
 
-# @staff_member_required
 def retailer_register(request):
     """
     Handles retailer account creation.
@@ -237,7 +239,7 @@ def add_product(request):
         selling_price = request.POST.get("selling_price", "").strip()
         mrp = request.POST.get("mrp", "").strip()
         minimum_stock = request.POST.get("minimum_stock", "0").strip()
-        current_stock = request.POST.get("current_stock", "0").strip()
+        current_stock = request.POST.get("current_stock", "10").strip()
         gst = request.POST.get("gst", "0").strip()
 
         # --- Basic required-field validation ---
@@ -326,24 +328,198 @@ def add_product(request):
     return render(request, "add_product.html", context)
 
 
-def product_mapping(request):
-    return render(request,"product_mapping.html")
 
 
 
-import logging
+@login_required(login_url="/user-login/")
+def low_stock_alert(request):
+    """
+    Display low-stock products.
 
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
-from django.db import DatabaseError
-from django.db.models import Q, F, Count
-from django.shortcuts import redirect, render
+    Retailer:
+        - Shows only products belonging to the logged-in retailer.
+        - Does not show retailer column.
 
-from .models import Product
+    Superadmin:
+        - Shows low-stock products for all active retailers.
+        - Shows retailer column.
+    """
+
+    try:
+
+        # CHECK WHETHER USER IS SUPERADMIN
+        is_admin = request.user.is_superuser
 
 
-logger = logging.getLogger(__name__)
+        # BASE QUERY
+        # Low stock means:
+        # current_stock <= minimum_stock
+        # Only active products are displayed.
+        products_qs = (
+            Product.objects
+            .filter(
+                is_active=True,
+                current_stock__lte=F("minimum_stock"),
+            )
+            .select_related(
+                "retailer",
+                "category",
+                "brand",
+                "unit",
+            )
+        )
+
+
+        # RETAILER LOGIN
+        if not is_admin:
+
+            retailer = getattr(
+                request.user,
+                "retailer",
+                None
+            )
+
+
+            # Retailer profile does not exist
+            if retailer is None:
+
+                logger.warning(
+                    "User %s has no associated retailer; "
+                    "cannot fetch low stock products.",
+                    request.user.id,
+                )
+
+                messages.error(
+                    request,
+                    "No retailer profile found for this account."
+                )
+
+                return render(
+                    request,
+                    "low_stock_list.html",
+                    {
+                        "products": [],
+                        "low_stock_count": 0,
+                        "is_admin": False,
+                    }
+                )
+
+
+            # Restrict products to logged-in retailer
+            products_qs = products_qs.filter(
+                retailer=retailer
+            )
+
+
+        # SUPERADMIN
+        else:
+
+            logger.info(
+                "Superadmin %s viewing low stock products "
+                "for all retailers.",
+                request.user.id,
+            )
+
+
+        # ORDERING
+        # Lowest stock appears first.
+        products_qs = products_qs.order_by(
+            "current_stock",
+            "minimum_stock",
+            "product_name",
+        )
+
+
+        # COUNT BEFORE PAGINATION
+        low_stock_count = products_qs.count()
+
+
+        # PAGINATION
+        paginator = Paginator(
+            products_qs,
+            25
+        )
+
+        page_number = request.GET.get(
+            "page"
+        )
+
+        try:
+            products = paginator.page(
+                page_number
+            )
+
+        except PageNotAnInteger:
+            products = paginator.page(
+                1
+            )
+
+        except EmptyPage:
+            products = paginator.page(
+                paginator.num_pages
+            )
+
+
+        # LOGGING
+        if is_admin:
+
+            logger.info(
+                "Superadmin %s: %d low stock product(s) found.",
+                request.user.id,
+                low_stock_count,
+            )
+
+        else:
+
+            logger.info(
+                "Retailer %s: %d low stock product(s) found.",
+                retailer.id,
+                low_stock_count,
+            )
+
+
+        # CONTEXT
+        context = {
+            "products": products,
+            "low_stock_count": low_stock_count,
+            "is_admin": is_admin,
+        }
+
+
+        return render(
+            request,
+            "low_stock_list.html",
+            context
+        )
+
+
+    # UNEXPECTED ERROR
+    except Exception:
+
+        logger.exception(
+            "Unexpected error while fetching low stock "
+            "products for user %s.",
+            request.user.id,
+        )
+
+
+        messages.error(
+            request,
+            "Something went wrong while loading "
+            "low stock products."
+        )
+
+
+        return render(
+            request,
+            "low_stock_list.html",
+            {
+                "products": [],
+                "low_stock_count": 0,
+                "is_admin": request.user.is_superuser,
+            }
+        )
+
 
 
 @login_required(login_url="/user-login/")
@@ -610,58 +786,170 @@ def product_list(request):
         )
 
 
-
-
-
-
-
-# @login_required(login_url='/user-login/')
-# def product_list(request):
-#     """
-#     Displays the retailer's product catalog in a tabular format,
-#     including category, brand, and unit details, ordered alphabetically
-#     by product name.
-#     """
-#     try:
-#         products = Product.objects.select_related(
-#             "category", "brand", "unit", "retailer"
-#         ).order_by("product_name")
-#     except Exception:
-#         logger.exception("Failed to fetch product list.")
-#         messages.error(request, "Something went wrong while loading the product list.")
-#         products = Product.objects.none()
-
-#     context = {"products": products}
-#     return render(request, "product_list.html", context)
-
+# =========================================================
+# GST RATE MAP
+# =========================================================
 
 GST_RATE_MAP = {
-    "none": 0,
-    "gst5": 5,
-    "gst12": 12,
-    "gst18": 18,
-    "gst28": 28,
+    "none": Decimal("0"),
+    "gst5": Decimal("5"),
+    "gst12": Decimal("12"),
+    "gst18": Decimal("18"),
+    "gst28": Decimal("28"),
 }
 
 
-@login_required(login_url='/user-login/')
+# =========================================================
+# COMMON DECIMAL VALUES
+# =========================================================
+
+MONEY_ZERO = Decimal("0.00")
+
+
+# =========================================================
+# MONEY HELPER
+# =========================================================
+
+def money(value):
+    """
+    Convert a value to Decimal with exactly 2 decimal places.
+    """
+
+    return Decimal(
+        str(value or "0")
+    ).quantize(
+        Decimal("0.01"),
+        rounding=ROUND_HALF_UP
+    )
+
+
+# =========================================================
+# DECIMAL POST HELPER
+# =========================================================
+
+def decimal_from_post(value, field_name):
+    """
+    Safely convert POST value to Decimal.
+
+    Raises ValueError if:
+    - value is invalid
+    - value is negative
+    """
+
+    try:
+
+        amount = Decimal(
+            str(value or "0")
+        )
+
+    except (
+        InvalidOperation,
+        ValueError,
+        TypeError
+    ):
+
+        raise ValueError(
+            f"{field_name} must be a valid number."
+        )
+
+    if amount < Decimal("0"):
+
+        raise ValueError(
+            f"{field_name} cannot be negative."
+        )
+
+    return amount
+
+
+@login_required(login_url="/user-login/")
 def add_order(request):
     """
-    Handles creation of a purchase order (Purchase) along with its
-    line items (PurchaseItem).
-
-    The entire purchase — header + all items — is created inside a
-    single atomic transaction: if any item fails to save, the whole
-    purchase is rolled back instead of leaving a partially-saved record.
+    Display Add Purchase page and handle purchase creation.
     """
-    
+
+    # =====================================================
+    # POST
+    # =====================================================
+
     if request.method == "POST":
+
         return _handle_add_order(request)
 
-    products = Product.objects.filter(is_active=True).order_by("product_name")
+
+    # =====================================================
+    # PRODUCTS / SUPPLIERS
+    # =====================================================
+
+    if request.user.is_superuser:
+
+        products = (
+            Product.objects
+            .filter(
+                is_active=True
+            )
+            .select_related(
+                "unit",
+                "brand",
+                "category"
+            )
+            .order_by(
+                "product_name"
+            )
+        )
+
+        supplier_list = (
+            Supplier.objects
+            .filter(
+                is_active=True
+            )
+            .order_by(
+                "supplier_name"
+            )
+        )
+
+    else:
+
+        products = (
+            Product.objects
+            .filter(
+                retailer_id=request.user.id,
+                is_active=True
+            )
+            .select_related(
+                "unit",
+                "brand",
+                "category"
+            )
+            .order_by(
+                "product_name"
+            )
+        )
+
+        supplier_list = (
+            Supplier.objects
+            .filter(
+                retailer_id=request.user.id,
+                is_active=True
+            )
+            .order_by(
+                "supplier_name"
+            )
+        )
+
+
     units = Unit.objects.all()
-    supplier_list = Supplier.objects.filter(is_active = True).order_by("supplier_name")
-    retailer_list = Retailer.objects.filter(is_active = True).order_by("shop_name")
+
+
+    retailer_list = (
+        Retailer.objects
+        .filter(
+            is_active=True
+        )
+        .order_by(
+            "shop_name"
+        )
+    )
+
 
     context = {
         "products": products,
@@ -670,171 +958,1069 @@ def add_order(request):
         "retailer_list": retailer_list,
     }
 
-    return render(request, "add_order.html",context)
+
+    return render(
+        request,
+        "add_order.html",
+        context
+    )
+
 
 
 def _handle_add_order(request):
-    """Validates form data and creates the Purchase + PurchaseItem records."""
+    """
+    Handles creation of Purchase and PurchaseItem records.
 
-    if request.user.is_superuser:
-        retailer_id = request.POST.get("retailer", "").strip()
-    else:
-        retailer_id = getattr(request.user, "retailer", None)
+    Flow:
 
-       
-    if retailer_id is None:
-        logger.warning("User without a retailer profile attempted to add an order: user=%s", request.user.username)
-        messages.error(request, "No retailer profile is linked to your account.")
-        return redirect("add_new_order")
-
-    retailer = Retailer.objects.get(id = retailer_id)
-
-    supplier_id = request.POST.get("supplier", "").strip()
-    bill_number = request.POST.get("bill_number", "").strip()
-    bill_date = request.POST.get("bill_date", "").strip()
-    bill_time = request.POST.get("bill_time") or None
-    logger.warning("User without a retailer profile attempted to add an order")
-    if not supplier_id or not bill_number or not bill_date:
-        messages.error(request, "Supplier, bill number, and bill date are required.")
-        return redirect("add_new_order")
-
-    # --- Parse header-level numeric fields ---
-    try:
-        subtotal = Decimal(request.POST.get("subtotal", 0) or 0)
-        discount = Decimal(request.POST.get("discount", 0) or 0)
-        gst = Decimal(request.POST.get("gst", 0) or 0)
-        grand_total = Decimal(request.POST.get("grand_total", 0) or 0)
-        paid_amount = Decimal(request.POST.get("paid_amount", 0) or 0)
-        due_amount = grand_total - paid_amount
-
-    except InvalidOperation:
-        logger.warning("Invalid numeric value submitted while adding order by user=%s", request.user.username)
-        messages.error(request, "Please enter valid numeric values for amount fields.")
-        return redirect("add_new_order")
-
-    payment_status = "Paid" if due_amount <= 0 else ("Partial" if paid_amount > 0 else "Unpaid")
+        1. Validate retailer
+        2. Validate supplier
+        3. Read bill information
+        4. Read item information
+        5. Calculate subtotal and GST
+        6. Calculate grand total
+        7. Create Purchase
+        8. Pass Purchase object to _create_purchase_items()
+        9. Create PurchaseItem records
+        10. Update product stock
+        11. Commit transaction
+    """
 
     try:
-        with transaction.atomic():
-            purchase = Purchase.objects.create(
-                retailer=retailer,
-                supplier=Supplier.objects.get(id = supplier_id),
-                bill_number=bill_number,
-                bill_date=bill_date,
-                bill_time=bill_time,
-                invoice_date=bill_date,
-                payment_terms=request.POST.get("payment_terms", "").strip(),
-                due_date=request.POST.get("due_date") or None,
-                state_of_supply=request.POST.get("state_of_supply", "").strip(),
-                warehouse=request.POST.get("warehouse", "").strip(),
-                subtotal=subtotal,
-                discount=discount,
-                gst=gst,
-                grand_total=grand_total,
-                paid_amount=paid_amount,
-                due_amount=due_amount,
-                payment_type=request.POST.get("payment_type", "").strip(),
-                payment_status=payment_status,
-                remarks="",
+
+        # =====================================================
+        # 1. GET RETAILER
+        # =====================================================
+
+        if request.user.is_superuser:
+
+            retailer_id = (
+                request.POST
+                .get(
+                    "retailer",
+                    ""
+                )
+                .strip()
             )
 
-            if request.FILES.get("bill_file"):
-                purchase.bill_file = request.FILES["bill_file"]
-                purchase.save(update_fields=["bill_file"])
+            if not retailer_id:
 
-            # breakpoint()
+                raise ValueError(
+                    "Please select a retailer."
+                )
 
-            _create_purchase_items(request, purchase)
+        else:
+
+            retailer_id = getattr(
+                request.user,
+                "retailer_id",
+                None
+            )
+
+            if not retailer_id:
+
+                logger.warning(
+                    "User without retailer profile "
+                    "attempted to create purchase. "
+                    "user=%s",
+                    request.user.username
+                )
+
+                raise ValueError(
+                    "No retailer profile is linked "
+                    "to your account."
+                )
+
+
+        # =====================================================
+        # 2. GET RETAILER OBJECT
+        # =====================================================
+
+        try:
+
+            retailer = Retailer.objects.get(
+                id=retailer_id,
+                is_active=True
+            )
+
+        except Retailer.DoesNotExist:
+
+            raise ValueError(
+                "Selected retailer does not exist "
+                "or is inactive."
+            )
+
+
+        # =====================================================
+        # 3. GET SUPPLIER
+        # =====================================================
+
+        supplier_id = (
+            request.POST
+            .get(
+                "supplier",
+                ""
+            )
+            .strip()
+        )
+
+
+        if not supplier_id:
+
+            raise ValueError(
+                "Supplier is required."
+            )
+
+
+        try:
+
+            supplier = Supplier.objects.get(
+                id=supplier_id,
+                is_active=True
+            )
+
+        except Supplier.DoesNotExist:
+
+            raise ValueError(
+                "Selected supplier does not exist "
+                "or is inactive."
+            )
+
+
+        # =====================================================
+        # 4. BILL INFORMATION
+        # =====================================================
+
+        bill_number = (
+            request.POST
+            .get(
+                "bill_number",
+                ""
+            )
+            .strip()
+        )
+
+
+        bill_date = (
+            request.POST
+            .get(
+                "bill_date",
+                ""
+            )
+            .strip()
+        )
+
+
+        bill_time = (
+            request.POST
+            .get(
+                "bill_time"
+            )
+            or None
+        )
+
+
+        if not bill_number:
+
+            raise ValueError(
+                "Bill number is required."
+            )
+
+
+        if not bill_date:
+
+            raise ValueError(
+                "Bill date is required."
+            )
+
+
+        # =====================================================
+        # 5. HEADER LEVEL AMOUNTS
+        #
+        # IMPORTANT:
+        #
+        # We DO NOT trust subtotal/GST/grand_total
+        # coming from JavaScript.
+        #
+        # They are calculated by backend.
+        # =====================================================
+
+        discount = decimal_from_post(
+            request.POST.get(
+                "discount",
+                "0"
+            ),
+            "Discount"
+        )
+
+
+        transport_charge = decimal_from_post(
+            request.POST.get(
+                "transport_charge",
+                "0"
+            ),
+            "Transport charge"
+        )
+
+
+        other_charge = decimal_from_post(
+            request.POST.get(
+                "other_charge",
+                "0"
+            ),
+            "Other charge"
+        )
+
+
+        paid_amount = decimal_from_post(
+            request.POST.get(
+                "paid_amount",
+                "0"
+            ),
+            "Paid amount"
+        )
+
+
+        # =====================================================
+        # 6. PAYMENT TYPE
+        # =====================================================
+
+        payment_type = (
+            request.POST
+            .get(
+                "payment_type",
+                ""
+            )
+            .strip()
+        )
+
+
+        if (
+            paid_amount > Decimal("0")
+            and not payment_type
+        ):
+
+            raise ValueError(
+                "Please select a payment type."
+            )
+
+
+        # =====================================================
+        # 7. CALCULATE ITEM TOTALS FIRST
+        #
+        # IMPORTANT:
+        #
+        # This function DOES NOT create PurchaseItem yet.
+        #
+        # It only validates and calculates the item data.
+        # =====================================================
+
+        item_data = _prepare_purchase_items(
+            request=request,
+            retailer=retailer
+        )
+
+
+        if not item_data:
+
+            raise ValueError(
+                "Please add at least one product "
+                "to the purchase."
+            )
+
+
+        # =====================================================
+        # 8. CALCULATE PURCHASE SUBTOTAL
+        # =====================================================
+
+        subtotal = money(
+            sum(
+                item["item_subtotal"]
+                for item in item_data
+            )
+        )
+
+
+        # =====================================================
+        # 9. CALCULATE TOTAL GST
+        # =====================================================
+
+        gst = money(
+            sum(
+                item["item_gst"]
+                for item in item_data
+            )
+        )
+
+
+        # =====================================================
+        # 10. DISCOUNT VALIDATION
+        # =====================================================
+
+        if discount > subtotal:
+
+            raise ValueError(
+                "Discount cannot be greater than subtotal."
+            )
+
+
+        # =====================================================
+        # 11. GRAND TOTAL
+        #
+        # Same calculation as frontend.
+        # =====================================================
+
+        grand_total = money(
+            subtotal
+            - discount
+            + gst
+            + transport_charge
+            + other_charge
+        )
+
+
+        # =====================================================
+        # 12. PAID AMOUNT VALIDATION
+        # =====================================================
+
+        if paid_amount > grand_total:
+
+            raise ValueError(
+                "Paid amount cannot be greater than "
+                "the grand total."
+            )
+
+
+        # =====================================================
+        # 13. DUE AMOUNT
+        # =====================================================
+
+        due_amount = money(
+            grand_total
+            - paid_amount
+        )
+
+
+        if due_amount < Decimal("0.00"):
+
+            due_amount = Decimal("0.00")
+
+
+        # =====================================================
+        # 14. PAYMENT STATUS
+        # =====================================================
+
+        if paid_amount >= grand_total:
+
+            payment_status = "Paid"
+
+            due_amount = Decimal("0.00")
+
+        elif paid_amount > Decimal("0.00"):
+
+            payment_status = "Partial"
+
+        else:
+
+            payment_status = "Unpaid"
+
+
+        # =====================================================
+        # 15. DATABASE TRANSACTION
+        # =====================================================
+
+        with transaction.atomic():
+
+            # =================================================
+            # CREATE PURCHASE
+            # =================================================
+
+            purchase = Purchase.objects.create(
+
+                retailer=retailer,
+
+                supplier=supplier,
+
+                bill_number=bill_number,
+
+                bill_date=bill_date,
+
+                bill_time=bill_time,
+
+                invoice_date=bill_date,
+
+                payment_terms=(
+                    request.POST
+                    .get(
+                        "payment_terms",
+                        ""
+                    )
+                    .strip()
+                ),
+
+                due_date=(
+                    request.POST
+                    .get(
+                        "due_date"
+                    )
+                    or None
+                ),
+
+                state_of_supply=(
+                    request.POST
+                    .get(
+                        "state_of_supply",
+                        ""
+                    )
+                    .strip()
+                ),
+
+                warehouse=(
+                    request.POST
+                    .get(
+                        "warehouse",
+                        ""
+                    )
+                    .strip()
+                ),
+
+                # Backend calculated values
+
+                subtotal=subtotal,
+
+                discount=money(
+                    discount
+                ),
+
+                gst=gst,
+
+                transport_charge=money(
+                    transport_charge
+                ),
+
+                other_charge=money(
+                    other_charge
+                ),
+
+                grand_total=grand_total,
+
+                paid_amount=money(
+                    paid_amount
+                ),
+
+                due_amount=due_amount,
+
+                payment_type=payment_type,
+
+                payment_status=payment_status,
+
+                remarks=(
+                    request.POST
+                    .get(
+                        "remarks",
+                        ""
+                    )
+                    .strip()
+                ),
+            )
+
+
+            # =================================================
+            # CREATE PURCHASE ITEMS
+            #
+            # THIS IS THE FIX FOR YOUR PROBLEM.
+            #
+            # We now pass the Purchase object.
+            # =================================================
+
+            _create_purchase_items(
+                request=request,
+                purchase=purchase,
+                item_data=item_data
+            )
+
+
+            # =================================================
+            # SAVE BILL FILE
+            # =================================================
+
+            bill_file = request.FILES.get(
+                "bill_file"
+            )
+
+
+            if bill_file:
+
+                purchase.bill_file = bill_file
+
+                purchase.save(
+                    update_fields=[
+                        "bill_file"
+                    ]
+                )
+
+
+        # =====================================================
+        # SUCCESS
+        # =====================================================
 
         logger.info(
-            "Purchase order created by user=%s: bill_number=%s, retailer=%s",
-            request.user.username, bill_number, retailer.shop_name,
+            "Purchase created successfully. "
+            "user=%s bill_number=%s retailer=%s "
+            "subtotal=%s gst=%s grand_total=%s "
+            "paid=%s due=%s",
+            request.user.username,
+            bill_number,
+            retailer.shop_name,
+            subtotal,
+            gst,
+            grand_total,
+            paid_amount,
+            due_amount,
         )
-        messages.success(request, f"Purchase order {bill_number} created successfully!")
-        return redirect("dashboard")
+
+
+        messages.success(
+            request,
+            f"Purchase order {bill_number} "
+            f"created successfully!"
+        )
+
+
+        return redirect(
+            "dashboard"
+        )
+
+
+    # =========================================================
+    # VALIDATION ERRORS
+    # =========================================================
+
+    except ValueError as exc:
+
+        logger.warning(
+            "Purchase validation failed. "
+            "user=%s error=%s",
+            request.user.username,
+            str(exc)
+        )
+
+
+        messages.error(
+            request,
+            str(exc)
+        )
+
+
+        return redirect(
+            "add_new_order"
+        )
+
+
+    # =========================================================
+    # INTEGRITY ERROR
+    # =========================================================
 
     except IntegrityError:
-        logger.exception("IntegrityError while creating purchase order: bill_number=%s", bill_number)
-        messages.error(request, "A purchase with this bill number may already exist.")
-        return redirect("add_new_order")
 
-    except ValueError as e:
-        # Raised deliberately from _create_purchase_items for bad item data
-        logger.warning("Invalid item data while creating purchase order: %s", str(e))
-        messages.error(request, str(e))
-        return redirect("add_new_order")
-
-    except Exception:
-        logger.exception("Unexpected error while creating purchase order: bill_number=%s", bill_number)
-        messages.error(request, "Something went wrong while saving the purchase. Please try again.")
-        return redirect("add_new_order")
-
-
-def _create_purchase_items(request, purchase):
-    """
-    Parses dynamically-named item_* fields from the POST data and creates
-    a PurchaseItem for each one, resolving product and unit by name.
-
-    Raises ValueError (caught by the caller) if a referenced product or
-    unit does not exist, so the whole transaction rolls back cleanly.
-    """
-    for key, value in request.POST.items():
-        if not key.startswith("item_name_"):
-            continue
-
-        index = key.split("_")[-1]
-        name = request.POST.get(f"item_name_{index}", "").strip()
-        print(name,"            Name:::::::::::")
-        if not name:
-            continue
-
-        unit_name = request.POST.get(f"item_unit_{index}", "").strip()
-        print(unit_name,"            unit_name :::::::::::")
-
-
-        try:
-            mrp = Decimal(request.POST.get(f"item_mrp_{index}", 0) or 0)
-            qty = Decimal(request.POST.get(f"item_qty_{index}", 0) or 0)
-            free_qty_raw = request.POST.get(f"item_free_qty_{index}", "0")
-            free_qty = Decimal(free_qty_raw) if free_qty_raw.strip() else Decimal("0")
-            price = Decimal(request.POST.get(f"item_price_{index}", 0) or 0)
-        except InvalidOperation:
-            raise ValueError(f"Invalid numeric value for item '{name}'.")
-
-        tax_code = request.POST.get(f"item_tax_{index}", "none")
-        gst_rate = GST_RATE_MAP.get(tax_code, 0)
-
-        amount = qty * price
-        tax_amount = amount * (Decimal(str(gst_rate)) / Decimal("100"))
-        total_amount = amount + tax_amount
-
-        try:
-            product = Product.objects.get(product_name__iexact=name, retailer=purchase.retailer)
-        except Product.DoesNotExist:
-            raise ValueError(f"Product '{name}' was not found. Please add it to inventory first.")
-
-        try:
-            unit = Unit.objects.get(id = unit_name)
-        except Unit.DoesNotExist:
-            raise ValueError(f"Unit '{unit_name}' was not found for item '{name}'.")
-
-        PurchaseItem.objects.create(
-            purchase=purchase,
-            product=product,
-            unit=unit,
-            quantity=qty,
-            free_quantity=free_qty,
-            purchase_price=price,
-            selling_price=product.selling_price,
-            mrp=mrp,
-            gst=gst_rate,
-            discount=0,
-            amount=total_amount,
-            remarks=name,
+        logger.exception(
+            "IntegrityError while creating purchase. "
+            "user=%s",
+            request.user.username
         )
 
 
+        messages.error(
+            request,
+            "A purchase with this bill number "
+            "may already exist."
+        )
 
+
+        return redirect(
+            "add_new_order"
+        )
+
+
+    # =========================================================
+    # UNEXPECTED ERROR
+    # =========================================================
+
+    except Exception:
+
+        logger.exception(
+            "Unexpected error while creating purchase. "
+            "user=%s",
+            request.user.username
+        )
+
+
+        messages.error(
+            request,
+            "Something went wrong while saving "
+            "the purchase. Please try again."
+        )
+
+
+        return redirect(
+            "add_new_order"
+        )
+
+
+def _prepare_purchase_items(
+    request,
+    retailer
+):
+    """
+    Reads all item_* fields from POST.
+
+    This function:
+        - validates product
+        - validates unit
+        - validates quantity
+        - validates price
+        - validates GST
+        - calculates item subtotal
+        - calculates item GST
+        - calculates item total
+
+    It does NOT create database records.
+
+    Returns:
+        list of dictionaries
+    """
+
+    item_data = []
+
+
+    # =========================================================
+    # LOOP THROUGH POST FIELDS
+    # =========================================================
+
+    for key in request.POST.keys():
+
+        if not key.startswith(
+            "item_name_"
+        ):
+            continue
+
+
+        # =====================================================
+        # GET ROW NUMBER
+        # =====================================================
+
+        index = key.rsplit(
+            "_",
+            1
+        )[-1]
+
+
+        # =====================================================
+        # PRODUCT NAME
+        # =====================================================
+
+        product_name = (
+            request.POST
+            .get(
+                f"item_name_{index}",
+                ""
+            )
+            .strip()
+        )
+
+
+        # Empty product row
+        # simply ignore it.
+
+        if not product_name:
+            continue
+
+
+        # =====================================================
+        # GET PRODUCT
+        # =====================================================
+
+        try:
+
+            product = (
+                Product.objects
+                .get(
+                    product_name__iexact=product_name,
+                    retailer=retailer,
+                    is_active=True
+                )
+            )
+
+        except Product.DoesNotExist:
+
+            raise ValueError(
+                f"Product '{product_name}' "
+                f"was not found for this retailer."
+            )
+
+
+        # =====================================================
+        # UNIT
+        # =====================================================
+
+        unit_id = (
+            request.POST
+            .get(
+                f"item_unit_{index}",
+                ""
+            )
+            .strip()
+        )
+
+
+        if not unit_id:
+
+            raise ValueError(
+                f"Please select a unit for "
+                f"'{product_name}'."
+            )
+
+
+        try:
+
+            unit = Unit.objects.get(
+                id=unit_id
+            )
+
+        except Unit.DoesNotExist:
+
+            raise ValueError(
+                f"Selected unit was not found "
+                f"for '{product_name}'."
+            )
+
+
+        # =====================================================
+        # MRP
+        # =====================================================
+
+        mrp = decimal_from_post(
+            request.POST.get(
+                f"item_mrp_{index}",
+                "0"
+            ),
+            f"MRP for {product_name}"
+        )
+
+
+        # =====================================================
+        # QUANTITY
+        # =====================================================
+
+        quantity = decimal_from_post(
+            request.POST.get(
+                f"item_qty_{index}",
+                "0"
+            ),
+            f"Quantity for {product_name}"
+        )
+
+
+        if quantity <= Decimal("0"):
+
+            raise ValueError(
+                f"Quantity for '{product_name}' "
+                f"must be greater than zero."
+            )
+
+
+        # =====================================================
+        # FREE QUANTITY
+        # =====================================================
+
+        free_quantity = decimal_from_post(
+            request.POST.get(
+                f"item_free_qty_{index}",
+                "0"
+            ),
+            f"Free quantity for {product_name}"
+        )
+
+
+        # =====================================================
+        # PURCHASE PRICE
+        # =====================================================
+
+        purchase_price = decimal_from_post(
+            request.POST.get(
+                f"item_price_{index}",
+                "0"
+            ),
+            f"Purchase price for {product_name}"
+        )
+
+
+        if purchase_price <= Decimal("0"):
+
+            raise ValueError(
+                f"Purchase price for '{product_name}' "
+                f"must be greater than zero."
+            )
+
+
+        # =====================================================
+        # GST CODE
+        # =====================================================
+
+        tax_code = (
+            request.POST
+            .get(
+                f"item_tax_{index}",
+                "none"
+            )
+            .strip()
+            .lower()
+        )
+
+
+        if tax_code not in GST_RATE_MAP:
+
+            raise ValueError(
+                f"Invalid GST selected for "
+                f"'{product_name}'."
+            )
+
+
+        gst_rate = GST_RATE_MAP[
+            tax_code
+        ]
+
+
+        # =====================================================
+        # ITEM SUBTOTAL
+        #
+        # Quantity × Purchase Price
+        # =====================================================
+
+        item_subtotal = money(
+            quantity
+            * purchase_price
+        )
+
+
+        # =====================================================
+        # ITEM GST
+        #
+        # Subtotal × GST %
+        # =====================================================
+
+        item_gst = money(
+            item_subtotal
+            * gst_rate
+            / Decimal("100")
+        )
+
+
+        # =====================================================
+        # ITEM TOTAL
+        # =====================================================
+
+        item_total = money(
+            item_subtotal
+            + item_gst
+        )
+
+
+        # =====================================================
+        # STORE ITEM DATA
+        # =====================================================
+
+        item_data.append({
+
+            "product": product,
+
+            "unit": unit,
+
+            "quantity": quantity,
+
+            "free_quantity": free_quantity,
+
+            "purchase_price": purchase_price,
+
+            "mrp": mrp,
+
+            "gst_rate": gst_rate,
+
+            "item_subtotal": item_subtotal,
+
+            "item_gst": item_gst,
+
+            "item_total": item_total,
+
+            "product_name": product_name,
+
+        })
+
+
+    return item_data
+
+
+def _create_purchase_items(
+    request,
+    purchase,
+    item_data
+):
+    """
+    Creates PurchaseItem records and updates product stock.
+
+    Parameters:
+        request:
+            Current Django request.
+
+        purchase:
+            Already-created Purchase object.
+
+        item_data:
+            Validated and calculated item information
+            returned by _prepare_purchase_items().
+
+    Stock calculation:
+
+        New Stock =
+            Existing Stock
+            + Purchase Quantity
+            + Free Quantity
+
+    Everything runs inside the transaction.atomic()
+    block of _handle_add_order().
+    """
+
+
+    # =========================================================
+    # LOOP THROUGH PREPARED ITEMS
+    # =========================================================
+
+    for item in item_data:
+
+
+        # =====================================================
+        # LOCK PRODUCT ROW
+        #
+        # This prevents incorrect stock updates when
+        # multiple purchases happen at the same time.
+        # =====================================================
+
+        product = (
+            Product.objects
+            .select_for_update()
+            .get(
+                id=item["product"].id
+            )
+        )
+
+
+        # =====================================================
+        # STORE OLD STOCK FOR LOGGING
+        # =====================================================
+
+        old_stock = product.current_stock
+
+
+        # =====================================================
+        # CREATE PURCHASE ITEM
+        # =====================================================
+
+        PurchaseItem.objects.create(
+
+            purchase=purchase,
+
+            product=product,
+
+            unit=item["unit"],
+
+            quantity=item["quantity"],
+
+            free_quantity=item[
+                "free_quantity"
+            ],
+
+            purchase_price=item[
+                "purchase_price"
+            ],
+
+            selling_price=product.selling_price,
+
+            mrp=item["mrp"],
+
+            gst=item["gst_rate"],
+
+            discount=MONEY_ZERO,
+
+            amount=item["item_total"],
+
+            remarks=item["product_name"],
+        )
+
+
+        # =====================================================
+        # STOCK TO ADD
+        #
+        # Example:
+        #
+        # Quantity      = 10
+        # Free Quantity = 2
+        #
+        # Stock Added   = 12
+        # =====================================================
+
+        stock_to_add = (
+            item["quantity"]
+            + item["free_quantity"]
+        )
+
+
+        # =====================================================
+        # UPDATE PRODUCT STOCK
+        # =====================================================
+
+        product.current_stock = (
+            product.current_stock
+            + stock_to_add
+        )
+
+
+        # =====================================================
+        # SAVE PRODUCT STOCK
+        # =====================================================
+
+        product.save(
+            update_fields=[
+                "current_stock",
+                "updated_at",
+            ]
+        )
+
+
+        # =====================================================
+        # LOG STOCK UPDATE
+        # =====================================================
+
+        logger.info(
+            "Purchase item created and stock updated. "
+            "purchase_id=%s "
+            "product_id=%s "
+            "product=%s "
+            "old_stock=%s "
+            "purchase_quantity=%s "
+            "free_quantity=%s "
+            "stock_added=%s "
+            "new_stock=%s",
+            purchase.id,
+            product.id,
+            product.product_name,
+            old_stock,
+            item["quantity"],
+            item["free_quantity"],
+            stock_to_add,
+            product.current_stock,
+        )
+
+   
 
 @login_required(login_url='/user-login/')
 def purchase_list(request):
@@ -1082,7 +2268,11 @@ def add_supplier(request):
     if request.method != "POST":
         # SECURITY FIX: Filter retailers belonging strictly to the logged-in user
         # Replace 'user=request.user' with your actual model relationship (e.g., profile.retailer)
-        retailers = Retailer.objects.filter(is_active=True)
+        
+        if request.user.is_superuser:
+            retailers = Retailer.objects.filter(is_active=True)
+        else:
+            retailers = Retailer.objects.filter(user=request.user, is_active=True)
         return render(request, "add_supplier.html", {"retailers": retailers})
 
     # POST Request: Process and save the data
@@ -1174,19 +2364,7 @@ def add_supplier(request):
     return redirect("add_new_supplier")
 
 
-import logging
-from decimal import Decimal, InvalidOperation
 
-from django.contrib import messages
-from django.db import transaction
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect
-from django.views.decorators.http import require_POST
-
-from .models import Product
-
-
-logger = logging.getLogger(__name__)
 
 
 @require_POST
@@ -1583,4 +2761,9 @@ def delete_product(request, product_id):
             status=500,
         )
 
-    
+
+
+
+# ********************************* Sales Module *********************************
+def sales_create(request):
+    return render(request,"sale_create.html")

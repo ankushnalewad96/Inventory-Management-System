@@ -1,5 +1,14 @@
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MinValueValidator
+from decimal import Decimal, ROUND_HALF_UP
+from django.core.exceptions import ValidationError
+from django.db.models import Max
+
+
+
+
+
 
 
 # Django User Authentication model
@@ -363,6 +372,844 @@ class PurchaseItem(models.Model):
 
     def __str__(self):
         return f"{self.purchase.bill_number} - {self.product.product_name}"
+
+
+
+
+
+
+
+
+
+# Sales Module
+class Customer(models.Model):
+    """
+    Represents a customer belonging to a specific retailer.
+
+    Each retailer can maintain its own customer list, balances,
+    credit limits, and customer information.
+    """
+
+    retailer = models.ForeignKey(
+        Retailer,
+        on_delete=models.CASCADE,
+        related_name="customers",
+        db_index=True,
+    )
+
+    customer_name = models.CharField(
+        max_length=200,
+        verbose_name="Customer Name",
+    )
+
+    mobile = models.CharField(
+        max_length=15,
+        blank=True,
+        null=True,
+        verbose_name="Mobile Number",
+    )
+
+    email = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name="Email Address",
+    )
+
+    address = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Address",
+    )
+
+    gst_number = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        verbose_name="GST Number",
+    )
+
+    opening_balance = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        validators=[MinValueValidator(Decimal("0.00"))],
+        verbose_name="Opening Balance",
+        help_text="Outstanding amount brought forward from previous records.",
+    )
+
+    credit_limit = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        validators=[MinValueValidator(Decimal("0.00"))],
+        verbose_name="Credit Limit",
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+        db_index=True,
+        verbose_name="Active",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "Customer"
+        verbose_name_plural = "Customers"
+        ordering = ["customer_name"]
+
+        indexes = [
+            models.Index(
+                fields=["retailer", "is_active"],
+                name="customer_retailer_active_idx",
+            ),
+            models.Index(
+                fields=["retailer", "mobile"],
+                name="customer_retailer_mobile_idx",
+            ),
+            models.Index(
+                fields=["retailer", "customer_name"],
+                name="customer_retailer_name_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.customer_name} - {self.mobile}"
+
+
+
+
+
+class Sale(models.Model):
+    """
+    Represents the master/header record of a sales invoice.
+
+    Each sale belongs to a retailer and a customer.
+    Invoice numbers are generated automatically per retailer.
+    """
+
+    PAYMENT_TYPE_CASH = "Cash"
+    PAYMENT_TYPE_UPI = "UPI"
+    PAYMENT_TYPE_BANK = "Bank Transfer"
+    PAYMENT_TYPE_CHEQUE = "Cheque"
+    PAYMENT_TYPE_CREDIT = "Credit"
+
+    PAYMENT_TYPE_CHOICES = [
+        (PAYMENT_TYPE_CASH, "Cash"),
+        (PAYMENT_TYPE_UPI, "UPI"),
+        (PAYMENT_TYPE_BANK, "Bank Transfer"),
+        (PAYMENT_TYPE_CHEQUE, "Cheque"),
+        (PAYMENT_TYPE_CREDIT, "Credit"),
+    ]
+
+    PAYMENT_STATUS_PAID = "Paid"
+    PAYMENT_STATUS_PARTIAL = "Partial"
+    PAYMENT_STATUS_UNPAID = "Unpaid"
+
+    PAYMENT_STATUS_CHOICES = [
+        (PAYMENT_STATUS_PAID, "Paid"),
+        (PAYMENT_STATUS_PARTIAL, "Partial"),
+        (PAYMENT_STATUS_UNPAID, "Unpaid"),
+    ]
+
+    retailer = models.ForeignKey(
+        Retailer,
+        on_delete=models.CASCADE,
+        related_name="sales",
+        db_index=True,
+    )
+
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.PROTECT,
+        related_name="sales",
+        db_index=True,
+    )
+
+    invoice_number = models.CharField(
+        max_length=100,
+        editable=False,
+    )
+
+    invoice_date = models.DateField()
+
+    subtotal = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+
+    discount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+
+    gst = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+
+    grand_total = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+
+    paid_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+
+    due_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+
+    payment_type = models.CharField(
+        max_length=20,
+        choices=PAYMENT_TYPE_CHOICES,
+        blank=True,
+        null=True,
+    )
+
+    payment_status = models.CharField(
+        max_length=20,
+        choices=PAYMENT_STATUS_CHOICES,
+        default=PAYMENT_STATUS_UNPAID,
+    )
+
+    remarks = models.TextField(
+        blank=True,
+        null=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "Sale"
+        verbose_name_plural = "Sales"
+        ordering = ["-invoice_date", "-created_at"]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["retailer", "invoice_number"],
+                name="unique_sale_invoice_per_retailer",
+            ),
+        ]
+
+        indexes = [
+            models.Index(
+                fields=["retailer", "invoice_date"],
+                name="sale_retailer_date_idx",
+            ),
+            models.Index(
+                fields=["retailer", "customer"],
+                name="sale_retailer_customer_idx",
+            ),
+            models.Index(
+                fields=["retailer", "payment_status"],
+                name="sale_retailer_status_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.invoice_number} - {self.customer.customer_name}"
+
+    def clean(self):
+        """
+        Validate retailer/customer relationship and payment values.
+        """
+
+        if self.customer_id and self.retailer_id:
+            if self.customer.retailer_id != self.retailer_id:
+                raise ValidationError(
+                    "The selected customer does not belong to this retailer."
+                )
+
+        if self.paid_amount < Decimal("0.00"):
+            raise ValidationError(
+                {"paid_amount": "Paid amount cannot be negative."}
+            )
+
+        if self.paid_amount > self.grand_total:
+            raise ValidationError(
+                {"paid_amount": "Paid amount cannot exceed the grand total."}
+            )
+
+        if self.discount < Decimal("0.00"):
+            raise ValidationError(
+                {"discount": "Discount cannot be negative."}
+            )
+
+        if self.gst < Decimal("0.00"):
+            raise ValidationError(
+                {"gst": "GST cannot be negative."}
+            )
+
+    def _generate_invoice_number(self):
+        """
+        Generate the next invoice number for the retailer.
+
+        Format:
+            INV-YYYY-000001
+            INV-YYYY-000002
+            INV-YYYY-000003
+        """
+
+        year = self.invoice_date.year
+
+        prefix = f"INV-{year}-"
+
+        last_sale = (
+            Sale.objects
+            .filter(
+                retailer=self.retailer,
+                invoice_number__startswith=prefix,
+            )
+            .order_by("-invoice_number")
+            .first()
+        )
+
+        if last_sale:
+            try:
+                last_number = int(
+                    last_sale.invoice_number.split("-")[-1]
+                )
+            except (ValueError, IndexError):
+                last_number = 0
+        else:
+            last_number = 0
+
+        next_number = last_number + 1
+
+        return f"{prefix}{next_number:06d}"
+
+    def save(self, *args, **kwargs):
+        """
+        Save sale and automatically generate invoice number,
+        due amount and payment status.
+        """
+
+        is_new = self.pk is None
+
+        if is_new and not self.invoice_number:
+            with transaction.atomic():
+                # Lock the retailer row to prevent two simultaneous
+                # sales from generating the same invoice number.
+                locked_retailer = (
+                    Retailer.objects
+                    .select_for_update()
+                    .get(pk=self.retailer_id)
+                )
+
+                self.retailer = locked_retailer
+
+                self.invoice_number = self._generate_invoice_number()
+
+                self._calculate_payment_details()
+
+                super().save(*args, **kwargs)
+
+            return
+
+        self._calculate_payment_details()
+
+        super().save(*args, **kwargs)
+
+    def _calculate_payment_details(self):
+        """
+        Calculate due amount and payment status automatically.
+        """
+
+        self.due_amount = (
+            self.grand_total - self.paid_amount
+        ).quantize(Decimal("0.01"))
+
+        if self.paid_amount <= Decimal("0.00"):
+            self.payment_status = self.PAYMENT_STATUS_UNPAID
+
+        elif self.paid_amount < self.grand_total:
+            self.payment_status = self.PAYMENT_STATUS_PARTIAL
+
+        else:
+            self.payment_status = self.PAYMENT_STATUS_PAID
+            self.due_amount = Decimal("0.00")
+
+
+
+
+
+class SaleItem(models.Model):
+    """
+    Represents an individual product/item sold as part of a Sale.
+
+    Stock deduction is handled transactionally by the sales service,
+    rather than directly inside save(), to prevent accidental
+    double deduction during updates/deletions.
+    """
+
+    sale = models.ForeignKey(
+        Sale,
+        on_delete=models.CASCADE,
+        related_name="items",
+        db_index=True,
+    )
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.PROTECT,
+        related_name="sale_items",
+        db_index=True,
+    )
+
+    unit = models.ForeignKey(
+        Unit,
+        on_delete=models.PROTECT,
+        related_name="sale_items",
+    )
+
+    quantity = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    selling_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    mrp = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+    )
+
+    gst = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="GST percentage for this item.",
+    )
+
+    discount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        editable=False,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "Sale Item"
+        verbose_name_plural = "Sale Items"
+        ordering = ["id"]
+
+        indexes = [
+            models.Index(
+                fields=["sale", "product"],
+                name="saleitem_sale_product_idx",
+            ),
+            models.Index(
+                fields=["product"],
+                name="saleitem_product_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.sale.invoice_number} - "
+            f"{self.product} - {self.quantity}"
+        )
+
+    def clean(self):
+        """
+        Validate the SaleItem values.
+
+        Actual stock availability is checked inside the atomic
+        stock-deduction service because the Product row must be
+        locked while checking and updating stock.
+        """
+
+        if self.quantity <= Decimal("0.00"):
+            raise ValidationError(
+                {"quantity": "Quantity must be greater than zero."}
+            )
+
+        if self.selling_price < Decimal("0.00"):
+            raise ValidationError(
+                {"selling_price": "Selling price cannot be negative."}
+            )
+
+        if self.mrp is not None and self.mrp < Decimal("0.00"):
+            raise ValidationError(
+                {"mrp": "MRP cannot be negative."}
+            )
+
+        if self.gst < Decimal("0.00"):
+            raise ValidationError(
+                {"gst": "GST cannot be negative."}
+            )
+
+        if self.gst > Decimal("100.00"):
+            raise ValidationError(
+                {"gst": "GST cannot exceed 100%."}
+            )
+
+        if self.discount < Decimal("0.00"):
+            raise ValidationError(
+                {"discount": "Discount cannot be negative."}
+            )
+
+    def calculate_amount(self):
+        """
+        Calculate the final line amount.
+
+        Formula:
+
+            Gross Amount = quantity × selling_price
+            Taxable Amount = Gross Amount - discount
+            GST Amount = Taxable Amount × GST%
+            Final Amount = Taxable Amount + GST Amount
+        """
+
+        gross_amount = self.quantity * self.selling_price
+
+        taxable_amount = gross_amount - self.discount
+
+        if taxable_amount < Decimal("0.00"):
+            raise ValidationError(
+                "Discount cannot be greater than the gross amount."
+            )
+
+        gst_amount = taxable_amount * (
+            self.gst / Decimal("100.00")
+        )
+
+        final_amount = taxable_amount + gst_amount
+
+        return final_amount.quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        )
+
+    def save(self, *args, **kwargs):
+        """
+        Calculate the line amount before saving.
+
+        NOTE:
+        Stock is intentionally NOT modified here.
+        Stock changes must happen through the transactional
+        sales service.
+        """
+
+        self.amount = self.calculate_amount()
+
+        super().save(*args, **kwargs)
+
+
+
+
+
+class Payment(models.Model):
+    """
+    Represents an actual payment received from a customer.
+
+    A single Sale can have multiple Payment records.
+    """
+
+    PAYMENT_TYPE_CASH = "Cash"
+    PAYMENT_TYPE_UPI = "UPI"
+    PAYMENT_TYPE_BANK = "Bank Transfer"
+    PAYMENT_TYPE_CHEQUE = "Cheque"
+
+    PAYMENT_TYPE_CHOICES = [
+        (PAYMENT_TYPE_CASH, "Cash"),
+        (PAYMENT_TYPE_UPI, "UPI"),
+        (PAYMENT_TYPE_BANK, "Bank Transfer"),
+        (PAYMENT_TYPE_CHEQUE, "Cheque"),
+    ]
+
+    retailer = models.ForeignKey(
+        Retailer,
+        on_delete=models.CASCADE,
+        related_name="customer_payments",
+        db_index=True,
+    )
+
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.PROTECT,
+        related_name="payments",
+        db_index=True,
+    )
+
+    sale = models.ForeignKey(
+        Sale,
+        on_delete=models.PROTECT,
+        related_name="payments",
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+
+    payment_date = models.DateField()
+
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[],
+    )
+
+    payment_type = models.CharField(
+        max_length=20,
+        choices=PAYMENT_TYPE_CHOICES,
+    )
+
+    payment_reference = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="UPI transaction ID, cheque number, bank reference, etc.",
+    )
+
+    receipt_number = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+    )
+
+    remarks = models.TextField(
+        blank=True,
+        null=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "Payment"
+        verbose_name_plural = "Payments"
+        ordering = ["-payment_date", "-created_at"]
+
+        indexes = [
+            models.Index(
+                fields=["retailer", "customer", "payment_date"],
+                name="payment_customer_date_idx",
+            ),
+            models.Index(
+                fields=["retailer", "sale"],
+                name="payment_retailer_sale_idx",
+            ),
+            models.Index(
+                fields=["payment_reference"],
+                name="payment_reference_idx",
+            ),
+        ]
+
+    def __str__(self):
+        if self.sale:
+            return (
+                f"{self.customer.customer_name} - "
+                f"{self.sale.invoice_number} - "
+                f"{self.amount}"
+            )
+
+        return (
+            f"{self.customer.customer_name} - "
+            f"Payment {self.amount}"
+        )
+
+    def clean(self):
+        if self.amount <= Decimal("0.00"):
+            raise ValidationError(
+                {"amount": "Payment amount must be greater than zero."}
+            )
+
+        if self.customer_id and self.retailer_id:
+            if self.customer.retailer_id != self.retailer_id:
+                raise ValidationError(
+                    "Customer does not belong to this retailer."
+                )
+
+        if self.sale_id:
+            if self.sale.customer_id != self.customer_id:
+                raise ValidationError(
+                    "Payment customer does not match the sale customer."
+                )
+
+            if self.sale.retailer_id != self.retailer_id:
+                raise ValidationError(
+                    "Payment retailer does not match the sale retailer."
+                )
+
+
+
+
+
+class CustomerLedger(models.Model):
+    """
+    Maintains the financial ledger of a customer.
+
+    Debit:
+        Amount added to customer's outstanding balance.
+
+    Credit:
+        Amount received from customer.
+
+    Balance:
+        Running outstanding balance after the ledger entry.
+    """
+
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.PROTECT,
+        related_name="ledger_entries",
+        db_index=True,
+    )
+
+    sale = models.ForeignKey(
+        Sale,
+        on_delete=models.PROTECT,
+        related_name="ledger_entries",
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+
+    payment = models.ForeignKey(
+        Payment,
+        on_delete=models.PROTECT,
+        related_name="ledger_entries",
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+
+    date = models.DateField()
+
+    debit = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+
+    credit = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+
+    balance = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        editable=False,
+    )
+
+    remarks = models.TextField(
+        blank=True,
+        null=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        verbose_name = "Customer Ledger"
+        verbose_name_plural = "Customer Ledgers"
+
+        ordering = ["date", "id"]
+
+        indexes = [
+            models.Index(
+                fields=["customer", "date"],
+                name="ledger_customer_date_idx",
+            ),
+            models.Index(
+                fields=["customer", "sale"],
+                name="ledger_customer_sale_idx",
+            ),
+            models.Index(
+                fields=["customer", "payment"],
+                name="ledger_customer_payment_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.customer.customer_name} - "
+            f"{self.date} - Balance: {self.balance}"
+        )
+
+    def clean(self):
+        """
+        Validate debit/credit values.
+
+        A ledger entry should normally contain either a debit
+        or a credit, not both.
+        """
+
+        if self.debit < Decimal("0.00"):
+            raise ValidationError(
+                {"debit": "Debit cannot be negative."}
+            )
+
+        if self.credit < Decimal("0.00"):
+            raise ValidationError(
+                {"credit": "Credit cannot be negative."}
+            )
+
+        if (
+            self.debit > Decimal("0.00")
+            and self.credit > Decimal("0.00")
+        ):
+            raise ValidationError(
+                "A ledger entry cannot have both debit and credit."
+            )
+
+        if self.customer_id and self.sale_id:
+            if self.sale.customer_id != self.customer_id:
+                raise ValidationError(
+                    "Sale customer does not match ledger customer."
+                )
+
+        if self.customer_id and self.payment_id:
+            if self.payment.customer_id != self.customer_id:
+                raise ValidationError(
+                    "Payment customer does not match ledger customer."
+                )
 
 
 

@@ -298,3 +298,63 @@ Traceback (most recent call last):
     raise NoReverseMatch(msg)
 django.urls.exceptions.NoReverseMatch: Reverse for 'product_delete' not found. 'product_delete' is not a valid view function or pattern name.
 [2026-08-14 23:27:36,791] INFO views Product deleted successfully. product_id=1 product_name=Maggi Noodles 4-Pack user=admin
+[2026-08-18 16:41:20,759] INFO views User logged out: username=admin
+[2026-08-18 16:41:34,479] INFO views User logged in: username=retailer1
+[2026-08-18 16:42:04,240] INFO views User logged out: username=retailer1
+[2026-08-18 16:42:42,396] INFO views User logged in: username=retailer1
+[2026-08-18 21:33:51,591] INFO views Retailer 3: 0 low stock product(s) found.
+[2026-08-18 22:00:16,571] INFO views Retailer 3: 0 low stock product(s) found.
+[2026-08-18 23:49:07,479] INFO views User logged out: username=retailer1
+[2026-08-18 23:49:16,967] INFO views User logged in: username=admin
+[2026-08-20 19:21:58,904] WARNING views User 1 has no associated retailer; cannot fetch low stock products.
+[2026-08-20 19:51:41,357] INFO views Product added by user=admin: product=Maggi Noodles 4-Pack, retailer=Abc Genral Store
+[2026-08-20 19:54:19,313] ERROR views Unexpected error while creating purchase order.
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 1030, in _handle_add_order
+    subtotal=subtotal,
+             ^^^^^^^^
+UnboundLocalError: cannot access local variable 'subtotal' where it is not associated with a value
+[2026-08-20 20:05:22,668] ERROR views Unexpected error while creating purchase order.
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 1044, in _handle_add_order
+    grand_total=grand_total,
+                ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'grand_total' where it is not associated with a value
+[2026-08-20 20:19:45,703] INFO views Purchase item created and stock updated. purchase_id=4 product_id=3 product=Haldiram Bhujia Sev 400g old_stock=10 purchase_quantity=5 free_quantity=0 stock_added=5 new_stock=15
+[2026-08-20 20:19:45,708] INFO views Purchase item created and stock updated. purchase_id=4 product_id=4 product=Maggi Noodles 4-Pack old_stock=0 purchase_quantity=5 free_quantity=0 stock_added=5 new_stock=5
+[2026-08-20 20:19:45,861] INFO views Purchase created successfully. user=admin bill_number=BILL-2026-001 retailer=Abc Genral Store subtotal=830.00 gst=41.50 grand_total=984.50 paid=500 due=484.50
+[2026-08-20 20:24:51,176] INFO views Product updated successfully. product_id=4 product_name=Maggi Noodles 4-Pack changed_fields=['minimum_stock'] user=admin
+[2026-08-20 20:25:02,077] INFO views Product updated successfully. product_id=3 product_name=Haldiram Bhujia Sev 400g changed_fields=['minimum_stock'] user=admin
+[2026-08-20 20:25:24,611] WARNING views User 1 has no associated retailer; cannot fetch low stock products.
+[2026-08-20 20:26:59,147] WARNING views User 1 has no associated retailer; cannot fetch low stock products.
+[2026-08-20 20:27:55,332] INFO views User logged out: username=admin
+[2026-08-20 20:28:06,957] WARNING views Failed login attempt for username=retailer
+[2026-08-20 20:28:18,598] INFO views User logged in: username=retailer1
+[2026-08-20 20:28:23,487] INFO views Retailer 3: 0 low stock product(s) found.
+[2026-08-20 21:28:54,952] INFO views User logged out: username=retailer1
+[2026-08-20 21:29:05,759] INFO views User logged in: username=admin
+[2026-08-20 21:31:23,538] INFO views User logged out: username=admin
+[2026-08-20 21:31:35,718] INFO views User logged in: username=retailer2
+[2026-08-20 21:31:44,749] INFO views Retailer 1: 0 low stock product(s) found.
+[2026-08-20 21:32:15,349] INFO views Product updated successfully. product_id=3 product_name=Haldiram Bhujia Sev 400g changed_fields=['minimum_stock'] user=retailer2
+[2026-08-20 21:32:18,965] INFO views Retailer 1: 1 low stock product(s) found.
+[2026-08-20 21:32:49,649] INFO views Product updated successfully. product_id=4 product_name=Maggi Noodles 4-Pack changed_fields=['minimum_stock'] user=retailer2
+[2026-08-20 21:32:51,411] INFO views Retailer 1: 2 low stock product(s) found.
+[2026-08-20 21:41:25,063] INFO views Retailer 1: 2 low stock product(s) found.
+[2026-08-20 21:41:26,103] INFO views Retailer 1: 2 low stock product(s) found.
+[2026-08-20 21:41:26,398] INFO views Retailer 1: 2 low stock product(s) found.
+[2026-08-20 21:41:26,588] INFO views Retailer 1: 2 low stock product(s) found.
+[2026-08-20 21:41:31,120] INFO views Retailer 1: 2 low stock product(s) found.
+[2026-08-20 21:41:52,037] INFO views Retailer 1: 2 low stock product(s) found.
+[2026-08-20 21:42:08,777] INFO views Retailer 1: 2 low stock product(s) found.
+[2026-08-20 21:42:49,365] INFO views Retailer 1: 2 low stock product(s) found.
+[2026-08-20 21:42:58,959] INFO views User logged out: username=retailer2
+[2026-08-20 21:43:07,062] INFO views User logged in: username=admin
+[2026-08-20 21:43:10,470] INFO views Superadmin 1 viewing low stock products for all retailers.
+[2026-08-20 21:43:10,471] INFO views Superadmin 1: 2 low stock product(s) found.
+[2026-08-20 21:49:22,696] INFO views Superadmin 1 viewing low stock products for all retailers.
+[2026-08-20 21:49:22,699] INFO views Superadmin 1: 2 low stock product(s) found.
+[2026-08-20 23:38:38,613] INFO views User logged out: username=admin
+[2026-08-21 18:30:37,700] INFO views User logged in: username=admin
+[2026-08-21 18:31:10,887] INFO views Superadmin 1 viewing low stock products for all retailers.
+[2026-08-21 18:31:10,889] INFO views Superadmin 1: 2 low stock product(s) found.

@@ -45,10 +45,11 @@
             </a>
             {% endif %}
 
-            <a href="{% url 'product_list' %}" class="nav-item {% if request.path == '/product-list/' or request.path == '/add-product/' %}active{% endif %}">
+            <a href="{% url 'product_list' %}" class="nav-item {% if request.path == '/product-list/' or request.path == '/add-product/' or request.path == '/low-stock/' %}active{% endif %}">
                 <i class="fas fa-cart-plus"></i>
                 <span>Products</span>
             </a>
+            
         </div>
 
         <div class="nav-section">
@@ -58,7 +59,7 @@
                 <span>Purchase</span>
                 <span class="nav-badge">12</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="{% url 'sale_create' %}" class="nav-item {% if request.path == '/sale-create/' %}active{% endif %}">
                 <i class="fas fa-chart-line"></i>
                 <span>Sales</span>
             </a>

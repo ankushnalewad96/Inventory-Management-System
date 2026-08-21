@@ -16,43 +16,6 @@
 {% endblock %}
 
 {% block body %}
-<!-- Stats Cards -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon blue">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-            </svg>
-        </div>
-        <div class="stat-info">
-            <span class="stat-value">{{ total_products|default:"0" }}</span>
-            <span class="stat-label">Total Products</span>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon green">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-        </div>
-        <div class="stat-info">
-            <span class="stat-value">{{ active_products|default:"0" }}</span>
-            <span class="stat-label">Active Products</span>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon red">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-            </svg>
-        </div>
-        <div class="stat-info">
-            <span class="stat-value">{{ out_of_stock_count|default:"0" }}</span>
-            <span class="stat-label">Out of Stock</span>
-        </div>
-    </div>
-</div>
-
 <!-- Toolbar -->
 <div class="toolbar">
 
@@ -87,61 +50,215 @@
 
     </form>
 
-
-    <!-- Status Filters -->
-    <div class="filter-group">
-
-        <a
-            href="?status=all{% if search %}&search={{ search|urlencode }}{% endif %}"
-            class="filter-chip {% if status == 'all' %}active{% endif %}"
-        >
-            All
-        </a>
-
-        <a
-            href="?status=active{% if search %}&search={{ search|urlencode }}{% endif %}"
-            class="filter-chip {% if status == 'active' %}active{% endif %}"
-        >
-            Active
-        </a>
-
-        <a
-            href="?status=inactive{% if search %}&search={{ search|urlencode }}{% endif %}"
-            class="filter-chip {% if status == 'inactive' %}active{% endif %}"
-        >
-            Inactive
-        </a>
-
-        <a
-            href="?status=out_of_stock{% if search %}&search={{ search|urlencode }}{% endif %}"
-            class="filter-chip {% if status == 'out_of_stock' %}active{% endif %}"
-        >
-            Out of Stock
-        </a>
-
-    </div>
-
-    <a href="{% url 'add_product' %}" class="btn-add">
-        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-        </svg>
-        Add Product
-    </a>
-
-    <a href="{% url 'low_stock_alert' %}" class="btn-add">
-        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-        </svg>
-        Reorder List
-    </a>
-
 </div>
 
 
 <!-- Table -->
 <div class="table-container">
     <div class="table-header">
-        <span class="table-title">Product List</span>
+        <span class="table-title">Reorder List</span>
+        <span class="table-count">{{ products|length }} products found</span>
+    </div>
+
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    {% if is_admin %}
+                        <th>Retailer</th>
+                    {% endif %}
+                    <th>Product</th>
+                    <th>Brand</th>
+                    <th>Category</th>
+                    <th>Unit</th>
+                    <th class="right">Purchase</th>
+                    <th class="right">Selling</th>
+                    <th class="right">MRP</th>
+                    <th class="center">Stock</th>
+                    <th class="center">Minimum Stock</th>
+                    <th class="center">GST</th>
+                    <th class="center">Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for product in products %}
+                <tr>
+
+                    <!-- Product -->
+                    {% if is_admin %}
+                        <td>
+                            {% if product.retailer %}
+                                <div class="product-info">
+                                    <span class="product-name">
+                                        {{ product.retailer.shop_name }}
+                                    </span>
+
+                                    {% if product.retailer.owner_name %}
+                                        <span class="product-meta">
+                                            {{ product.retailer.owner_name }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    {% endif %}
+                    <td>
+                        <div class="product-info">
+                            <span class="product-name">
+                                {{ product.product_name }}
+                            </span>
+
+                            <span class="product-meta">
+                                {% if product.hsn_code %}
+                                    HSN: {{ product.hsn_code }}
+                                {% endif %}
+
+                                {% if product.barcode %}
+                                    {% if product.hsn_code %} | {% endif %}
+                                    Barcode: {{ product.barcode }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </td>
+
+                    <!-- Brand -->
+                    <td>
+                        {% if product.brand %}
+                            {{ product.brand.brand_name }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <!-- Category -->
+                    <td>
+                        {% if product.category %}
+                            {{ product.category.category_name }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <!-- Unit -->
+                    <td>
+                        {% if product.unit %}
+                            {{ product.unit.short_name|default:product.unit }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <!-- Purchase Price -->
+                    <td class="right">
+                        <div class="price">
+                            ₹{{ product.purchase_price|default:"0.00" }}
+                        </div>
+                    </td>
+
+                    <!-- Selling Price -->
+                    <td class="right">
+                        <div class="price">
+                            ₹{{ product.selling_price|default:"0.00" }}
+                        </div>
+                    </td>
+
+                    <!-- MRP -->
+                    <td class="right">
+                        <div class="price-muted">
+                            ₹{{ product.mrp|default:"0.00" }}
+                        </div>
+                    </td>
+
+                    <!-- Current Stock -->
+                    <td class="center">
+                        {% if product.current_stock == 0 %}
+                            <span class="stock-value low">
+                                {{ product.current_stock }}
+                            </span>
+
+                        {% elif product.current_stock <= product.minimum_stock %}
+                            <span class="stock-value medium">
+                                {{ product.current_stock }}
+                            </span>
+
+                        {% else %}
+                            <span class="stock-value high">
+                                {{ product.current_stock }}
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Minimum Stock -->
+                    <td class="center">
+                        <span>
+                            {{ product.minimum_stock|default:"0" }}
+                        </span>
+                    </td>
+
+                    <!-- GST -->
+                    <td class="center">
+                        <span class="price-muted">
+                            {{ product.gst|default:"0" }}%
+                        </span>
+                    </td>
+
+                    <!-- Status -->
+                    <td class="center">
+                        {% if product.is_active %}
+                            <span class="badge badge-success">
+                                <span class="badge-dot"></span>
+                                Active
+                            </span>
+                        {% else %}
+                            <span class="badge badge-inactive">
+                                <span class="badge-dot"></span>
+                                Inactive
+                            </span>
+                        {% endif %}
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="11">
+                        <div class="empty-state">
+
+                            <svg
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                                />
+                            </svg>
+
+                            <h3>No Products Found</h3>
+
+                            <p>
+                                No products are currently available in the inventory.
+                            </p>
+
+                        </div>
+                    </td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- <div class="table-header">
+        <span class="table-title">Low Stock List</span>
         <span class="table-count">{{ products|length }} products found</span>
     </div>
 
@@ -160,7 +277,6 @@
                     <th class="center">Minimum Stock</th>
                     <th class="center">GST</th>
                     <th class="center">Status</th>
-                    <th class="center" style="width: 120px;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -212,47 +328,6 @@
                             <span class="badge badge-inactive"><span class="badge-dot"></span> Inactive</span>
                         {% endif %}
                     </td>
-                    <td class="center">
-                    <div class="actions">
-                        <a href="javascript:void(0)" 
-                            class="action-btn view" 
-                            title="View"
-                            onclick="openProductModal({
-                                id: '{{ product.id }}',
-                                name: '{{ product.product_name|escapejs }}',
-                                hsn: '{{ product.hsn_code }}',
-                                barcode: '{{ product.barcode|default:''|escapejs }}',
-                                category: '{{ product.category.category_name|default:'—'|escapejs }}',
-                                brand: '{{ product.brand.brand_name|default:'—'|escapejs }}',
-                                unit: '{{ product.unit.short_name|default:product.unit|default:'—'|escapejs }}',
-                                purchasePrice: '{{ product.purchase_price }}',
-                                sellingPrice: '{{ product.selling_price }}',
-                                gst: '{{ product.gst }}',
-                                currentStock: '{{ product.current_stock }}',
-                                minimumStock: '{{ product.minimum_stock }}',
-                                mrp: '{{ product.mrp }}',
-                                isActive: {% if product.is_active %}true{% else %}false{% endif %}
-                            })">
-                                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                </svg>
-                            </a>
-                        
-                        <button 
-                            type="button" 
-                            class="action-btn delete" 
-                            title="Delete"
-                            data-url="{% url 'delete_product' product.id %}"
-                            data-name="{{ product.product_name|escapejs }}"
-                            onclick="handleDelete(this)"
-                        >
-                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                        </button>
-                    </div>
-                </td>
                 </tr>
                 {% empty %}
                 <tr>
@@ -269,133 +344,9 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
+    </div> -->
 
-<!-- Modal Overlay -->
-<div class="modal-overlay" id="productModal">
-    <div class="modal-container">
-        
-        <!-- Header -->
-        <div class="modal-header">
-            <div class="modal-title-group">
-                <h2 id="modalProductName">Product Name</h2>
-                <span class="modal-subtitle" id="modalProductMeta">HSN: — | Barcode: —</span>
-            </div>
-            <button type="button" class="modal-close" onclick="closeModal()">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-        </div>
 
-        <!-- Body -->
-        <div class="modal-body">
-            <form id="productEditForm" method="POST" action="{% url 'update_product' %}">
-                {% csrf_token %}
-                <input type="hidden" name="product_id" id="modalProductId">
-
-                <div class="modal-layout">
-                    
-                    <!-- Left: Static Info -->
-                    <div class="modal-info-panel">
-                        <div class="modal-section-title">Product Info</div>
-                        <div class="info-list">
-                            <div class="info-item">
-                                <span class="info-item-label">Category</span>
-                                <span class="info-item-value" id="modalCategory">—</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-item-label">Brand</span>
-                                <span class="info-item-value" id="modalBrand">—</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-item-label">Unit</span>
-                                <span class="info-item-value" id="modalUnit">—</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-item-label">HSN Code</span>
-                                <span class="info-item-value" id="modalHsn">—</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right: Editable Fields -->
-                    <div class="modal-edit-panel" id="editPanel">
-                        <div class="modal-section-title">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                            </svg>
-                            Editable Fields
-                        </div>
-
-                        <div class="edit-grid">
-                            <div class="modal-form-group">
-                                <label class="modal-form-label" for="modalPurchasePrice">Purchase Price (₹)</label>
-                                <input type="number" id="modalPurchasePrice" name="purchase_price" class="modal-form-input" step="0.01" min="0" readonly>
-                            </div>
-
-                            <div class="modal-form-group">
-                                <label class="modal-form-label" for="modalSellingPrice">Selling Price (₹)</label>
-                                <input type="number" id="modalSellingPrice" name="selling_price" class="modal-form-input" step="0.01" min="0" readonly>
-                            </div>
-
-                            <div class="modal-form-group">
-                                <label class="modal-form-label" for="modalMrp">MRP (₹)</label>
-                                <input type="number" id="modalMrp" name="mrp" class="modal-form-input" step="0.01" min="0" readonly>
-                            </div>
-
-                            <div class="modal-form-group">
-                                <label class="modal-form-label" for="modalGst">GST (%)</label>
-                                <input type="number" id="modalGst" name="gst" class="modal-form-input" step="0.01" min="0" max="100" readonly>
-                            </div>
-
-                            <div class="modal-form-group">
-                                <label class="modal-form-label" for="modalCurrentStock">Current Stock</label>
-                                <input type="number" id="modalCurrentStock" name="current_stock" class="modal-form-input" min="0" readonly>
-                            </div>
-
-                            <div class="modal-form-group">
-                                <label class="modal-form-label" for="modalMinimumStock">Minimum Stock</label>
-                                <input type="number" id="modalMinimumStock" name="minimum_stock" class="modal-form-input" min="0" readonly>
-                            </div>
-                        </div>
-
-                        <!-- Status Toggle -->
-                        <div class="modal-form-group status-group">
-                            <label class="modal-form-label">Status</label>
-                            <div class="modal-toggle-row">
-                                <div class="modal-toggle disabled" id="statusToggle" onclick="toggleModalStatus()">
-                                    <div class="modal-toggle-knob"></div>
-                                </div>
-                                <span class="modal-toggle-label" id="statusToggleLabel">Active</span>
-                            </div>
-                            <input type="hidden" name="is_active" id="modalIsActive" value="true">
-                        </div>
-                    </div>
-
-                </div>
-            </form>
-        </div>
-
-        <!-- Footer -->
-        <div class="modal-footer">
-            <button type="button" class="btn-modal btn-secondary" onclick="closeModal()">Close</button>
-            <button type="button" class="btn-modal btn-edit" id="modalEditBtn" onclick="enableEditMode()">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                </svg>
-                Edit
-            </button>
-            <button type="button" class="btn-modal btn-save" id="modalSaveBtn" onclick="saveProduct()" style="display: none;">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                </svg>
-                Save Changes
-            </button>
-        </div>
-
-    </div>
-</div>
 
 <!-- Toast -->
 <div class="toast" id="modalToast">
