@@ -34,6 +34,7 @@ class RetailerAdmin(admin.ModelAdmin):
 class SupplierAdmin(admin.ModelAdmin):
 
     list_display = (
+        "retailer",
         "supplier_name",
         "mobile",
         "city",

@@ -358,3 +358,34 @@ UnboundLocalError: cannot access local variable 'grand_total' where it is not as
 [2026-08-21 18:30:37,700] INFO views User logged in: username=admin
 [2026-08-21 18:31:10,887] INFO views Superadmin 1 viewing low stock products for all retailers.
 [2026-08-21 18:31:10,889] INFO views Superadmin 1: 2 low stock product(s) found.
+[2026-08-24 23:28:25,306] INFO views Purchase item created and stock updated. purchase_id=5 product_id=3 product=Haldiram Bhujia Sev 400g old_stock=15 purchase_quantity=12 free_quantity=0 stock_added=12 new_stock=27
+[2026-08-24 23:28:25,337] INFO views Purchase item created and stock updated. purchase_id=5 product_id=4 product=Maggi Noodles 4-Pack old_stock=5 purchase_quantity=12 free_quantity=0 stock_added=12 new_stock=17
+[2026-08-24 23:28:25,408] INFO views Purchase created successfully. user=admin bill_number=BILL-2026-001 retailer=Abc Genral Store subtotal=1992.00 gst=99.60 grand_total=2151.60 paid=591 due=1560.60
+[2026-08-24 23:35:13,297] INFO views Supplier 'Supplier3' (ID: 3) created by retailer 1
+[2026-08-24 23:35:35,043] WARNING views Duplicate supplier 'Supplier3' attempted for retailer 1
+[2026-08-24 23:35:47,169] WARNING views Duplicate supplier 'Supplier3' attempted for retailer 1
+[2026-08-25 18:24:56,141] INFO views Supplier 'Supplier4' (ID: 4) created by retailer 1
+[2026-08-25 18:31:10,821] INFO views Supplier 'Supplier4' (ID: 5) created by retailer 1
+[2026-08-25 18:38:41,671] WARNING views Duplicate supplier 'Supplier3' attempted for retailer 1
+[2026-08-25 18:38:48,851] WARNING views Duplicate supplier 'Supplier4' attempted for retailer 1
+[2026-08-25 18:38:54,215] INFO views Supplier 'Supplier5' (ID: 6) created successfully by User ID 1 for Retailer ID 1
+[2026-08-25 18:39:57,987] WARNING views Duplicate supplier 'Supplier5' attempted for retailer 1
+[2026-08-25 18:42:26,715] INFO views Retailer account created by admin=admin: username=retailer3, shop=Abcdef Genral Store
+[2026-08-25 18:51:05,289] INFO views Retailer account created successfully. Retailer ID=5, User ID=6, Username=retailer4, Shop=Genral Store1, Created By=admin
+[2026-08-25 19:03:36,956] WARNING views Duplicate barcode attempted while adding product. Barcode=8901058002315, User=admin
+[2026-08-25 19:03:58,403] INFO views Product added successfully. Product ID=5, Product=Amul Taaza Fresh Milk 1L, Retailer=Abc Genral Store, Created By=admin
+[2026-08-25 19:09:43,290] INFO views Product added successfully. Product ID=6, Product=XYZ, Retailer=Abc Genral Store, Created By=admin
+[2026-08-25 20:11:04,040] INFO views Product added successfully. Product ID=7, Product=XYZ1, Retailer=Abc Genral Store, Created By=admin
+[2026-08-25 21:59:55,887] INFO views New category created. Category=Ghee & Vanaspati, Retailer=1, User=admin
+[2026-08-25 21:59:55,934] INFO views New brand created. Brand=Patanjali, Retailer=1, User=admin
+[2026-08-25 21:59:56,004] INFO views New unit created. Unit=Pouch (or 500 ML), User=admin
+[2026-08-25 21:59:56,078] INFO views Product added successfully. Product ID=8, Product=Patanjali Cow's Ghee 500ml Pouch, Retailer=Abc Genral Store, Created By=admin
+[2026-08-25 22:53:24,150] INFO views Supplier 'Supplier1' (ID: 7) created successfully by User ID 1 for Retailer ID 5
+[2026-08-25 23:04:20,257] WARNING views Duplicate supplier 'Supplier1' attempted for retailer 5
+[2026-08-25 23:10:16,166] INFO views Supplier 'Supplier' (ID: 8) created successfully by User ID 1 for Retailer ID 5
+[2026-08-25 23:11:05,227] WARNING views Duplicate supplier 'Supplier' attempted for retailer 5
+[2026-08-25 23:13:10,145] WARNING views Duplicate supplier 'Supplier' attempted for retailer 5
+[2026-08-25 23:15:07,189] WARNING views Duplicate username registration attempt. Username=retailer1, Created By=admin
+[2026-08-25 23:17:51,236] INFO views Purchase item created and stock updated. purchase_id=6 product_id=8 product=Patanjali Cow's Ghee 500ml Pouch old_stock=0 purchase_quantity=12 free_quantity=0 stock_added=12 new_stock=12
+[2026-08-25 23:17:51,240] INFO views Purchase item created and stock updated. purchase_id=6 product_id=5 product=Amul Taaza Fresh Milk 1L old_stock=0 purchase_quantity=24 free_quantity=0 stock_added=24 new_stock=24
+[2026-08-25 23:17:51,347] INFO views Purchase created successfully. user=admin bill_number=BILL-2026-001 retailer=Abc Genral Store subtotal=4224.00 gst=211.20 grand_total=4555.20 paid=500 due=4055.20

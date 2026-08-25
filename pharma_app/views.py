@@ -21,6 +21,8 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 
 
+
+
 logger = logging.getLogger("pharma_app")
 
 
@@ -47,68 +49,306 @@ def dashboard(request):
     return render(request, "dashboard.html", context)
 
 
+
+
+@login_required(login_url="/user-login/")
 def retailer_register(request):
     """
     Handles retailer account creation.
 
-    Restricted to admin/staff users only — retailers do not self-register.
-    Creates a CustomUser account and a linked Retailer profile in a single
-    atomic transaction — if profile creation fails, the user account is
-    rolled back too, so we never end up with an orphaned user.
-    """
-    if request.method == "POST":
-        return _handle_retailer_registration(request)
+    Only superusers and staff users are allowed to create
+    retailer accounts.
 
-    return render(request, "register.html")
+    Supports:
+    - Normal browser form submission.
+    - AJAX form submission returning JSON.
+
+    Creates the CustomUser and linked Retailer profile
+    inside one atomic transaction.
+    """
+
+    # ------------------------------------------------------------
+    # ACCESS CONTROL
+    # ------------------------------------------------------------
+    if not (request.user.is_superuser or request.user.is_staff):
+
+        logger.warning(
+            "Unauthorized retailer registration attempt. User ID=%s",
+            request.user.id
+        )
+
+        error_message = (
+            "You are not authorized to register a retailer."
+        )
+
+        is_ajax = (
+            request.headers.get("X-Requested-With")
+            == "XMLHttpRequest"
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message
+                },
+                status=403
+            )
+
+        messages.error(request, error_message)
+        return redirect("user_login")
+
+    # ------------------------------------------------------------
+    # GET REQUEST
+    # ------------------------------------------------------------
+    if request.method != "POST":
+        return render(
+            request,
+            "register.html"
+        )
+
+    # ------------------------------------------------------------
+    # POST REQUEST
+    # ------------------------------------------------------------
+    return _handle_retailer_registration(request)
 
 
 def _handle_retailer_registration(request):
-    """Validates form data and creates the User + Retailer records."""
+    """
+    Validates retailer registration data and creates:
 
-    # --- Collect form data ---
-    username = request.POST.get("username", "").strip()
-    password = request.POST.get("password", "")
-    email = request.POST.get("email", "").strip()
+        CustomUser
+             |
+             └── Retailer
 
-    shop_name = request.POST.get("shop_name", "").strip()
-    owner_name = request.POST.get("owner_name", "").strip()
-    mobile = request.POST.get("mobile", "").strip()
-    gst_number = request.POST.get("gst_number", "").strip()
-    pan_number = request.POST.get("pan_number", "").strip()
-    address = request.POST.get("address", "").strip()
-    city = request.POST.get("city", "").strip()
-    state = request.POST.get("state", "").strip()
-    pincode = request.POST.get("pincode", "").strip()
+    Both records are created atomically.
+    """
 
-    # --- Basic validation ---
-    required_fields = {
-        "Username": username,
-        "Password": password,
-        "Email": email,
-        "Shop Name": shop_name,
-        "Owner Name": owner_name,
-        "Mobile": mobile,
-        "Address": "address",
-        "City": city,
-        "State": state,
-        "Pincode": pincode,
-    }
-    missing = [label for label, value in required_fields.items() if not value]
-    if missing:
-        messages.error(request, f"Missing required field(s): {', '.join(missing)}")
-        return redirect("retailer_register")
+    is_ajax = (
+        request.headers.get("X-Requested-With")
+        == "XMLHttpRequest"
+    )
 
-    if CustomUser.objects.filter(username=username).exists():
-        messages.error(request, "Username already exists.")
-        return redirect("retailer_register")
-
-    if CustomUser.objects.filter(email=email).exists():
-        messages.error(request, "Email already exists.")
-        return redirect("retailer_register")
-
-    # --- Create user + retailer atomically ---
     try:
+
+        # ========================================================
+        # COLLECT FORM DATA
+        # ========================================================
+
+        username = request.POST.get(
+            "username",
+            ""
+        ).strip()
+
+        password = request.POST.get(
+            "password",
+            ""
+        )
+
+        email = request.POST.get(
+            "email",
+            ""
+        ).strip()
+
+        shop_name = request.POST.get(
+            "shop_name",
+            ""
+        ).strip()
+
+        owner_name = request.POST.get(
+            "owner_name",
+            ""
+        ).strip()
+
+        mobile = request.POST.get(
+            "mobile",
+            ""
+        ).strip()
+
+        gst_number = request.POST.get(
+            "gst_number",
+            ""
+        ).strip()
+
+        pan_number = request.POST.get(
+            "pan_number",
+            ""
+        ).strip()
+
+        address = request.POST.get(
+            "address",
+            ""
+        ).strip()
+
+        city = request.POST.get(
+            "city",
+            ""
+        ).strip()
+
+        state = request.POST.get(
+            "state",
+            ""
+        ).strip()
+
+        pincode = request.POST.get(
+            "pincode",
+            ""
+        ).strip()
+
+        # ========================================================
+        # REQUIRED FIELD VALIDATION
+        # ========================================================
+
+        required_fields = {
+            "Username": username,
+            "Password": password,
+            "Email": email,
+            "Shop Name": shop_name,
+            "Owner Name": owner_name,
+            "Mobile": mobile,
+            "Address": "address",
+            "City": city,
+            "State": state,
+            "Pincode": pincode,
+        }
+
+        missing_fields = [
+            field_name
+            for field_name, value in required_fields.items()
+            if not value
+        ]
+
+        if missing_fields:
+
+            error_message = (
+                "Please fill all required fields: "
+                + ", ".join(missing_fields)
+            )
+
+            if is_ajax:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": error_message,
+                        "missing_fields": missing_fields
+                    },
+                    status=400
+                )
+
+            messages.error(
+                request,
+                error_message
+            )
+
+            return redirect("retailer_register")
+
+        # ========================================================
+        # USERNAME VALIDATION
+        # ========================================================
+
+        if CustomUser.objects.filter(
+            username__iexact=username
+        ).exists():
+
+            logger.warning(
+                "Duplicate username registration attempt. "
+                "Username=%s, Created By=%s",
+                username,
+                request.user.username
+            )
+
+            error_message = "Username already exists."
+
+            if is_ajax:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": error_message,
+                        "field": "username"
+                    },
+                    status=409
+                )
+
+            messages.error(
+                request,
+                error_message
+            )
+
+            return redirect("retailer_register")
+
+        # ========================================================
+        # EMAIL VALIDATION
+        # ========================================================
+
+        if CustomUser.objects.filter(
+            email__iexact=email
+        ).exists():
+
+            logger.warning(
+                "Duplicate email registration attempt. "
+                "Email=%s, Created By=%s",
+                email,
+                request.user.username
+            )
+
+            error_message = "Email already exists."
+
+            if is_ajax:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": error_message,
+                        "field": "email"
+                    },
+                    status=409
+                )
+
+            messages.error(
+                request,
+                error_message
+            )
+
+            return redirect("retailer_register")
+
+        # ========================================================
+        # MOBILE VALIDATION
+        # ========================================================
+
+        mobile_digits = "".join(
+            character
+            for character in mobile
+            if character.isdigit()
+        )
+
+        if not 10 <= len(mobile_digits) <= 15:
+
+            error_message = (
+                "Please enter a valid mobile number."
+            )
+
+            if is_ajax:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": error_message,
+                        "field": "mobile"
+                    },
+                    status=400
+                )
+
+            messages.error(
+                request,
+                error_message
+            )
+
+            return redirect("retailer_register")
+
+        # ========================================================
+        # CREATE USER + RETAILER ATOMICALLY
+        # ========================================================
+
         with transaction.atomic():
+
             user = CustomUser.objects.create_user(
                 username=username,
                 email=email,
@@ -116,36 +356,238 @@ def _handle_retailer_registration(request):
                 user_type="retailer",
             )
 
-            Retailer.objects.create(
+            retailer = Retailer.objects.create(
                 user=user,
                 shop_name=shop_name,
                 owner_name=owner_name,
-                mobile=mobile,
+                mobile=mobile_digits,
                 email=email,
                 gst_number=gst_number or None,
                 pan_number=pan_number or None,
-                address=address,
+                address="address",
                 city=city,
                 state=state,
                 pincode=pincode,
             )
 
+        # ========================================================
+        # LOG SUCCESS
+        # ========================================================
+
         logger.info(
-            "Retailer account created by admin=%s: username=%s, shop=%s",
-            request.user.username, username, shop_name
+            "Retailer account created successfully. "
+            "Retailer ID=%s, User ID=%s, Username=%s, "
+            "Shop=%s, Created By=%s",
+            retailer.id,
+            user.id,
+            username,
+            shop_name,
+            request.user.username
         )
-        messages.success(request, "Retailer registered successfully.")
+
+        # ========================================================
+        # AJAX SUCCESS RESPONSE
+        # ========================================================
+
+        if is_ajax:
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "id": retailer.id,
+                    "user_id": user.id,
+                    "username": user.username,
+                    "shop_name": retailer.shop_name,
+                    "message": "Retailer registered successfully."
+                },
+                status=201
+            )
+
+        # ========================================================
+        # NORMAL FORM SUCCESS
+        # ========================================================
+
+        messages.success(
+            request,
+            "Retailer registered successfully."
+        )
+
         return redirect("user_login")
 
+    # ============================================================
+    # DATABASE INTEGRITY ERROR
+    # ============================================================
+
     except IntegrityError:
-        logger.exception("IntegrityError during retailer registration for username=%s", username)
-        messages.error(request, "Registration failed due to a data conflict. Please try again.")
-        return redirect("retailer_register")
+
+        logger.exception(
+            "IntegrityError during retailer registration. "
+            "Username=%s, Created By=%s",
+            request.POST.get("username", "").strip(),
+            request.user.username
+        )
+
+        error_message = (
+            "Registration failed because the username, email, "
+            "or another value already exists."
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message
+                },
+                status=409
+            )
+
+        messages.error(
+            request,
+            error_message
+        )
+
+    # ============================================================
+    # UNEXPECTED ERROR
+    # ============================================================
 
     except Exception:
-        logger.exception("Unexpected error during retailer registration for username=%s", username)
-        messages.error(request, "Something went wrong. Please try again later.")
-        return redirect("retailer_register")
+
+        logger.exception(
+            "Unexpected error during retailer registration. "
+            "Username=%s, Created By=%s",
+            request.POST.get("username", "").strip(),
+            request.user.username
+        )
+
+        error_message = (
+            "Something went wrong while registering the retailer. "
+            "Please try again later."
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message
+                },
+                status=500
+            )
+
+        messages.error(
+            request,
+            error_message
+        )
+
+    return redirect("retailer_register")
+
+
+
+
+
+
+
+
+
+
+# def retailer_register(request):
+#     """
+#     Handles retailer account creation.
+
+#     Restricted to admin/staff users only — retailers do not self-register.
+#     Creates a CustomUser account and a linked Retailer profile in a single
+#     atomic transaction — if profile creation fails, the user account is
+#     rolled back too, so we never end up with an orphaned user.
+#     """
+#     if request.method == "POST":
+#         return _handle_retailer_registration(request)
+
+#     return render(request, "register.html")
+
+
+# def _handle_retailer_registration(request):
+#     """Validates form data and creates the User + Retailer records."""
+
+#     # --- Collect form data ---
+#     username = request.POST.get("username", "").strip()
+#     password = request.POST.get("password", "")
+#     email = request.POST.get("email", "").strip()
+
+#     shop_name = request.POST.get("shop_name", "").strip()
+#     owner_name = request.POST.get("owner_name", "").strip()
+#     mobile = request.POST.get("mobile", "").strip()
+#     gst_number = request.POST.get("gst_number", "").strip()
+#     pan_number = request.POST.get("pan_number", "").strip()
+#     address = request.POST.get("address", "").strip()
+#     city = request.POST.get("city", "").strip()
+#     state = request.POST.get("state", "").strip()
+#     pincode = request.POST.get("pincode", "").strip()
+
+#     # --- Basic validation ---
+#     required_fields = {
+#         "Username": username,
+#         "Password": password,
+#         "Email": email,
+#         "Shop Name": shop_name,
+#         "Owner Name": owner_name,
+#         "Mobile": mobile,
+#         "Address": "address",
+#         "City": city,
+#         "State": state,
+#         "Pincode": pincode,
+#     }
+#     missing = [label for label, value in required_fields.items() if not value]
+#     if missing:
+#         messages.error(request, f"Missing required field(s): {', '.join(missing)}")
+#         return redirect("retailer_register")
+
+#     if CustomUser.objects.filter(username=username).exists():
+#         messages.error(request, "Username already exists.")
+#         return redirect("retailer_register")
+
+#     if CustomUser.objects.filter(email=email).exists():
+#         messages.error(request, "Email already exists.")
+#         return redirect("retailer_register")
+
+#     # --- Create user + retailer atomically ---
+#     try:
+#         with transaction.atomic():
+#             user = CustomUser.objects.create_user(
+#                 username=username,
+#                 email=email,
+#                 password=password,
+#                 user_type="retailer",
+#             )
+
+#             Retailer.objects.create(
+#                 user=user,
+#                 shop_name=shop_name,
+#                 owner_name=owner_name,
+#                 mobile=mobile,
+#                 email=email,
+#                 gst_number=gst_number or None,
+#                 pan_number=pan_number or None,
+#                 address=address,
+#                 city=city,
+#                 state=state,
+#                 pincode=pincode,
+#             )
+
+#         logger.info(
+#             "Retailer account created by admin=%s: username=%s, shop=%s",
+#             request.user.username, username, shop_name
+#         )
+#         messages.success(request, "Retailer registered successfully.")
+#         return redirect("user_login")
+
+#     except IntegrityError:
+#         logger.exception("IntegrityError during retailer registration for username=%s", username)
+#         messages.error(request, "Registration failed due to a data conflict. Please try again.")
+#         return redirect("retailer_register")
+
+#     except Exception:
+#         logger.exception("Unexpected error during retailer registration for username=%s", username)
+#         messages.error(request, "Something went wrong. Please try again later.")
+#         return redirect("retailer_register")
 
 
 def _login(request):
@@ -204,15 +646,40 @@ def user_logout(request):
     return redirect("user_login")
 
 
-@login_required(login_url='/user-login/')
+
+@login_required(login_url="/user-login/")
 def add_product(request):
     """
-    Handles product creation for a retailer.
+    Create a new product.
 
-    Displays a form pre-loaded with available retailers, categories,
-    brands, and units, and creates a new Product record on submission.
+    Supports:
+    - Normal browser form submission.
+    - AJAX/fetch submission returning JSON.
+
+    Security:
+    - Superusers/staff can create products for any active retailer.
+    - Normal users can create products only for their own retailer.
+
+    All product creation is performed inside an atomic transaction.
     """
-    retailers = Retailer.objects.all()
+
+    # REQUEST TYPE
+    is_ajax = (
+        request.headers.get("X-Requested-With")
+        == "XMLHttpRequest"
+    )
+
+    # LOAD FORM DATA
+    if request.user.is_superuser or request.user.is_staff:
+        retailers = Retailer.objects.filter(
+            is_active=True
+        )
+    else:
+        retailers = Retailer.objects.filter(
+            user=request.user,
+            is_active=True
+        )
+
     categories = Category.objects.all()
     brands = Brand.objects.all()
     units = Unit.objects.all()
@@ -224,108 +691,1467 @@ def add_product(request):
         "units": units,
     }
 
-    if request.method == "POST":
+    # ============================================================
+    # GET REQUEST
+    # ============================================================
+    if request.method != "POST":
+        return render(
+            request,
+            "add_product.html",
+            context
+        )
 
-        # --- Collect form data ---
-        retailer_id = request.POST.get("retailer", "").strip()
-        category_id = request.POST.get("category", "").strip()
-        brand_id = request.POST.get("brand", "").strip()
-        unit_id = request.POST.get("unit", "").strip()
+    # ============================================================
+    # COLLECT FORM DATA
+    # ============================================================
+    retailer_id = request.POST.get(
+        "retailer",
+        ""
+    ).strip()
 
-        product_name = request.POST.get("product_name", "").strip()
-        barcode = request.POST.get("barcode", "").strip()
-        hsn_code = request.POST.get("hsn_code", "").strip()
-        purchase_price = request.POST.get("purchase_price", "").strip()
-        selling_price = request.POST.get("selling_price", "").strip()
-        mrp = request.POST.get("mrp", "").strip()
-        minimum_stock = request.POST.get("minimum_stock", "0").strip()
-        current_stock = request.POST.get("current_stock", "10").strip()
-        gst = request.POST.get("gst", "0").strip()
+    category_id = request.POST.get(
+        "category",
+        ""
+    ).strip()
 
-        # --- Basic required-field validation ---
-        required_fields = {
-            "Retailer": retailer_id,
-            "Category": category_id,
-            "Brand": brand_id,
-            "Unit": unit_id,
-            "Product Name": product_name,
-            "HSN Code": hsn_code,
-            "Purchase Price": purchase_price,
-            "Selling Price": selling_price,
-            "MRP": mrp,
-        }
-        missing = [label for label, value in required_fields.items() if not value]
-        if missing:
-            messages.error(request, f"Missing required field(s): {', '.join(missing)}")
-            return render(request, "add_product.html", context)
+    brand_id = request.POST.get(
+        "brand",
+        ""
+    ).strip()
 
-        # --- Numeric field validation ---
-        try:
-            purchase_price = Decimal(purchase_price)
-            selling_price = Decimal(selling_price)
-            mrp = Decimal(mrp)
-            gst = Decimal(gst) if gst else Decimal("0")
-            minimum_stock = int(minimum_stock) if minimum_stock else 0
-            current_stock = int(current_stock) if current_stock else 0
-        except (InvalidOperation, ValueError):
-            messages.error(request, "Please enter valid numeric values for price, stock, and GST fields.")
-            return render(request, "add_product.html", context)
+    unit_id = request.POST.get(
+        "unit",
+        ""
+    ).strip()
 
-        # --- Fetch related objects safely ---
-        try:
-            retailer = get_object_or_404(Retailer, id=retailer_id)
-            category = get_object_or_404(Category, id=category_id)
-            brand = get_object_or_404(Brand, id=brand_id)
-            unit = get_object_or_404(Unit, id=unit_id)
-        except Exception:
-            logger.warning(
-                "Invalid related object reference while adding product: "
-                "retailer=%s, category=%s, brand=%s, unit=%s",
-                retailer_id, category_id, brand_id, unit_id,
+    product_name = request.POST.get(
+        "product_name",
+        ""
+    ).strip()
+
+    barcode = request.POST.get(
+        "barcode",
+        ""
+    ).strip()
+
+    hsn_code = request.POST.get(
+        "hsn_code",
+        ""
+    ).strip()
+
+    purchase_price = request.POST.get(
+        "purchase_price",
+        ""
+    ).strip()
+
+    selling_price = request.POST.get(
+        "selling_price",
+        ""
+    ).strip()
+
+    mrp = request.POST.get(
+        "mrp",
+        ""
+    ).strip()
+
+    minimum_stock = request.POST.get(
+        "minimum_stock",
+        "0"
+    ).strip()
+
+    current_stock = request.POST.get(
+        "current_stock",
+        "0"
+    ).strip()
+
+    gst = request.POST.get(
+        "gst",
+        "0"
+    ).strip()
+
+    # ============================================================
+    # REQUIRED FIELD VALIDATION
+    # ============================================================
+    required_fields = {
+        "Retailer": retailer_id,
+        "Category": category_id,
+        "Brand": brand_id,
+        "Unit": unit_id,
+        "Product Name": product_name,
+        "HSN Code": hsn_code,
+        "Purchase Price": purchase_price,
+        "Selling Price": selling_price,
+        "MRP": mrp,
+    }
+
+    missing_fields = [
+        field_name
+        for field_name, value in required_fields.items()
+        if not value
+    ]
+
+    if missing_fields:
+
+        error_message = (
+            "Please fill all required fields: "
+            + ", ".join(missing_fields)
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message,
+                    "missing_fields": missing_fields,
+                },
+                status=400
             )
-            messages.error(request, "Selected retailer, category, brand, or unit is invalid.")
-            return render(request, "add_product.html", context)
 
-        # --- Create product ---
-        try:
-            with transaction.atomic():
-                Product.objects.create(
-                    retailer=retailer,
-                    category=category,
-                    brand=brand,
-                    unit=unit,
-                    product_name=product_name,
-                    barcode=barcode or None,
-                    hsn_code=hsn_code,
-                    purchase_price=purchase_price,
-                    selling_price=selling_price,
-                    mrp=mrp,
-                    minimum_stock=minimum_stock,
-                    current_stock=current_stock,
-                    gst=gst,
+        messages.error(
+            request,
+            error_message
+        )
+
+        return render(
+            request,
+            "add_product.html",
+            context
+        )
+
+    # ============================================================
+    # NUMERIC VALIDATION
+    # ============================================================
+    try:
+
+        purchase_price = Decimal(
+            purchase_price
+        )
+
+        selling_price = Decimal(
+            selling_price
+        )
+
+        mrp = Decimal(
+            mrp
+        )
+
+        gst = (
+            Decimal(gst)
+            if gst
+            else Decimal("0")
+        )
+
+        minimum_stock = (
+            int(minimum_stock)
+            if minimum_stock
+            else 0
+        )
+
+        current_stock = (
+            int(current_stock)
+            if current_stock
+            else 0
+        )
+
+    except (
+        InvalidOperation,
+        ValueError,
+        TypeError
+    ):
+
+        logger.warning(
+            "Invalid numeric values while adding product. "
+            "User=%s, Product=%s",
+            request.user.username,
+            product_name
+        )
+
+        error_message = (
+            "Please enter valid numeric values for "
+            "price, stock, and GST fields."
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message,
+                },
+                status=400
+            )
+
+        messages.error(
+            request,
+            error_message
+        )
+
+        return render(
+            request,
+            "add_product.html",
+            context
+        )
+
+    # ============================================================
+    # BUSINESS VALIDATION
+    # ============================================================
+    if purchase_price < 0:
+
+        error_message = (
+            "Purchase price cannot be negative."
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message,
+                },
+                status=400
+            )
+
+        messages.error(
+            request,
+            error_message
+        )
+
+        return render(
+            request,
+            "add_product.html",
+            context
+        )
+
+    if selling_price < 0:
+
+        error_message = (
+            "Selling price cannot be negative."
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message,
+                },
+                status=400
+            )
+
+        messages.error(
+            request,
+            error_message
+        )
+
+        return render(
+            request,
+            "add_product.html",
+            context
+        )
+
+    if mrp < 0:
+
+        error_message = (
+            "MRP cannot be negative."
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message,
+                },
+                status=400
+            )
+
+        messages.error(
+            request,
+            error_message
+        )
+
+        return render(
+            request,
+            "add_product.html",
+            context
+        )
+
+    if minimum_stock < 0:
+
+        error_message = (
+            "Minimum stock cannot be negative."
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message,
+                },
+                status=400
+            )
+
+        messages.error(
+            request,
+            error_message
+        )
+
+        return render(
+            request,
+            "add_product.html",
+            context
+        )
+
+    if current_stock < 0:
+
+        error_message = (
+            "Current stock cannot be negative."
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message,
+                },
+                status=400
+            )
+
+        messages.error(
+            request,
+            error_message
+        )
+
+        return render(
+            request,
+            "add_product.html",
+            context
+        )
+
+    if gst < 0:
+
+        error_message = (
+            "GST cannot be negative."
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message,
+                },
+                status=400
+            )
+
+        messages.error(
+            request,
+            error_message
+        )
+
+        return render(
+            request,
+            "add_product.html",
+            context
+        )
+
+    # ============================================================
+    # GST RANGE VALIDATION
+    # ============================================================
+    if gst > Decimal("100"):
+
+        error_message = (
+            "GST percentage cannot be greater than 100."
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message,
+                },
+                status=400
+            )
+
+        messages.error(
+            request,
+            error_message
+        )
+
+        return render(
+            request,
+            "add_product.html",
+            context
+        )
+
+    # ============================================================
+    # PRICE VALIDATION
+    # ============================================================
+    if selling_price > mrp:
+
+        error_message = (
+            "Selling price cannot be greater than MRP."
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message,
+                },
+                status=400
+            )
+
+        messages.error(
+            request,
+            error_message
+        )
+
+        return render(
+            request,
+            "add_product.html",
+            context
+        )
+
+    # ============================================================
+    # FETCH RETAILER
+    # ============================================================
+    try:
+
+        if request.user.is_superuser or request.user.is_staff:
+
+            retailer = Retailer.objects.get(
+                id=retailer_id,
+                is_active=True
+            )
+
+        else:
+
+            retailer = Retailer.objects.get(
+                id=retailer_id,
+                user=request.user,
+                is_active=True
+            )
+
+    except Retailer.DoesNotExist:
+
+        logger.warning(
+            "Unauthorized or invalid retailer selected "
+            "while adding product. User=%s, Retailer=%s",
+            request.user.username,
+            retailer_id
+        )
+
+        error_message = (
+            "Selected retailer does not exist or "
+            "you are not authorized to use it."
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message,
+                },
+                status=403
+            )
+
+        messages.error(
+            request,
+            error_message
+        )
+
+        return render(
+            request,
+            "add_product.html",
+            context
+        )
+
+    # ============================================================
+    # FETCH CATEGORY
+    # ============================================================
+    try:
+
+        # ========================================================
+        # CATEGORY
+        # ========================================================
+        if category_id.startswith("other:"):
+
+            category_name = category_id[
+                len("other:"):
+            ].strip()
+
+            if not category_name:
+                error_message = "Category name is required."
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        },
+                        status=400
+                    )
+
+                messages.error(
+                    request,
+                    error_message
                 )
 
-            logger.info(
-                "Product added by user=%s: product=%s, retailer=%s",
-                request.user.username, product_name, retailer.shop_name,
+                return render(
+                    request,
+                    "add_product.html",
+                    context
+                )
+
+            # ----------------------------------------------------
+            # Check category for THIS retailer
+            # ----------------------------------------------------
+            category = Category.objects.filter(
+                retailer=retailer,
+                category_name__iexact=category_name
+            ).first()
+
+            # ----------------------------------------------------
+            # Create category if it doesn't exist
+            # ----------------------------------------------------
+            if category is None:
+
+                category = Category.objects.create(
+                    retailer=retailer,
+                    category_name=category_name
+                )
+
+                logger.info(
+                    "New category created. "
+                    "Category=%s, Retailer=%s, User=%s",
+                    category_name,
+                    retailer.id,
+                    request.user.username
+                )
+
+        else:
+
+            # ----------------------------------------------------
+            # Existing category selected from dropdown
+            # ----------------------------------------------------
+            category = Category.objects.filter(
+                id=category_id,
+                retailer=retailer
+            ).first()
+
+            if category is None:
+
+                error_message = (
+                    "Selected category does not exist "
+                    "or does not belong to this retailer."
+                )
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        },
+                        status=400
+                    )
+
+                messages.error(
+                    request,
+                    error_message
+                )
+
+                return render(
+                    request,
+                    "add_product.html",
+                    context
+                )
+
+        # ========================================================
+        # BRAND
+        # ========================================================
+        if brand_id.startswith("other:"):
+
+            brand_name = brand_id[
+                len("other:"):
+            ].strip()
+
+            if not brand_name:
+                error_message = "Brand name is required."
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        },
+                        status=400
+                    )
+
+                messages.error(
+                    request,
+                    error_message
+                )
+
+                return render(
+                    request,
+                    "add_product.html",
+                    context
+                )
+
+            # ----------------------------------------------------
+            # Check brand for THIS retailer
+            # ----------------------------------------------------
+            brand = Brand.objects.filter(
+                retailer=retailer,
+                brand_name__iexact=brand_name
+            ).first()
+
+            # ----------------------------------------------------
+            # Create brand if it doesn't exist
+            # ----------------------------------------------------
+            if brand is None:
+
+                brand = Brand.objects.create(
+                    retailer=retailer,
+                    brand_name=brand_name
+                )
+
+                logger.info(
+                    "New brand created. "
+                    "Brand=%s, Retailer=%s, User=%s",
+                    brand_name,
+                    retailer.id,
+                    request.user.username
+                )
+
+        else:
+
+            # ----------------------------------------------------
+            # Existing brand selected from dropdown
+            # ----------------------------------------------------
+            brand = Brand.objects.filter(
+                id=brand_id,
+                retailer=retailer
+            ).first()
+
+            if brand is None:
+
+                error_message = (
+                    "Selected brand does not exist "
+                    "or does not belong to this retailer."
+                )
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        },
+                        status=400
+                    )
+
+                messages.error(
+                    request,
+                    error_message
+                )
+
+                return render(
+                    request,
+                    "add_product.html",
+                    context
+                )
+
+        # ========================================================
+        # UNIT
+        # ========================================================
+        if unit_id.startswith("other:"):
+
+            unit_value = unit_id[
+                len("other:"):
+            ].strip()
+
+            if not unit_value:
+                error_message = "Unit name is required."
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        },
+                        status=400
+                    )
+
+                messages.error(
+                    request,
+                    error_message
+                )
+
+                return render(
+                    request,
+                    "add_product.html",
+                    context
+                )
+
+            # ----------------------------------------------------
+            # Unit is GLOBAL.
+            #
+            # User can enter either:
+            #     Kilogram
+            #     kg
+            #
+            # We check both name and short_name.
+            # ----------------------------------------------------
+            unit = Unit.objects.filter(
+                Q(name__iexact=unit_value) |
+                Q(short_name__iexact=unit_value)
+            ).first()
+
+            # ----------------------------------------------------
+            # Create new global unit
+            # ----------------------------------------------------
+            if unit is None:
+
+                unit = Unit.objects.create(
+                    name=unit_value,
+                    short_name=unit_value[:10]
+                )
+
+                logger.info(
+                    "New unit created. "
+                    "Unit=%s, User=%s",
+                    unit_value,
+                    request.user.username
+                )
+
+        else:
+
+            # ----------------------------------------------------
+            # Existing unit selected from dropdown
+            # ----------------------------------------------------
+            unit = Unit.objects.filter(
+                id=unit_id
+            ).first()
+
+            if unit is None:
+
+                error_message = (
+                    "Selected unit does not exist."
+                )
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": error_message,
+                        },
+                        status=400
+                    )
+
+                messages.error(
+                    request,
+                    error_message
+                )
+
+                return render(
+                    request,
+                    "add_product.html",
+                    context
+                )
+
+    except Exception:
+
+        logger.exception(
+            "Unexpected error while processing "
+            "brand/category/unit. User=%s",
+            request.user.username
+        )
+
+        error_message = (
+            "Something went wrong while processing "
+            "brand, category, or unit."
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message,
+                },
+                status=500
             )
-            messages.success(request, "Product added successfully.")
-            return redirect("dashboard")
 
-        except IntegrityError:
-            logger.exception(
-                "IntegrityError while adding product=%s (likely duplicate barcode=%s)",
-                product_name, barcode,
+        messages.error(
+            request,
+            error_message
+        )
+
+        return render(
+            request,
+            "add_product.html",
+            context
+        )
+    # try:
+
+    #     if category_id.startswith("other:"):
+
+    #         category_name = (
+    #             category_id
+    #             .replace("other:", "")
+    #             .strip()
+    #         )
+
+    #         if not category_name:
+
+    #             error_message = "Category name is required."
+
+    #             if is_ajax:
+    #                 return JsonResponse(
+    #                     {
+    #                         "success": False,
+    #                         "message": error_message
+    #                     },
+    #                     status=400
+    #                 )
+
+    #             messages.error(request, error_message)
+
+    #             return render(
+    #                 request,
+    #                 "add_product.html",
+    #                 context
+    #             )
+
+    #         category = Category.objects.filter(
+    #             name__iexact=category_name
+    #         ).first()
+
+    #         if not category:
+
+    #             category = Category.objects.create(
+    #                 name=category_name
+    #             )
+
+    #             logger.info(
+    #                 "New category created: %s by user=%s",
+    #                 category_name,
+    #                 request.user.username
+    #             )
+
+    #     else:
+
+    #         category = Category.objects.get(
+    #             id=category_id
+    #         )
+
+    # except Category.DoesNotExist:
+
+    #     logger.warning(
+    #         "Invalid category selected. "
+    #         "User=%s Category=%s",
+    #         request.user.username,
+    #         category_id
+    #     )
+
+    #     error_message = "Selected category is invalid."
+
+    #     if is_ajax:
+    #         return JsonResponse(
+    #             {
+    #                 "success": False,
+    #                 "message": error_message
+    #             },
+    #             status=400
+    #         )
+
+    #     messages.error(request, error_message)
+
+    #     return render(
+    #         request,
+    #         "add_product.html",
+    #         context
+    #     )
+    # try:
+
+    #     category = Category.objects.get(
+    #         id=category_id
+    #     )
+
+    # except Category.DoesNotExist:
+
+    #     logger.warning(
+    #         "Invalid category selected while adding product. "
+    #         "User=%s, Category=%s",
+    #         request.user.username,
+    #         category_id
+    #     )
+
+    #     error_message = (
+    #         "Selected category is invalid."
+    #     )
+
+    #     if is_ajax:
+    #         return JsonResponse(
+    #             {
+    #                 "success": False,
+    #                 "message": error_message,
+    #             },
+    #             status=400
+    #         )
+
+    #     messages.error(
+    #         request,
+    #         error_message
+    #     )
+
+    #     return render(
+    #         request,
+    #         "add_product.html",
+    #         context
+    #     )
+
+    # ============================================================
+    # FETCH BRAND
+    # ============================================================
+    # try:
+
+    #     if brand_id.startswith("other:"):
+
+    #         brand_name = (
+    #             brand_id
+    #             .replace("other:", "")
+    #             .strip()
+    #         )
+
+    #         if not brand_name:
+
+    #             error_message = "Brand name is required."
+
+    #             if is_ajax:
+    #                 return JsonResponse(
+    #                     {
+    #                         "success": False,
+    #                         "message": error_message
+    #                     },
+    #                     status=400
+    #                 )
+
+    #             messages.error(request, error_message)
+
+    #             return render(
+    #                 request,
+    #                 "add_product.html",
+    #                 context
+    #             )
+
+    #         brand, created = Brand.objects.get_or_create(
+    #             name__iexact=brand_name
+    #         )
+
+    #         if created:
+    #             logger.info(
+    #                 "New brand created: %s by user=%s",
+    #                 brand_name,
+    #                 request.user.username
+    #             )
+
+    #     else:
+
+    #         brand = Brand.objects.get(
+    #             id=brand_id
+    #         )
+
+    # except Brand.DoesNotExist:
+
+    #     logger.warning(
+    #         "Invalid brand selected. "
+    #         "User=%s Brand=%s",
+    #         request.user.username,
+    #         brand_id
+    #     )
+
+    #     error_message = "Selected brand is invalid."
+
+    #     if is_ajax:
+    #         return JsonResponse(
+    #             {
+    #                 "success": False,
+    #                 "message": error_message
+    #             },
+    #             status=400
+    #         )
+
+    #     messages.error(request, error_message)
+
+    #     return render(
+    #         request,
+    #         "add_product.html",
+    #         context
+    #     )
+
+
+
+    # try:
+
+    #     brand = Brand.objects.get(
+    #         id=brand_id
+    #     )
+
+    # except Brand.DoesNotExist:
+
+    #     logger.warning(
+    #         "Invalid brand selected while adding product. "
+    #         "User=%s, Brand=%s",
+    #         request.user.username,
+    #         brand_id
+    #     )
+
+    #     error_message = (
+    #         "Selected brand is invalid."
+    #     )
+
+    #     if is_ajax:
+    #         return JsonResponse(
+    #             {
+    #                 "success": False,
+    #                 "message": error_message,
+    #             },
+    #             status=400
+    #         )
+
+    #     messages.error(
+    #         request,
+    #         error_message
+    #     )
+
+    #     return render(
+    #         request,
+    #         "add_product.html",
+    #         context
+    #     )
+
+    # ============================================================
+    # FETCH UNIT
+    # ============================================================
+    # try:
+
+    #     if unit_id.startswith("other:"):
+
+    #         unit_name = (
+    #             unit_id
+    #             .replace("other:", "")
+    #             .strip()
+    #         )
+
+    #         if not unit_name:
+
+    #             error_message = "Unit name is required."
+
+    #             if is_ajax:
+    #                 return JsonResponse(
+    #                     {
+    #                         "success": False,
+    #                         "message": error_message
+    #                     },
+    #                     status=400
+    #                 )
+
+    #             messages.error(request, error_message)
+
+    #             return render(
+    #                 request,
+    #                 "add_product.html",
+    #                 context
+    #             )
+
+    #         unit = Unit.objects.filter(
+    #             unit_name__iexact=unit_name
+    #         ).first()
+
+    #         if not unit:
+
+    #             unit = Unit.objects.create(
+    #                 unit_name=unit_name
+    #             )
+
+    #             logger.info(
+    #                 "New unit created: %s by user=%s",
+    #                 unit_name,
+    #                 request.user.username
+    #             )
+
+    #     else:
+
+    #         unit = Unit.objects.get(
+    #             id=unit_id
+    #         )
+
+    # except Unit.DoesNotExist:
+
+    #     logger.warning(
+    #         "Invalid unit selected. "
+    #         "User=%s Unit=%s",
+    #         request.user.username,
+    #         unit_id
+    #     )
+
+    #     error_message = "Selected unit is invalid."
+
+    #     if is_ajax:
+    #         return JsonResponse(
+    #             {
+    #                 "success": False,
+    #                 "message": error_message
+    #             },
+    #             status=400
+    #         )
+
+    #     messages.error(request, error_message)
+
+    #     return render(
+    #         request,
+    #         "add_product.html",
+    #         context
+    #     )
+    # try:
+
+    #     unit = Unit.objects.get(
+    #         id=unit_id
+    #     )
+
+    # except Unit.DoesNotExist:
+
+    #     logger.warning(
+    #         "Invalid unit selected while adding product. "
+    #         "User=%s, Unit=%s",
+    #         request.user.username,
+    #         unit_id
+    #     )
+
+    #     error_message = (
+    #         "Selected unit is invalid."
+    #     )
+
+    #     if is_ajax:
+    #         return JsonResponse(
+    #             {
+    #                 "success": False,
+    #                 "message": error_message,
+    #             },
+    #             status=400
+    #         )
+
+    #     messages.error(
+    #         request,
+    #         error_message
+    #     )
+
+    #     return render(
+    #         request,
+    #         "add_product.html",
+    #         context
+    #     )
+
+    # ============================================================
+    # DUPLICATE BARCODE VALIDATION
+    # ============================================================
+    if barcode:
+
+        barcode_exists = Product.objects.filter(
+            barcode=barcode
+        ).exists()
+
+        if barcode_exists:
+
+            logger.warning(
+                "Duplicate barcode attempted while adding product. "
+                "Barcode=%s, User=%s",
+                barcode,
+                request.user.username
             )
-            messages.error(request, "A product with this barcode already exists.")
-            return render(request, "add_product.html", context)
 
-        except Exception:
-            logger.exception("Unexpected error while adding product=%s", product_name)
-            messages.error(request, "Something went wrong while adding the product. Please try again.")
-            return render(request, "add_product.html", context)
+            error_message = (
+                "A product with this barcode already exists."
+            )
 
-    return render(request, "add_product.html", context)
+            if is_ajax:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": error_message,
+                        "field": "barcode",
+                    },
+                    status=409
+                )
+
+            messages.error(
+                request,
+                error_message
+            )
+
+            return render(
+                request,
+                "add_product.html",
+                context
+            )
+
+    # ============================================================
+    # CREATE PRODUCT
+    # ============================================================
+    try:
+
+        with transaction.atomic():
+
+            product = Product.objects.create(
+                retailer=retailer,
+                category=category,
+                brand=brand,
+                unit=unit,
+                product_name=product_name,
+                barcode=barcode or None,
+                hsn_code=hsn_code,
+                purchase_price=purchase_price,
+                selling_price=selling_price,
+                mrp=mrp,
+                minimum_stock=minimum_stock,
+                current_stock=current_stock,
+                gst=gst,
+            )
+
+        # --------------------------------------------------------
+        # SUCCESS LOG
+        # --------------------------------------------------------
+        logger.info(
+            "Product added successfully. "
+            "Product ID=%s, Product=%s, Retailer=%s, "
+            "Created By=%s",
+            product.id,
+            product.product_name,
+            retailer.shop_name,
+            request.user.username,
+        )
+
+        # ========================================================
+        # AJAX SUCCESS RESPONSE
+        # ========================================================
+        if is_ajax:
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "id": product.id,
+                    "product_name": product.product_name,
+                    "message": "Product added successfully.",
+                },
+                status=201
+            )
+
+        # ========================================================
+        # NORMAL FORM SUCCESS
+        # ========================================================
+        messages.success(
+            request,
+            "Product added successfully."
+        )
+
+        return redirect("dashboard")
+
+    # ============================================================
+    # DATABASE INTEGRITY ERROR
+    # ============================================================
+    except IntegrityError:
+
+        logger.exception(
+            "IntegrityError while adding product. "
+            "Product=%s, Barcode=%s, User=%s",
+            product_name,
+            barcode,
+            request.user.username,
+        )
+
+        error_message = (
+            "A product with this barcode already exists "
+            "or another database constraint was violated."
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message,
+                },
+                status=409
+            )
+
+        messages.error(
+            request,
+            error_message
+        )
+
+        return render(
+            request,
+            "add_product.html",
+            context
+        )
+
+    # ============================================================
+    # UNEXPECTED ERROR
+    # ============================================================
+    except Exception:
+
+        logger.exception(
+            "Unexpected error while adding product=%s",
+            product_name
+        )
+
+        error_message = (
+            "Something went wrong while adding the product. "
+            "Please try again later."
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message,
+                },
+                status=500
+            )
+
+        messages.error(
+            request,
+            error_message
+        )
+
+        return render(
+            request,
+            "add_product.html",
+            context
+        )
+
+
+
+
+
+
+# @login_required(login_url='/user-login/')
+# def add_product(request):
+#     """
+#     Handles product creation for a retailer.
+
+#     Displays a form pre-loaded with available retailers, categories,
+#     brands, and units, and creates a new Product record on submission.
+#     """
+#     retailers = Retailer.objects.all()
+#     categories = Category.objects.all()
+#     brands = Brand.objects.all()
+#     units = Unit.objects.all()
+
+#     context = {
+#         "retailers": retailers,
+#         "categories": categories,
+#         "brands": brands,
+#         "units": units,
+#     }
+
+#     if request.method == "POST":
+
+#         # --- Collect form data ---
+#         retailer_id = request.POST.get("retailer", "").strip()
+#         category_id = request.POST.get("category", "").strip()
+#         brand_id = request.POST.get("brand", "").strip()
+#         unit_id = request.POST.get("unit", "").strip()
+
+#         product_name = request.POST.get("product_name", "").strip()
+#         barcode = request.POST.get("barcode", "").strip()
+#         hsn_code = request.POST.get("hsn_code", "").strip()
+#         purchase_price = request.POST.get("purchase_price", "").strip()
+#         selling_price = request.POST.get("selling_price", "").strip()
+#         mrp = request.POST.get("mrp", "").strip()
+#         minimum_stock = request.POST.get("minimum_stock", "0").strip()
+#         current_stock = request.POST.get("current_stock", "10").strip()
+#         gst = request.POST.get("gst", "0").strip()
+
+#         # --- Basic required-field validation ---
+#         required_fields = {
+#             "Retailer": retailer_id,
+#             "Category": category_id,
+#             "Brand": brand_id,
+#             "Unit": unit_id,
+#             "Product Name": product_name,
+#             "HSN Code": hsn_code,
+#             "Purchase Price": purchase_price,
+#             "Selling Price": selling_price,
+#             "MRP": mrp,
+#         }
+#         missing = [label for label, value in required_fields.items() if not value]
+#         if missing:
+#             messages.error(request, f"Missing required field(s): {', '.join(missing)}")
+#             return render(request, "add_product.html", context)
+
+#         # --- Numeric field validation ---
+#         try:
+#             purchase_price = Decimal(purchase_price)
+#             selling_price = Decimal(selling_price)
+#             mrp = Decimal(mrp)
+#             gst = Decimal(gst) if gst else Decimal("0")
+#             minimum_stock = int(minimum_stock) if minimum_stock else 0
+#             current_stock = int(current_stock) if current_stock else 0
+#         except (InvalidOperation, ValueError):
+#             messages.error(request, "Please enter valid numeric values for price, stock, and GST fields.")
+#             return render(request, "add_product.html", context)
+
+#         # --- Fetch related objects safely ---
+#         try:
+#             retailer = get_object_or_404(Retailer, id=retailer_id)
+#             category = get_object_or_404(Category, id=category_id)
+#             brand = get_object_or_404(Brand, id=brand_id)
+#             unit = get_object_or_404(Unit, id=unit_id)
+#         except Exception:
+#             logger.warning(
+#                 "Invalid related object reference while adding product: "
+#                 "retailer=%s, category=%s, brand=%s, unit=%s",
+#                 retailer_id, category_id, brand_id, unit_id,
+#             )
+#             messages.error(request, "Selected retailer, category, brand, or unit is invalid.")
+#             return render(request, "add_product.html", context)
+
+#         # --- Create product ---
+#         try:
+#             with transaction.atomic():
+#                 Product.objects.create(
+#                     retailer=retailer,
+#                     category=category,
+#                     brand=brand,
+#                     unit=unit,
+#                     product_name=product_name,
+#                     barcode=barcode or None,
+#                     hsn_code=hsn_code,
+#                     purchase_price=purchase_price,
+#                     selling_price=selling_price,
+#                     mrp=mrp,
+#                     minimum_stock=minimum_stock,
+#                     current_stock=current_stock,
+#                     gst=gst,
+#                 )
+
+#             logger.info(
+#                 "Product added by user=%s: product=%s, retailer=%s",
+#                 request.user.username, product_name, retailer.shop_name,
+#             )
+#             messages.success(request, "Product added successfully.")
+#             return redirect("dashboard")
+
+#         except IntegrityError:
+#             logger.exception(
+#                 "IntegrityError while adding product=%s (likely duplicate barcode=%s)",
+#                 product_name, barcode,
+#             )
+#             messages.error(request, "A product with this barcode already exists.")
+#             return render(request, "add_product.html", context)
+
+#         except Exception:
+#             logger.exception("Unexpected error while adding product=%s", product_name)
+#             messages.error(request, "Something went wrong while adding the product. Please try again.")
+#             return render(request, "add_product.html", context)
+
+#     return render(request, "add_product.html", context)
 
 
 
@@ -879,8 +2705,9 @@ def add_order(request):
     # =====================================================
     # PRODUCTS / SUPPLIERS
     # =====================================================
-
     if request.user.is_superuser:
+
+        retailers = Retailer.objects.filter(is_active=True)
 
         products = (
             Product.objects
@@ -908,7 +2735,7 @@ def add_order(request):
         )
 
     else:
-
+        retailers = Retailer.objects.filter(user=request.user, is_active=True)
         products = (
             Product.objects
             .filter(
@@ -949,10 +2776,15 @@ def add_order(request):
             "shop_name"
         )
     )
+    categories = Category.objects.all()
+    brands = Brand.objects.all()
+    units = Unit.objects.all()
 
 
     context = {
         "products": products,
+        "categories": categories,
+        "brands": brands,
         "units": units,
         "supplier_list": supplier_list,
         "retailer_list": retailer_list,
@@ -1487,9 +3319,7 @@ def _handle_add_order(request):
         )
 
 
-        return redirect(
-            "dashboard"
-        )
+        return redirect("add_new_order")
 
 
     # =========================================================
@@ -1565,6 +3395,7 @@ def _handle_add_order(request):
         return redirect(
             "add_new_order"
         )
+
 
 
 def _prepare_purchase_items(
@@ -2259,77 +4090,363 @@ def purchase_detail(request, purchase_id):
         return redirect("purchase_list")
 
 
+
+
+
+
 @login_required(login_url='/user-login/')
 def add_supplier(request):
     """
     Create a new supplier securely and safely.
+
+    Supports:
+    - Normal GET request for rendering the supplier form.
+    - AJAX POST request for creating a supplier and returning JSON.
     """
-    # GET Request: Render the entry form
+
+    # ============================================================
+    # GET REQUEST
+    # ============================================================
     if request.method != "POST":
-        # SECURITY FIX: Filter retailers belonging strictly to the logged-in user
-        # Replace 'user=request.user' with your actual model relationship (e.g., profile.retailer)
-        
+
         if request.user.is_superuser:
             retailers = Retailer.objects.filter(is_active=True)
         else:
-            retailers = Retailer.objects.filter(user=request.user, is_active=True)
-        return render(request, "add_supplier.html", {"retailers": retailers})
-
-    # POST Request: Process and save the data
-    try:
-        with transaction.atomic():
-            # SECURITY FIX: Ensure the user owns the retailer ID they sent
-            retailer = Retailer.objects.get(
-                id=request.POST.get("retailer"),
+            retailers = Retailer.objects.filter(
+                user=request.user,
                 is_active=True
             )
 
-            # CLEANUP: Extract and sanitize crucial text values
-            supplier_name = request.POST.get("supplier_name", "").strip()
-            if not supplier_name:
-                messages.error(request, "Supplier Name is required.")
+        return render(
+            request,
+            "add_supplier.html",
+            {
+                "retailers": retailers
+            }
+        )
+
+    # ============================================================
+    # POST REQUEST
+    # ============================================================
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+    try:
+        with transaction.atomic():
+
+            # ----------------------------------------------------
+            # GET RETAILER
+            # ----------------------------------------------------
+            retailer_id = request.POST.get("retailer")
+
+            if not retailer_id:
+                error_message = "Please select a retailer."
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": error_message
+                        },
+                        status=400
+                    )
+
+                messages.error(request, error_message)
                 return redirect("add_new_supplier")
 
-            # VALIDATION: Check for unique constraint violation early
-            if Supplier.objects.filter(retailer=retailer, supplier_name__iexact=supplier_name).exists():
-                logger.warning("Duplicate supplier '%s' attempted for retailer %s", supplier_name, retailer.id)
-                messages.error(request, "Supplier already exists for this retailer.")
+            # SECURITY:
+            # Superuser can create supplier for any active retailer.
+            # Normal user can only create supplier for their own retailer.
+            if request.user.is_superuser:
+                retailer = Retailer.objects.filter(
+                    id=retailer_id,
+                    is_active=True
+                ).first()
+            else:
+                retailer = Retailer.objects.filter(
+                    id=retailer_id,
+                    user=request.user,
+                    is_active=True
+                ).first()
+
+            if retailer is None:
+                logger.warning(
+                    "Unauthorized or invalid retailer access attempt. "
+                    "User ID: %s, Retailer ID: %s",
+                    request.user.id,
+                    retailer_id
+                )
+
+                error_message = (
+                    "Retailer does not exist or you are not authorized "
+                    "to use this retailer."
+                )
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": error_message
+                        },
+                        status=403
+                    )
+
+                messages.error(request, error_message)
                 return redirect("add_new_supplier")
 
-            # CLEANUP: Extract optional fields cleanly as Python None instead of empty strings
-            contact_person = request.POST.get("contact_person", "").strip() or None
-            alternate_mobile = request.POST.get("alternate_mobile", "").strip() or None
-            email = request.POST.get("email", "").strip() or None
-            gst_number = request.POST.get("gst_number", "").strip() or None
-            pan_number = request.POST.get("pan_number", "").strip() or None
-            notes = request.POST.get("notes", "").strip() or None
+            # ----------------------------------------------------
+            # REQUIRED TEXT FIELDS
+            # ----------------------------------------------------
+            supplier_name = request.POST.get(
+                "supplier_name",
+                ""
+            ).strip()
 
-            # MANDATORY FIELDS: Fallback defaults if they arrive empty
-            mobile = request.POST.get("mobile", "").strip()
-            address = request.POST.get("address", "").strip()
-            city = request.POST.get("city", "").strip()
-            state = request.POST.get("state", "").strip()
-            pincode = request.POST.get("pincode", "").strip()
+            mobile = request.POST.get(
+                "mobile",
+                ""
+            ).strip()
 
-            # CONVERSIONS: Safe decimal and integer handling
+            address = request.POST.get(
+                "address",
+                ""
+            ).strip()
+
+            city = request.POST.get(
+                "city",
+                ""
+            ).strip()
+
+            state = request.POST.get(
+                "state",
+                ""
+            ).strip()
+
+            pincode = request.POST.get(
+                "pincode",
+                ""
+            ).strip()
+
+            required_fields = {
+                "Supplier Name": supplier_name,
+                "Mobile": mobile,
+                "Address": address,
+                "City": city,
+                "State": state,
+                "Pincode": pincode,
+            }
+
+            missing_fields = [
+                field_name
+                for field_name, value in required_fields.items()
+                if not value
+            ]
+
+            if missing_fields:
+                error_message = (
+                    "Please fill all required fields: "
+                    + ", ".join(missing_fields)
+                )
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": error_message
+                        },
+                        status=400
+                    )
+
+                messages.error(request, error_message)
+                return redirect("add_new_supplier")
+
+            # ----------------------------------------------------
+            # MOBILE VALIDATION
+            # ----------------------------------------------------
+            mobile_digits = "".join(
+                character
+                for character in mobile
+                if character.isdigit()
+            )
+
+            if not 10 <= len(mobile_digits) <= 15:
+                error_message = "Please enter a valid mobile number."
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": error_message
+                        },
+                        status=400
+                    )
+
+                messages.error(request, error_message)
+                return redirect("add_new_supplier")
+
+            # ----------------------------------------------------
+            # DUPLICATE SUPPLIER CHECK
+            # ----------------------------------------------------
+            if Supplier.objects.filter(
+                retailer=retailer,
+                supplier_name__iexact=supplier_name
+            ).exists():
+
+                logger.warning(
+                    "Duplicate supplier '%s' attempted for retailer %s",
+                    supplier_name,
+                    retailer.id
+                )
+
+                error_message = (
+                    "Supplier already exists for this retailer."
+                )
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": error_message
+                        },
+                        status=409
+                    )
+
+                messages.error(request, error_message)
+                return redirect("add_new_supplier")
+
+            # ----------------------------------------------------
+            # OPTIONAL FIELDS
+            # ----------------------------------------------------
+            contact_person = request.POST.get(
+                "contact_person",
+                ""
+            ).strip() or None
+
+            alternate_mobile = request.POST.get(
+                "alternate_mobile",
+                ""
+            ).strip() or None
+
+            email = request.POST.get(
+                "email",
+                ""
+            ).strip() or None
+
+            gst_number = request.POST.get(
+                "gst_number",
+                ""
+            ).strip() or None
+
+            pan_number = request.POST.get(
+                "pan_number",
+                ""
+            ).strip() or None
+
+            notes = request.POST.get(
+                "notes",
+                ""
+            ).strip() or None
+
+            # ----------------------------------------------------
+            # NUMERIC FIELDS
+            # ----------------------------------------------------
             try:
-                opening_balance = Decimal(request.POST.get("opening_balance") or "0.00")
-                credit_limit = Decimal(request.POST.get("credit_limit") or "0.00")
-                credit_days = int(request.POST.get("credit_days") or 0)
-            except (InvalidOperation, ValueError):
-                logger.error("Data type conversion failed for financial/numeric values.")
-                messages.error(request, "Invalid numeric or decimal format provided.")
+                opening_balance = Decimal(
+                    request.POST.get("opening_balance") or "0.00"
+                )
+
+                credit_limit = Decimal(
+                    request.POST.get("credit_limit") or "0.00"
+                )
+
+                credit_days = int(
+                    request.POST.get("credit_days") or 0
+                )
+
+            except (InvalidOperation, ValueError, TypeError):
+
+                logger.error(
+                    "Invalid numeric data received while creating "
+                    "supplier. User ID: %s",
+                    request.user.id
+                )
+
+                error_message = (
+                    "Invalid numeric or decimal format provided."
+                )
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": error_message
+                        },
+                        status=400
+                    )
+
+                messages.error(request, error_message)
                 return redirect("add_new_supplier")
 
-            # FIX: HTML checkboxes send 'on' when checked, and are absent when unchecked
+            # ----------------------------------------------------
+            # ADDITIONAL NUMERIC VALIDATION
+            # ----------------------------------------------------
+            if opening_balance < 0:
+                error_message = "Opening balance cannot be negative."
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": error_message
+                        },
+                        status=400
+                    )
+
+                messages.error(request, error_message)
+                return redirect("add_new_supplier")
+
+            if credit_limit < 0:
+                error_message = "Credit limit cannot be negative."
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": error_message
+                        },
+                        status=400
+                    )
+
+                messages.error(request, error_message)
+                return redirect("add_new_supplier")
+
+            if credit_days < 0:
+                error_message = "Credit days cannot be negative."
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": error_message
+                        },
+                        status=400
+                    )
+
+                messages.error(request, error_message)
+                return redirect("add_new_supplier")
+
+            # ----------------------------------------------------
+            # ACTIVE STATUS
+            # ----------------------------------------------------
             is_active = "is_active" in request.POST
 
-            # PERSIST: Build and commit instance to database
+            # ----------------------------------------------------
+            # CREATE SUPPLIER
+            # ----------------------------------------------------
             supplier = Supplier.objects.create(
                 retailer=retailer,
                 supplier_name=supplier_name,
                 contact_person=contact_person,
-                mobile=mobile,
+                mobile=mobile_digits,
                 alternate_mobile=alternate_mobile,
                 email=email,
                 gst_number=gst_number,
@@ -2345,23 +4462,195 @@ def add_supplier(request):
                 notes=notes
             )
 
-            logger.info("Supplier '%s' (ID: %s) created by retailer %s", supplier.supplier_name, supplier.id, retailer.id)
-            messages.success(request, "Supplier added successfully.")
+            logger.info(
+                "Supplier '%s' (ID: %s) created successfully "
+                "by User ID %s for Retailer ID %s",
+                supplier.supplier_name,
+                supplier.id,
+                request.user.id,
+                retailer.id
+            )
+
+            # ====================================================
+            # AJAX RESPONSE
+            # ====================================================
+            if is_ajax:
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "id": supplier.id,
+                        "supplier_name": supplier.supplier_name,
+                        "message": "Supplier added successfully."
+                    },
+                    status=201
+                )
+
+            # ====================================================
+            # NORMAL FORM RESPONSE
+            # ====================================================
+            messages.success(
+                request,
+                "Supplier added successfully."
+            )
+
             return redirect("add_new_supplier")
 
-    except Retailer.DoesNotExist:
-        logger.error("Retailer not found or unauthorized access attempt by User ID %s", request.user.id)
-        messages.error(request, "Retailer does not exist or unauthorized access.")
-        
+    # ============================================================
+    # DATABASE / UNEXPECTED ERRORS
+    # ============================================================
     except IntegrityError:
-        logger.exception("Database unique constraint validation dropped to database level.")
-        messages.error(request, "Supplier already exists.")
-        
+
+        logger.exception(
+            "Database integrity error while creating supplier. "
+            "User ID: %s",
+            request.user.id
+        )
+
+        error_message = "Supplier already exists or violates a database constraint."
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message
+                },
+                status=409
+            )
+
+        messages.error(request, error_message)
+
     except Exception as e:
-        logger.exception("Unexpected exception inside add_supplier view: %s", str(e))
-        messages.error(request, "Something went wrong. Please try again.")
+
+        logger.exception(
+            "Unexpected exception inside add_supplier view: %s",
+            str(e)
+        )
+
+        error_message = (
+            "Something went wrong while adding the supplier. "
+            "Please try again."
+        )
+
+        if is_ajax:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": error_message
+                },
+                status=500
+            )
+
+        messages.error(request, error_message)
 
     return redirect("add_new_supplier")
+
+
+
+
+
+# @login_required(login_url='/user-login/')
+# def add_supplier(request):
+#     """
+#     Create a new supplier securely and safely.
+#     """
+#     # GET Request: Render the entry form
+#     if request.method != "POST":
+#         # SECURITY FIX: Filter retailers belonging strictly to the logged-in user
+#         # Replace 'user=request.user' with your actual model relationship (e.g., profile.retailer)
+        
+#         if request.user.is_superuser:
+#             retailers = Retailer.objects.filter(is_active=True)
+#         else:
+#             retailers = Retailer.objects.filter(user=request.user, is_active=True)
+#         return render(request, "add_supplier.html", {"retailers": retailers})
+
+#     # POST Request: Process and save the data
+#     try:
+#         with transaction.atomic():
+#             # SECURITY FIX: Ensure the user owns the retailer ID they sent
+#             retailer = Retailer.objects.get(
+#                 id=request.POST.get("retailer"),
+#                 is_active=True
+#             )
+
+#             # CLEANUP: Extract and sanitize crucial text values
+#             supplier_name = request.POST.get("supplier_name", "").strip()
+#             if not supplier_name:
+#                 messages.error(request, "Supplier Name is required.")
+#                 return redirect("add_new_supplier")
+
+#             # VALIDATION: Check for unique constraint violation early
+#             if Supplier.objects.filter(retailer=retailer, supplier_name__iexact=supplier_name).exists():
+#                 logger.warning("Duplicate supplier '%s' attempted for retailer %s", supplier_name, retailer.id)
+#                 messages.error(request, "Supplier already exists for this retailer.")
+#                 return redirect("add_new_supplier")
+
+#             # CLEANUP: Extract optional fields cleanly as Python None instead of empty strings
+#             contact_person = request.POST.get("contact_person", "").strip() or None
+#             alternate_mobile = request.POST.get("alternate_mobile", "").strip() or None
+#             email = request.POST.get("email", "").strip() or None
+#             gst_number = request.POST.get("gst_number", "").strip() or None
+#             pan_number = request.POST.get("pan_number", "").strip() or None
+#             notes = request.POST.get("notes", "").strip() or None
+
+#             # MANDATORY FIELDS: Fallback defaults if they arrive empty
+#             mobile = request.POST.get("mobile", "").strip()
+#             address = request.POST.get("address", "").strip()
+#             city = request.POST.get("city", "").strip()
+#             state = request.POST.get("state", "").strip()
+#             pincode = request.POST.get("pincode", "").strip()
+
+#             # CONVERSIONS: Safe decimal and integer handling
+#             try:
+#                 opening_balance = Decimal(request.POST.get("opening_balance") or "0.00")
+#                 credit_limit = Decimal(request.POST.get("credit_limit") or "0.00")
+#                 credit_days = int(request.POST.get("credit_days") or 0)
+#             except (InvalidOperation, ValueError):
+#                 logger.error("Data type conversion failed for financial/numeric values.")
+#                 messages.error(request, "Invalid numeric or decimal format provided.")
+#                 return redirect("add_new_supplier")
+
+#             # FIX: HTML checkboxes send 'on' when checked, and are absent when unchecked
+#             is_active = "is_active" in request.POST
+
+#             # PERSIST: Build and commit instance to database
+#             supplier = Supplier.objects.create(
+#                 retailer=retailer,
+#                 supplier_name=supplier_name,
+#                 contact_person=contact_person,
+#                 mobile=mobile,
+#                 alternate_mobile=alternate_mobile,
+#                 email=email,
+#                 gst_number=gst_number,
+#                 pan_number=pan_number,
+#                 address=address,
+#                 city=city,
+#                 state=state,
+#                 pincode=pincode,
+#                 opening_balance=opening_balance,
+#                 credit_limit=credit_limit,
+#                 credit_days=credit_days,
+#                 is_active=is_active,
+#                 notes=notes
+#             )
+
+#             logger.info("Supplier '%s' (ID: %s) created by retailer %s", supplier.supplier_name, supplier.id, retailer.id)
+#             messages.success(request, "Supplier added successfully.")
+#             return redirect("add_new_supplier")
+
+#     except Retailer.DoesNotExist:
+#         logger.error("Retailer not found or unauthorized access attempt by User ID %s", request.user.id)
+#         messages.error(request, "Retailer does not exist or unauthorized access.")
+        
+#     except IntegrityError:
+#         logger.exception("Database unique constraint validation dropped to database level.")
+#         messages.error(request, "Supplier already exists.")
+        
+#     except Exception as e:
+#         logger.exception("Unexpected exception inside add_supplier view: %s", str(e))
+#         messages.error(request, "Something went wrong. Please try again.")
+
+#     return redirect("add_new_supplier")
 
 
 

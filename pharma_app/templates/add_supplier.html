@@ -4,6 +4,7 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/add_order.css' %}">
+<link rel="stylesheet" href="{% static 'css/error_message.css' %}">
 {% endblock %}
 
 {% block page_title %}
@@ -18,7 +19,7 @@
         <h2>Supplier Information</h2>
     </div>
 
-    {% if messages %}
+    <!-- {% if messages %}
         <div class="messages-container">
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }}">
@@ -26,7 +27,7 @@
                 </div>
             {% endfor %}
         </div>
-    {% endif %}
+    {% endif %} -->
 
     <!-- Note: Changed action name to a more generic one if applicable, keep your exact url name if needed -->
     <form method="POST" action="{% url 'add_new_supplier' %}" id="purchaseForm" enctype="multipart/form-data">

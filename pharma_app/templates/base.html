@@ -7,6 +7,8 @@
     <title>{% block title %} {% endblock %}</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/error_message.css' %}">
+
     {% block css %} 
         
     {% endblock %}
@@ -123,11 +125,26 @@
                     <p>A quick pulse on your cash position</p> -->
                 </div>
             </div>
-            <div class="header-actions">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search orders, suppliers, invoices...">
+            {% if messages %}
+                <div class="messages-container">
+                {% for message in messages %}
+                    <!-- If tag is error, we also add 'danger' for CSS styling clarity -->
+                    <div class="alert alert-{{ message.tags }} {% if message.tags == 'error' %}danger{% endif %}">
+                    <div class="alert-icon">
+                        {% if message.tags == 'success' %}✓
+                        {% elif message.tags == 'error' or message.tags == 'danger' %}✕
+                        {% elif message.tags == 'warning' %}⚠
+                        {% else %}ℹ{% endif %}
+                    </div>
+                    <div class="alert-text">
+                        {{ message }}
+                    </div>
+                    <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                {% endfor %}
                 </div>
+                {% endif %}
+            <div class="header-actions">
                 <button class="header-icon-btn" onclick="toggleTheme()" title="Toggle theme">
                     <i class="fas fa-moon" id="themeIcon"></i>
                 </button>
@@ -165,8 +182,18 @@
 
     
     {% block js %}
-
+        
     {% endblock %}
-
+    <script>
+        setTimeout(function() {
+            let alerts = document.querySelectorAll('.messages-container .alert');
+            alerts.forEach(function(alert) {
+            alert.style.transition = "transform 0.4s ease, opacity 0.4s ease";
+            alert.style.opacity = "0";
+            alert.style.transform = "translateX(100%)";
+            setTimeout(() => alert.remove(), 400);
+            });
+        }, 5000); // 5000ms = 5 seconds
+    </script>
 </body>
 </html>

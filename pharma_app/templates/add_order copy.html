@@ -4,7 +4,6 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/add_order.css' %}">
-<link rel="stylesheet" href="{% static 'css/error_message.css' %}">
 {% endblock %}
 
 {% block page_title %}
@@ -13,6 +12,7 @@
 {% endblock %}
 
 {% block body %}
+<!-- Form Card -->
 <div class="form-card">
     <div class="form-header">
         <h2><i class="fas fa-file-invoice"></i>Purchase Order Details</h2>
@@ -41,38 +41,28 @@
             <div class="form-grid">
                 <div class="form-group full-width">
                     <label>Search by Supplier Name <span class="required">*</span></label>
-                    <div class="field-with-action">
-                        <div class="supplier-search" style="flex:1;">
-                            <i class="fas fa-search"></i>
-                            <select class="form-control" id="supplierSelect" name="supplier" required>
-                                <option value="">Select Supplier</option>
-                                {% for supplier in supplier_list %}
-                                    <option value="{{ supplier.id }}">{{ supplier.supplier_name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <button type="button" class="btn-action-add" id="btnOpenSupplierModal" title="Add New Supplier">
-                            <i class="fas fa-plus"></i>
-                        </button>
+                    <div class="supplier-search">
+                        <i class="fas fa-search"></i>
+                        <select class="form-control" id="supplierSelect" name="supplier" required>
+                            <option value="">Select Supplier</option>
+                            {% for supplier in supplier_list %}
+                                <option value="{{ supplier.id }}">{{ supplier.supplier_name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
 
                 {% if request.user.is_superuser %}
                 <div class="form-group">
                     <label>Retailer Name <span class="required">*</span></label>
-                    <div class="field-with-action">
-                        <div class="supplier-search" style="flex:1;">
-                            <i class="fas fa-search"></i>
-                            <select class="form-control" id="supplierSelect" name="retailer" required>
-                                <option value="">Select Retailer</option>
-                                {% for retailer in retailer_list %}
-                                    <option value="{{ retailer.id }}">{{ retailer.shop_name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <button type="button" class="btn-action-add retailer-btn" id="btnOpenRetailerModal" title="Add New Retailer">
-                            <i class="fas fa-plus"></i>
-                        </button>
+                    <div class="supplier-search">
+                        <i class="fas fa-search"></i>
+                        <select class="form-control" id="supplierSelect" name="retailer" required>
+                            <option value="">Select Retailer</option>
+                            {% for retailer in retailer_list %}
+                                <option value="{{ retailer.id }}">{{ retailer.shop_name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
                 {% endif %}
@@ -86,7 +76,7 @@
                     <label>Bill Date <span class="required">*</span></label>
                     <div class="form-control-icon">
                         <input type="date" class="form-control" name="bill_date" id="billDate" value="2026-07-27" required>
-                        <i class="fas fa-calendar-alt" style="pointer-events:none;"></i>
+                        <i class="fas fa-calendar-alt"></i>
                     </div>
                 </div>
 
@@ -94,7 +84,7 @@
                     <label>Time</label>
                     <div class="form-control-icon">
                         <input type="time" class="form-control" name="bill_time" id="billTime" value="18:35">
-                        <i class="fas fa-clock" style="pointer-events:none;"></i>
+                        <i class="fas fa-clock"></i>
                     </div>
                 </div>
 
@@ -115,7 +105,7 @@
                     <label>Due Date</label>
                     <div class="form-control-icon">
                         <input type="date" class="form-control" name="due_date" id="dueDate" value="2026-08-11">
-                        <i class="fas fa-calendar-alt" style="pointer-events:none;"></i>
+                        <i class="fas fa-calendar-alt"></i>
                     </div>
                 </div>
 
@@ -150,9 +140,6 @@
             <div class="items-section">
                 <div class="items-header">
                     <h3><i class="fas fa-list"></i>Items</h3>
-                    <button type="button" class="btn-add-product-inline" id="btnOpenProductModal">
-                        <i class="fas fa-plus"></i> Add New Product
-                    </button>
                 </div>
 
                 <div class="items-table-wrap">
@@ -189,7 +176,7 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td class="total-value" id="totalAmount">&#8377;0</td>
+                                <td class="total-value" id="totalAmount">₹0</td>
                                 <td></td>
                             </tr>
                         </tbody>
@@ -234,69 +221,162 @@
                     <!-- Subtotal -->
                     <div class="summary-row">
                         <span class="summary-label">Subtotal</span>
-                        <span class="summary-value" id="summarySubtotal">&#8377;0.00</span>
-                        <input type="hidden" name="subtotal" id="subtotalInput" value="0">
+
+                        <span class="summary-value" id="summarySubtotal">
+                            ₹0.00
+                        </span>
+
+                        <input
+                            type="hidden"
+                            name="subtotal"
+                            id="subtotalInput"
+                            value="0"
+                        >
                     </div>
+
 
                     <!-- Tax -->
                     <div class="summary-row">
                         <span class="summary-label">Tax</span>
-                        <span class="summary-value" id="summaryTax">&#8377;0.00</span>
-                        <input type="hidden" name="gst" id="taxInput" value="0">
+
+                        <span class="summary-value" id="summaryTax">
+                            ₹0.00
+                        </span>
+
+                        <input
+                            type="hidden"
+                            name="gst"
+                            id="taxInput"
+                            value="0"
+                        >
                     </div>
+
 
                     <!-- Discount -->
                     <div class="summary-row">
                         <span class="summary-label">Discount</span>
+
                         <div class="summary-value">
-                            <input type="number" class="form-control" name="discount" id="discountInput" value="0" min="0" step="0.01" style="width:120px;text-align:right;" placeholder="0.00">
+                            <input
+                                type="number"
+                                class="form-control"
+                                name="discount"
+                                id="discountInput"
+                                value="0"
+                                min="0"
+                                step="0.01"
+                                style="width:120px;text-align:right;"
+                                placeholder="0.00"
+                            >
                         </div>
                     </div>
+
 
                     <!-- Transport Charge -->
                     <div class="summary-row">
                         <span class="summary-label">Transport Charge</span>
+
                         <div class="summary-value">
-                            <input type="number" class="form-control" name="transport_charge" id="transportChargeInput" value="0" min="0" step="0.01" style="width:120px;text-align:right;" placeholder="0.00">
+                            <input
+                                type="number"
+                                class="form-control"
+                                name="transport_charge"
+                                id="transportChargeInput"
+                                value="0"
+                                min="0"
+                                step="0.01"
+                                style="width:120px;text-align:right;"
+                                placeholder="0.00"
+                            >
                         </div>
                     </div>
+
 
                     <!-- Other Charges -->
                     <div class="summary-row">
                         <span class="summary-label">Other Charges</span>
+
                         <div class="summary-value">
-                            <input type="number" class="form-control" name="other_charge" id="otherChargeInput" value="0" min="0" step="0.01" style="width:120px;text-align:right;" placeholder="0.00">
+                            <input
+                                type="number"
+                                class="form-control"
+                                name="other_charge"
+                                id="otherChargeInput"
+                                value="0"
+                                min="0"
+                                step="0.01"
+                                style="width:120px;text-align:right;"
+                                placeholder="0.00"
+                            >
                         </div>
                     </div>
+
 
                     <!-- Grand Total -->
                     <div class="summary-row grand-total">
                         <span class="summary-label">Grand Total</span>
-                        <span class="summary-value" id="summaryGrandTotal">&#8377;0.00</span>
-                        <input type="hidden" name="grand_total" id="grandTotalInput" value="0">
+
+                        <span class="summary-value" id="summaryGrandTotal">
+                            ₹0.00
+                        </span>
+
+                        <input
+                            type="hidden"
+                            name="grand_total"
+                            id="grandTotalInput"
+                            value="0"
+                        >
                     </div>
+
 
                     <!-- Paid Amount -->
                     <div class="summary-row">
                         <span class="summary-label">Paid Amount</span>
-                        <span class="summary-value"><span id="summaryPaidAmount">&#8377;0.00</span></span>
+
+                        <span class="summary-value">
+                            <span id="summaryPaidAmount">₹0.00</span>
+                        </span>
                     </div>
+
 
                     <!-- Due Amount -->
                     <div class="summary-row">
                         <span class="summary-label">Due Amount</span>
-                        <span class="summary-value" id="summaryDueAmount">&#8377;0.00</span>
-                        <input type="hidden" name="due_amount" id="dueAmountInput" value="0">
+
+                        <span class="summary-value" id="summaryDueAmount">
+                            ₹0.00
+                        </span>
+
+                        <input
+                            type="hidden"
+                            name="due_amount"
+                            id="dueAmountInput"
+                            value="0"
+                        >
                     </div>
+
 
                     <!-- Payment Status -->
                     <div class="summary-row">
                         <span class="summary-label">Payment Status</span>
-                        <span class="summary-value" id="summaryPaymentStatus">Unpaid</span>
-                        <input type="hidden" name="payment_status" id="paymentStatusInput" value="Unpaid">
+
+                        <span
+                            class="summary-value"
+                            id="summaryPaymentStatus"
+                        >
+                            Unpaid
+                        </span>
+
+                        <input
+                            type="hidden"
+                            name="payment_status"
+                            id="paymentStatusInput"
+                            value="Unpaid"
+                        >
                     </div>
 
                 </div>
+                    
 
                     <div class="tax-section">
                         <label>Tax</label>
@@ -320,341 +400,6 @@
         </div>
     </form>
 </div>
-
-<!-- ==================== REDESIGNED MODALS ==================== -->
-
-<!-- Add Supplier Modal -->
-<div class="modal-overlay-po" id="supplierModal">
-    <div class="modal-dialog-po">
-        <div class="modal-header-po">
-            <h3><span class="modal-header-icon supplier"><i class="fas fa-truck"></i></span> Add New Supplier</h3>
-            <button type="button" class="modal-close-po" data-modal="supplierModal"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body-po">
-            <form id="supplierModalForm" onsubmit="return false;">
-                {% csrf_token %}
-                <div class="modal-section-title supplier-color"><i class="fas fa-building"></i> Basic Details</div>
-                <div class="modal-form-grid">
-                    <div class="form-group form-group-full">
-                        <label>Retailer Name <span class="required">*</span></label>
-                        <select class="form-control" name="retailer" required>
-                            <option value="" disabled selected>Select a Retailer</option>
-                            {% for retailer in retailer_list %}
-                                <option value="{{ retailer.id }}">{{ retailer.shop_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Supplier Name <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="supplier_name" placeholder="Enter supplier name" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Contact Person</label>
-                        <input type="text" class="form-control" name="contact_person" placeholder="Enter contact person name">
-                    </div>
-                    <div class="form-group">
-                        <label>Mobile <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="mobile" placeholder="Enter mobile number" required maxlength="15">
-                    </div>
-                    <div class="form-group">
-                        <label>Alternate Mobile</label>
-                        <input type="text" class="form-control" name="alternate_mobile" placeholder="Enter alternate mobile" maxlength="15">
-                    </div>
-                    <div class="form-group">
-                        <label>Email Address</label>
-                        <input type="email" class="form-control" name="email" placeholder="Enter email address">
-                    </div>
-                    <div class="form-group">
-                        <label>GST Number</label>
-                        <input type="text" class="form-control" name="gst_number" placeholder="Enter GSTIN" maxlength="20">
-                    </div>
-                    <div class="form-group">
-                        <label>PAN Number</label>
-                        <input type="text" class="form-control" name="pan_number" placeholder="Enter PAN" maxlength="20">
-                    </div>
-                </div>
-
-                <div class="modal-section-title supplier-color"><i class="fas fa-map-marker-alt"></i> Address &amp; Financials</div>
-                <div class="modal-form-grid">
-                    <div class="form-group">
-                        <label>City <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="city" placeholder="Enter city" required>
-                    </div>
-                    <div class="form-group">
-                        <label>State <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="state" placeholder="Enter state" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Pincode <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="pincode" placeholder="Enter pincode" required maxlength="10">
-                    </div>
-                    <div class="form-group">
-                        <label>Opening Balance</label>
-                        <input type="number" step="0.01" class="form-control" name="opening_balance" value="0.00" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Credit Limit</label>
-                        <input type="number" step="0.01" class="form-control" name="credit_limit" value="0.00" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Credit Days</label>
-                        <input type="number" class="form-control" name="credit_days" value="0" min="0">
-                    </div>
-                    <div class="form-group form-group-full">
-                        <label>Address <span class="required">*</span></label>
-                        <textarea class="form-control" name="address" rows="2" placeholder="Enter complete address" required></textarea>
-                    </div>
-                    <div class="form-group form-group-full">
-                        <label>Notes</label>
-                        <textarea class="form-control" name="notes" rows="2" placeholder="Add remarks"></textarea>
-                    </div>
-                    <div class="form-group form-group-full">
-                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500;">
-                            <input type="checkbox" name="is_active" checked> Is Active
-                        </label>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer-po">
-            <button type="button" class="btn-modal btn-modal-outline modal-close" data-modal="supplierModal">Cancel</button>
-            <button type="button" class="btn-modal btn-modal-primary" id="saveSupplierBtn"><i class="fas fa-save"></i> Save Supplier</button>
-        </div>
-    </div>
-</div>
-
-<!-- Add Product Modal -->
-<div class="modal-overlay-po" id="productModal">
-    <div class="modal-dialog-po">
-        <div class="modal-header-po">
-            <h3><span class="modal-header-icon product"><i class="fas fa-box"></i></span> Add New Product</h3>
-            <button type="button" class="modal-close-po" data-modal="productModal"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body-po">
-            <form id="productModalForm" onsubmit="return false;">
-                {% csrf_token %}
-                <div class="modal-section-title product-color"><i class="fas fa-info-circle"></i> Basic Information</div>
-                <div class="modal-form-grid">
-                    <div class="form-group form-group-full">
-                        <label>Product Name <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="product_name" placeholder="e.g., Tata Salt, Aashirvaad Atta 5kg" required maxlength="200">
-                    </div>
-                    <div class="form-group">
-                        <label>Barcode</label>
-                        <input type="text" class="form-control" name="barcode" placeholder="Scan or enter barcode" maxlength="100">
-                    </div>
-                    <div class="form-group">
-                        <label>HSN Code <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="hsn_code" placeholder="e.g., 2106" required maxlength="20">
-                    </div>
-                    
-                    <!-- Brand with Other -->
-                    <div class="form-group">
-                        <label>Brand <span class="required">*</span></label>
-                        <select class="form-control" name="brand" id="brandSelect" required>
-                            <option value="" disabled selected>Select brand</option>
-                            {% for brand in brands %}
-                                <option value="{{ brand.id }}">{{ brand }}</option>
-                            {% endfor %}
-                            <option value="other">➕ Other (Add New)</option>
-                        </select>
-                        <div class="other-input-wrapper" id="brandOtherWrapper" style="display:none;">
-                            <input type="text" class="form-control other-input" name="brand_other" id="brandOtherInput" placeholder="Enter new brand name" maxlength="100">
-                        </div>
-                    </div>
-                    
-                    <!-- Category with Other -->
-                    <div class="form-group">
-                        <label>Category <span class="required">*</span></label>
-                        <select class="form-control" name="category" id="categorySelect" required>
-                            <option value="" disabled selected>Select category</option>
-                            {% for category in categories %}
-                                <option value="{{ category.id }}">{{ category }}</option>
-                            {% endfor %}
-                            <option value="other">➕ Other (Add New)</option>
-                        </select>
-                        <div class="other-input-wrapper" id="categoryOtherWrapper" style="display:none;">
-                            <input type="text" class="form-control other-input" name="category_other" id="categoryOtherInput" placeholder="Enter new category name" maxlength="100">
-                        </div>
-                    </div>
-                    
-                    <!-- Unit with Other -->
-                    <div class="form-group">
-                        <label>Unit <span class="required">*</span></label>
-                        <select class="form-control" name="unit" id="unitSelect" required>
-                            <option value="" disabled selected>Select unit</option>
-                            {% for unit in units %}
-                                <option value="{{ unit.id }}">{{ unit }}</option>
-                            {% endfor %}
-                            <option value="other">➕ Other (Add New)</option>
-                        </select>
-                        <div class="other-input-wrapper" id="unitOtherWrapper" style="display:none;">
-                            <input type="text" class="form-control other-input" name="unit_other" id="unitOtherInput" placeholder="Enter new unit (e.g., dozen, pack)" maxlength="50">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal-section-title product-color"><i class="fas fa-tags"></i> Pricing Details</div>
-                <div class="modal-form-grid">
-                    <div class="form-group">
-                        <label>Purchase Price <span class="required">*</span></label>
-                        <input type="number" class="form-control" name="purchase_price" placeholder="0.00" step="0.01" min="0" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Selling Price <span class="required">*</span></label>
-                        <input type="number" class="form-control" name="selling_price" placeholder="0.00" step="0.01" min="0" required>
-                    </div>
-                    <div class="form-group">
-                        <label>MRP <span class="required">*</span></label>
-                        <input type="number" class="form-control" name="mrp" placeholder="0.00" step="0.01" min="0" required>
-                    </div>
-                    <div class="form-group">
-                        <label>GST (%)</label>
-                        <input type="number" class="form-control" name="gst" placeholder="e.g., 5, 12, 18" step="0.01" min="0" max="100">
-                    </div>
-                </div>
-
-                <div class="modal-section-title product-color"><i class="fas fa-warehouse"></i> Stock &amp; Availability</div>
-                <div class="modal-form-grid">
-                    <div class="form-group">
-                        <label>Current Stock <span class="required">*</span></label>
-                        <input type="number" class="form-control" name="current_stock" placeholder="e.g., 50" min="0" step="1" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Minimum Stock <span class="required">*</span></label>
-                        <input type="number" class="form-control" name="minimum_stock" placeholder="e.g., 10" min="0" step="1" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Retailer <span class="required">*</span></label>
-                        <select class="form-control" name="retailer" required>
-                            <option value="" disabled selected>Select retailer</option>
-                            {% for retailer in retailer_list %}
-                                <option value="{{ retailer.id }}">{{ retailer }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group" style="display:flex;align-items:flex-end;">
-                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500;margin-bottom:10px;">
-                            <input type="checkbox" name="is_active" checked> Product Active
-                        </label>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer-po">
-            <button type="button" class="btn-modal btn-modal-outline modal-close" data-modal="productModal">Cancel</button>
-            <button type="button" class="btn-modal btn-modal-success" id="saveProductBtn"><i class="fas fa-save"></i> Save Product</button>
-        </div>
-    </div>
-</div>
-
-<!-- Add Retailer Modal -->
-<div class="modal-overlay-po" id="retailerModal">
-    <div class="modal-dialog-po">
-        <div class="modal-header-po">
-            <h3><span class="modal-header-icon retailer"><i class="fas fa-store"></i></span> Add New Retailer</h3>
-            <button type="button" class="modal-close-po" data-modal="retailerModal"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body-po">
-            <form id="retailerModalForm" onsubmit="return false;">
-                {% csrf_token %}
-                <div class="modal-section-title retailer-color"><i class="fas fa-user-shield"></i> Account Information</div>
-                <div class="modal-form-grid">
-                    <div class="form-group">
-                        <label>Username <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="username" placeholder="e.g. rajesh_store" required autocomplete="username">
-                    </div>
-                    <div class="form-group">
-                        <label>Email Address <span class="required">*</span></label>
-                        <input type="email" class="form-control" name="email" placeholder="e.g. rajesh@store.com" required autocomplete="email">
-                    </div>
-                    <div class="form-group">
-                        <label>Password <span class="required">*</span></label>
-                        <div class="password-input-wrapper">
-                            <input type="password" class="form-control password-field" name="password" placeholder="Min 8 characters" required autocomplete="new-password" minlength="8">
-                            <button type="button" class="password-toggle" aria-label="Show password" title="Show password">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Confirm Password <span class="required">*</span></label>
-                        <div class="password-input-wrapper">
-                            <input type="password" class="form-control password-field" name="confirm_password" placeholder="Re-enter password" required minlength="8" autocomplete="new-password">
-                            <button type="button" class="password-toggle" aria-label="Show confirm password" title="Show confirm password">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal-section-title retailer-color"><i class="fas fa-store"></i> Shop Details</div>
-                <div class="modal-form-grid">
-                    <div class="form-group">
-                        <label>Shop Name <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="shop_name" placeholder="e.g. Rajesh General Store" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Owner Name <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="owner_name" placeholder="e.g. Rajesh Kumar Sharma" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Mobile Number <span class="required">*</span></label>
-                        <input type="tel" class="form-control" name="mobile" placeholder="e.g. 9876543210" required maxlength="10" inputmode="numeric" autocomplete="tel">
-                    </div>
-                </div>
-
-                <div class="modal-section-title retailer-color"><i class="fas fa-map-marker-alt"></i> Address</div>
-                <div class="modal-form-grid">
-                    <div class="form-group">
-                        <label>City <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="city" placeholder="e.g. Mumbai" required>
-                    </div>
-                    <div class="form-group">
-                        <label>State <span class="required">*</span></label>
-                        <select class="form-control" name="state" required>
-                            <option value="">Select State</option>
-                            <option value="maharashtra">Maharashtra</option>
-                            <option value="gujarat">Gujarat</option>
-                            <option value="karnataka">Karnataka</option>
-                            <option value="tamilnadu">Tamil Nadu</option>
-                            <option value="delhi">Delhi</option>
-                            <option value="rajasthan">Rajasthan</option>
-                            <option value="telangana">Telangana</option>
-                            <option value="westbengal">West Bengal</option>
-                            <option value="punjab">Punjab</option>
-                            <option value="haryana">Haryana</option>
-                            <option value="up">Uttar Pradesh</option>
-                            <option value="mp">Madhya Pradesh</option>
-                            <option value="kerala">Kerala</option>
-                            <option value="andhra">Andhra Pradesh</option>
-                            <option value="bihar">Bihar</option>
-                            <option value="odisha">Odisha</option>
-                            <option value="assam">Assam</option>
-                            <option value="jharkhand">Jharkhand</option>
-                            <option value="chhattisgarh">Chhattisgarh</option>
-                            <option value="goa">Goa</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>PIN Code <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="pincode" placeholder="e.g. 400001" required maxlength="6" inputmode="numeric">
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer-po">
-            <button type="button" class="btn-modal btn-modal-outline modal-close" data-modal="retailerModal">Cancel</button>
-            <button type="button" class="btn-modal btn-modal-primary" id="saveRetailerBtn"><i class="fas fa-save"></i> Save Retailer</button>
-        </div>
-    </div>
-</div>
-
-<!-- Toast Container -->
-<div class="toast-container-po" id="ajaxToastContainer"></div>
-
-
 {% endblock %}
 
 {% block js %}
@@ -731,60 +476,6 @@ document.addEventListener('keydown', function (e) {
         userProfile.classList.remove('open');
         closeMobileSidebar();
     }
-});
-
-
-// ===== Password Show / Hide =====
-document.querySelectorAll('.password-toggle').forEach(function(toggle) {
-
-    toggle.addEventListener('click', function() {
-
-        var wrapper = this.closest('.password-input-wrapper');
-        var input = wrapper.querySelector('.password-field');
-        var icon = this.querySelector('i');
-
-        if (!input || !icon) {
-            return;
-        }
-
-        if (input.type === 'password') {
-
-            // Show password
-            input.type = 'text';
-
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
-
-            this.setAttribute(
-                'aria-label',
-                'Hide password'
-            );
-
-            this.setAttribute(
-                'title',
-                'Hide password'
-            );
-
-        } else {
-
-            // Hide password
-            input.type = 'password';
-
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
-
-            this.setAttribute(
-                'aria-label',
-                'Show password'
-            );
-
-            this.setAttribute(
-                'title',
-                'Show password'
-            );
-        }
-    });
-
 });
 
 
@@ -2350,318 +2041,6 @@ document.addEventListener('DOMContentLoaded', function () {
     calculateTotals();
 
 });
-
-
-
-(function() {
-    'use strict';
-
-    // ===== CSRF Helper =====
-    function getCookie(name) {
-        var cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-    var csrftoken = getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-    // ===== Toast System =====
-    var toastContainer = document.getElementById('ajaxToastContainer');
-    function showToast(message, type) {
-        type = type || 'error';
-        var toast = document.createElement('div');
-        toast.className = 'ajax-toast-po ' + type;
-        var icons = { error: 'fa-exclamation-circle', success: 'fa-check-circle', warning: 'fa-exclamation-triangle' };
-        var colors = { error: '#ef4444', success: '#10b981', warning: '#f59e0b' };
-        toast.innerHTML = '<i class="fas ' + (icons[type] || icons.error) + '" style="font-size:18px;color:' + (colors[type] || colors.error) + ';flex-shrink:0;"></i><span>' + String(message) + '</span>';
-        if (toastContainer) toastContainer.appendChild(toast);
-        setTimeout(function() {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateX(40px)';
-            setTimeout(function() { toast.remove(); }, 300);
-        }, 4000);
-    }
-
-    // ===== Modal System =====
-    function openModal(id) {
-        var el = document.getElementById(id);
-        if (el) { el.classList.add('active'); document.body.style.overflow = 'hidden'; }
-    }
-    function closeModal(id) {
-        var el = document.getElementById(id);
-        if (el) { el.classList.remove('active'); document.body.style.overflow = ''; }
-        var form = el.querySelector('form');
-        if (form) form.reset();
-        // Clear error borders
-        var inputs = form ? form.querySelectorAll('.form-control') : [];
-        for (var k = 0; k < inputs.length; k++) inputs[k].style.borderColor = '';
-    }
-
-    document.querySelectorAll('.modal-close-po, .modal-close').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var modalId = this.getAttribute('data-modal');
-            if (modalId) closeModal(modalId);
-        });
-    });
-    ['supplierModal','productModal','retailerModal'].forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el) {
-            el.addEventListener('click', function(e) {
-                if (e.target === el) closeModal(id);
-            });
-        }
-    });
-
-    var btnOpenSupplier = document.getElementById('btnOpenSupplierModal');
-    var btnOpenProduct = document.getElementById('btnOpenProductModal');
-    var btnOpenRetailer = document.getElementById('btnOpenRetailerModal');
-
-    if (btnOpenSupplier) btnOpenSupplier.addEventListener('click', function() { openModal('supplierModal'); });
-    if (btnOpenProduct) btnOpenProduct.addEventListener('click', function() { openModal('productModal'); });
-    if (btnOpenRetailer) btnOpenRetailer.addEventListener('click', function() { openModal('retailerModal'); });
-
-    // ===== AJAX: Add Supplier =====
-    var saveSupplierBtn = document.getElementById('saveSupplierBtn');
-    if (saveSupplierBtn) {
-        saveSupplierBtn.addEventListener('click', function() {
-            var form = document.getElementById('supplierModalForm');
-            if (!form) return;
-            var reqFields = ['retailer','supplier_name','mobile','city','state','pincode','address'];
-            var missing = false;
-            reqFields.forEach(function(fn) {
-                var el = form.querySelector('[name="' + fn + '"]');
-                if (!el || !el.value.trim()) { missing = true; if (el) el.style.borderColor = '#ef4444'; }
-                else { if (el) el.style.borderColor = ''; }
-            });
-            if (missing) { showToast('Please fill all required supplier fields', 'error'); return; }
-            var mobile = form.querySelector('[name="mobile"]').value.trim();
-            if (!/^\d{10,15}$/.test(mobile.replace(/\D/g,''))) { showToast('Please enter a valid mobile number', 'error'); return; }
-
-            var formData = new FormData(form);
-            fetch("{% url 'add_new_supplier' %}", {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
-                body: formData
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success || data.id) {
-                    var select = document.querySelector('select[name="supplier"]');
-                    if (select) { var opt = new Option(data.supplier_name || formData.get('supplier_name'), data.id, true, true); select.add(opt); }
-                    closeModal('supplierModal');
-                    showToast('Supplier added successfully!', 'success');
-                } else {
-                    showToast(data.message || data.error || 'Failed to add supplier', 'error');
-                }
-            })
-            .catch(function(err) { console.error(err); showToast('Network error while adding supplier', 'error'); });
-        });
-    }
-
-    
-    // ===== AJAX: Add Product =====
-    (function() {
-        'use strict';
-
-        // ── Helper: Setup "Other" toggle for dropdowns ──
-        function setupOtherToggle(selectId, wrapperId, inputId) {
-            var select = document.getElementById(selectId);
-            var wrapper = document.getElementById(wrapperId);
-            var input = document.getElementById(inputId);
-            if (!select || !wrapper || !input) return;
-
-            select.addEventListener('change', function() {
-                if (this.value === 'other') {
-                    wrapper.style.display = 'block';
-                    input.setAttribute('required', 'required');
-                    setTimeout(function() { input.focus(); }, 100);
-                } else {
-                    wrapper.style.display = 'none';
-                    input.removeAttribute('required');
-                    input.value = '';
-                    input.style.borderColor = '';
-                }
-            });
-        }
-
-        // Initialize toggles for Brand, Category, Unit
-        setupOtherToggle('brandSelect',    'brandOtherWrapper',    'brandOtherInput');
-        setupOtherToggle('categorySelect', 'categoryOtherWrapper', 'categoryOtherInput');
-        setupOtherToggle('unitSelect',     'unitOtherWrapper',     'unitOtherInput');
-
-        // ── Save Product Handler ──
-        var saveProductBtn = document.getElementById('saveProductBtn');
-        if (saveProductBtn) {
-            saveProductBtn.addEventListener('click', function() {
-                var form = document.getElementById('productModalForm');
-                if (!form) return;
-
-                // Required fields validation
-                var reqFields = ['product_name','hsn_code','brand','category','unit','purchase_price','selling_price','mrp','current_stock','minimum_stock','retailer'];
-                var missing = false;
-
-                reqFields.forEach(function(fn) {
-                    var el = form.querySelector('[name="' + fn + '"]');
-                    if (!el) return;
-                    var val = el.value.trim();
-
-                    // Check "Other" text inputs when "other" is selected
-                    if (fn === 'brand' && val === 'other') {
-                        var otherEl = document.getElementById('brandOtherInput');
-                        if (!otherEl || !otherEl.value.trim()) {
-                            missing = true;
-                            if (otherEl) otherEl.style.borderColor = '#ef4444';
-                        } else {
-                            if (otherEl) otherEl.style.borderColor = '';
-                        }
-                    }
-                    else if (fn === 'category' && val === 'other') {
-                        var otherEl = document.getElementById('categoryOtherInput');
-                        if (!otherEl || !otherEl.value.trim()) {
-                            missing = true;
-                            if (otherEl) otherEl.style.borderColor = '#ef4444';
-                        } else {
-                            if (otherEl) otherEl.style.borderColor = '';
-                        }
-                    }
-                    else if (fn === 'unit' && val === 'other') {
-                        var otherEl = document.getElementById('unitOtherInput');
-                        if (!otherEl || !otherEl.value.trim()) {
-                            missing = true;
-                            if (otherEl) otherEl.style.borderColor = '#ef4444';
-                        } else {
-                            if (otherEl) otherEl.style.borderColor = '';
-                        }
-                    }
-                    else if (!val) {
-                        missing = true;
-                        el.style.borderColor = '#ef4444';
-                    } else {
-                        el.style.borderColor = '';
-                    }
-                });
-
-                if (missing) { showToast('Please fill all required fields', 'error'); return; }
-
-                // Price validations
-                var pp  = parseFloat(form.querySelector('[name="purchase_price"]').value) || 0;
-                var sp  = parseFloat(form.querySelector('[name="selling_price"]').value) || 0;
-                var mrp = parseFloat(form.querySelector('[name="mrp"]').value) || 0;
-                if (sp < pp) { showToast('Selling price must be >= purchase price', 'error'); return; }
-                if (mrp < sp) { showToast('MRP must be >= selling price', 'error'); return; }
-
-                // Build FormData
-                var formData = new FormData(form);
-
-                // Replace "other" with prefixed new name for backend handling
-                var brandSel = document.getElementById('brandSelect');
-                if (brandSel && brandSel.value === 'other') {
-                    formData.set('brand', 'other:' + document.getElementById('brandOtherInput').value.trim());
-                }
-                var catSel = document.getElementById('categorySelect');
-                if (catSel && catSel.value === 'other') {
-                    formData.set('category', 'other:' + document.getElementById('categoryOtherInput').value.trim());
-                }
-                var unitSel = document.getElementById('unitSelect');
-                if (unitSel && unitSel.value === 'other') {
-                    formData.set('unit', 'other:' + document.getElementById('unitOtherInput').value.trim());
-                }
-
-                fetch("{% url 'add_product' %}", {
-                    method: 'POST',
-                    headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
-                    body: formData
-                })
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    if (data.success || data.id) {
-                        var prodName = data.product_name || formData.get('product_name');
-                        var prodId = data.id;
-                        document.querySelectorAll('#itemsBody tr').forEach(function(row) {
-                            var select = row.querySelector('td:nth-child(2) select');
-                            if (select) {
-                                var exists = Array.from(select.options).some(function(o) { return o.value == prodId; });
-                                if (!exists) select.add(new Option(prodName, prodId));
-                            }
-                        });
-                        if (typeof window.__purchaseProducts !== 'undefined' && Array.isArray(window.__purchaseProducts)) {
-                            window.__purchaseProducts.push({ id: prodId, name: prodName });
-                        }
-                        closeModal('productModal');
-                        showToast('Product added successfully!', 'success');
-                    } else {
-                        var msg = data.message || data.error || '';
-                        if (typeof data.errors === 'object') msg = Object.values(data.errors).flat().join(', ');
-                        showToast(msg || 'Failed to add product', 'error');
-                    }
-                })
-                .catch(function(err) { console.error(err); showToast('Network error while adding product', 'error'); });
-            });
-        }
-    })();
-    
-
-    // ===== AJAX: Add Retailer =====
-    var saveRetailerBtn = document.getElementById('saveRetailerBtn');
-    if (saveRetailerBtn) {
-        saveRetailerBtn.addEventListener('click', function() {
-            var form = document.getElementById('retailerModalForm');
-            if (!form) return;
-            var reqFields = ['username','email','password','confirm_password','shop_name','owner_name','mobile','city','state','pincode'];
-            var missing = false;
-            reqFields.forEach(function(fn) {
-                var el = form.querySelector('[name="' + fn + '"]');
-                if (!el || !el.value.trim()) { missing = true; if (el) el.style.borderColor = '#ef4444'; }
-                else { if (el) el.style.borderColor = ''; }
-            });
-            if (missing) { showToast('Please fill all required retailer fields', 'error'); return; }
-            var pwd = form.querySelector('[name="password"]').value;
-            var cpwd = form.querySelector('[name="confirm_password"]').value;
-            if (pwd !== cpwd) { showToast('Passwords do not match', 'error'); return; }
-            if (pwd.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; }
-            var mobile = form.querySelector('[name="mobile"]').value.trim().replace(/\D/g,'');
-            if (mobile.length !== 10) { showToast('Enter a valid 10-digit mobile number', 'error'); return; }
-            var email = form.querySelector('[name="email"]').value.trim();
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Enter a valid email address', 'error'); return; }
-
-            var formData = new FormData(form);
-            fetch("{% url 'retailer_register' %}", {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
-                body: formData
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success || data.id) {
-                    var select = document.querySelector('select[name="retailer"]');
-                    if (select) { var opt = new Option(data.shop_name || formData.get('shop_name'), data.id, true, true); select.add(opt); }
-                    closeModal('retailerModal');
-                    showToast('Retailer added successfully!', 'success');
-                } else {
-                    var msg = data.message || data.error || '';
-                    if (typeof data.errors === 'object') msg = Object.values(data.errors).flat().join(', ');
-                    showToast(msg || 'Failed to add retailer', 'error');
-                }
-            })
-            .catch(function(err) { console.error(err); showToast('Network error while adding retailer', 'error'); });
-        });
-    }
-
-    // Numeric sanitizers
-    var retailerMobile = document.querySelector('#retailerModalForm [name="mobile"]');
-    if (retailerMobile) retailerMobile.addEventListener('input', function() { this.value = this.value.replace(/\D/g, '').slice(0, 10); });
-    var retailerPin = document.querySelector('#retailerModalForm [name="pincode"]');
-    if (retailerPin) retailerPin.addEventListener('input', function() { this.value = this.value.replace(/\D/g, '').slice(0, 6); });
-})();
-
 
 window.addEventListener('resize', () => {
     if (window.innerWidth > 768) {
