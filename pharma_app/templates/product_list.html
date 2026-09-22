@@ -161,6 +161,9 @@
                     <th class="center">Minimum Stock</th>
                     <th class="center">GST</th>
                     <th class="center">Status</th>
+                    {% if request.user.is_superuser %}
+                    <th class="center">Retailer</th>
+                    {% endif %}
                     <th class="center" style="width: 120px;">Actions</th>
                 </tr>
             </thead>
@@ -213,6 +216,9 @@
                             <span class="badge badge-inactive"><span class="badge-dot"></span> Inactive</span>
                         {% endif %}
                     </td>
+                    {% if request.user.is_superuser %}
+                    <td class="center">{{ product.retailer.shop_name }}</td>
+                    {% endif %}
                     <td class="center">
                     <div class="actions">
                         <a href="javascript:void(0)" 

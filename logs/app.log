@@ -389,3 +389,1191 @@ UnboundLocalError: cannot access local variable 'grand_total' where it is not as
 [2026-08-25 23:17:51,236] INFO views Purchase item created and stock updated. purchase_id=6 product_id=8 product=Patanjali Cow's Ghee 500ml Pouch old_stock=0 purchase_quantity=12 free_quantity=0 stock_added=12 new_stock=12
 [2026-08-25 23:17:51,240] INFO views Purchase item created and stock updated. purchase_id=6 product_id=5 product=Amul Taaza Fresh Milk 1L old_stock=0 purchase_quantity=24 free_quantity=0 stock_added=24 new_stock=24
 [2026-08-25 23:17:51,347] INFO views Purchase created successfully. user=admin bill_number=BILL-2026-001 retailer=Abc Genral Store subtotal=4224.00 gst=211.20 grand_total=4555.20 paid=500 due=4055.20
+[2026-08-26 15:21:15,972] INFO views Superadmin 1 viewing low stock products for all retailers.
+[2026-08-26 15:21:15,975] INFO views Superadmin 1: 3 low stock product(s) found.
+[2026-08-26 15:21:40,019] INFO views Superadmin 1 viewing low stock products for all retailers.
+[2026-08-26 15:21:40,020] INFO views Superadmin 1: 3 low stock product(s) found.
+[2026-08-26 15:22:15,388] INFO views User logged out: username=admin
+[2026-08-26 15:22:29,737] WARNING views Failed login attempt for username=reatiler1
+[2026-08-26 15:22:43,075] WARNING views Failed login attempt for username=retailer
+[2026-08-26 15:22:53,347] INFO views User logged in: username=retailer3
+[2026-08-26 15:23:03,784] INFO views Retailer 4: 0 low stock product(s) found.
+[2026-08-26 15:29:46,130] INFO views User logged out: username=retailer3
+[2026-08-26 15:29:55,627] INFO views User logged in: username=admin
+[2026-08-26 21:35:09,022] ERROR views Duplicate customer/mobile race condition.
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 359, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: pharma_app_customer.retailer_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 5676, in create_customer_ajax
+    customer = Customer.objects.create(
+        retailer=retailer,
+    ...<7 lines>...
+        is_active=True,
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 669, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\base.py", line 874, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\base.py", line 966, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, insert_fields, returning_fields, raw
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\base.py", line 1220, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1918, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\compiler.py", line 1925, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\utils.py", line 94, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 359, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: NOT NULL constraint failed: pharma_app_customer.retailer_id
+[2026-08-26 21:35:37,206] ERROR views Duplicate customer/mobile race condition.
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 359, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: pharma_app_customer.retailer_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 5676, in create_customer_ajax
+    customer = Customer.objects.create(
+        retailer=retailer,
+    ...<7 lines>...
+        is_active=True,
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 669, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\base.py", line 874, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\base.py", line 966, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, insert_fields, returning_fields, raw
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\base.py", line 1220, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1918, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\compiler.py", line 1925, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\utils.py", line 94, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 359, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: NOT NULL constraint failed: pharma_app_customer.retailer_id
+[2026-08-26 21:35:50,043] ERROR views Duplicate customer/mobile race condition.
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 359, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: pharma_app_customer.retailer_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 5676, in create_customer_ajax
+    customer = Customer.objects.create(
+        retailer=retailer,
+    ...<7 lines>...
+        is_active=True,
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 669, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\base.py", line 874, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\base.py", line 966, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, insert_fields, returning_fields, raw
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\base.py", line 1220, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1918, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\compiler.py", line 1925, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\utils.py", line 94, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 359, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: NOT NULL constraint failed: pharma_app_customer.retailer_id
+[2026-08-26 21:36:32,020] ERROR views Duplicate customer/mobile race condition.
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 359, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: pharma_app_customer.retailer_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 5676, in create_customer_ajax
+    customer = Customer.objects.create(
+        retailer=retailer,
+    ...<7 lines>...
+        is_active=True,
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 669, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\base.py", line 874, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\base.py", line 966, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, insert_fields, returning_fields, raw
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\base.py", line 1220, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1918, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\compiler.py", line 1925, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\utils.py", line 94, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 359, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: NOT NULL constraint failed: pharma_app_customer.retailer_id
+[2026-08-27 15:38:39,208] INFO views User logged out: username=admin
+[2026-08-27 15:38:56,958] INFO views User logged in: username=retailer3
+[2026-09-07 15:51:33,821] INFO views User logged in: username=admin
+[2026-09-08 16:37:26,263] INFO views Retailer account created successfully. Retailer ID=1, User ID=2, Username=a_retailer_store, Shop=A Retailer Genral Store, Created By=admin
+[2026-09-08 16:37:34,807] INFO views User logged out: username=admin
+[2026-09-08 16:37:51,120] INFO views User logged in: username=a_retailer_store
+[2026-09-08 16:38:04,701] INFO views User logged out: username=a_retailer_store
+[2026-09-08 16:38:13,468] INFO views User logged in: username=admin
+[2026-09-08 18:38:34,807] ERROR views Unexpected error while processing brand/category/unit. User=admin
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\fields\__init__.py", line 2128, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: 'other'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 1121, in add_product
+    category = Category.objects.filter(
+               ~~~~~~~~~~~~~~~~~~~~~~~^
+        id=category_id,
+        ^^^^^^^^^^^^^^^
+        retailer=retailer
+        ^^^^^^^^^^^^^^^^^
+    ).first()
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1542, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1560, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1570, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1676, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1708, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1618, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1445, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 35, in __init__
+    self.rhs = self.get_prep_lookup()
+               ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 391, in get_prep_lookup
+    return super().get_prep_lookup()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 93, in get_prep_lookup
+    return self.lhs.output_field.get_prep_value(self.rhs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\fields\__init__.py", line 2130, in get_prep_value
+    raise e.__class__(
+        "Field '%s' expected a number but got %r." % (self.name, value),
+    ) from e
+ValueError: Field 'id' expected a number but got 'other'.
+[2026-09-08 18:42:25,454] ERROR views Unexpected error while processing brand/category/unit. User=admin
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\fields\__init__.py", line 2128, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: 'other'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 1122, in add_product
+    category = Category.objects.filter(
+               ~~~~~~~~~~~~~~~~~~~~~~~^
+        id=category_id,
+        ^^^^^^^^^^^^^^^
+        retailer=retailer
+        ^^^^^^^^^^^^^^^^^
+    ).first()
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1542, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1560, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1570, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1676, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1708, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1618, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1445, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 35, in __init__
+    self.rhs = self.get_prep_lookup()
+               ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 391, in get_prep_lookup
+    return super().get_prep_lookup()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 93, in get_prep_lookup
+    return self.lhs.output_field.get_prep_value(self.rhs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\fields\__init__.py", line 2130, in get_prep_value
+    raise e.__class__(
+        "Field '%s' expected a number but got %r." % (self.name, value),
+    ) from e
+ValueError: Field 'id' expected a number but got 'other'.
+[2026-09-08 18:51:33,860] INFO views New category created. Category=Noodles, Retailer=1, User=admin
+[2026-09-08 18:51:33,931] INFO views New brand created. Brand=Maggi, Retailer=1, User=admin
+[2026-09-08 18:51:34,010] INFO views New unit created. Unit=Pack, User=admin
+[2026-09-08 18:51:34,093] INFO views Product added successfully. Product ID=1, Product=Maggi Noodles 4-Pack, Retailer=A Retailer Genral Store, Created By=admin
+[2026-09-08 19:01:35,211] ERROR views Unexpected error while processing brand/category/unit. User=admin
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\fields\__init__.py", line 2128, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: 'other'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 1124, in add_product
+    category = Category.objects.filter(
+               ~~~~~~~~~~~~~~~~~~~~~~~^
+        id=category_id,
+        ^^^^^^^^^^^^^^^
+        retailer=retailer
+        ^^^^^^^^^^^^^^^^^
+    ).first()
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1542, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1560, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1570, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1676, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1708, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1618, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1445, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 35, in __init__
+    self.rhs = self.get_prep_lookup()
+               ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 391, in get_prep_lookup
+    return super().get_prep_lookup()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 93, in get_prep_lookup
+    return self.lhs.output_field.get_prep_value(self.rhs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\fields\__init__.py", line 2130, in get_prep_value
+    raise e.__class__(
+        "Field '%s' expected a number but got %r." % (self.name, value),
+    ) from e
+ValueError: Field 'id' expected a number but got 'other'.
+[2026-09-08 19:09:12,148] ERROR views Unexpected error while processing brand/category/unit. User=admin
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\fields\__init__.py", line 2128, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: 'other'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 1124, in add_product
+    category = Category.objects.filter(
+               ~~~~~~~~~~~~~~~~~~~~~~~^
+        id=category_id,
+        ^^^^^^^^^^^^^^^
+        retailer=retailer
+        ^^^^^^^^^^^^^^^^^
+    ).first()
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1542, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1560, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1570, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1676, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1708, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1618, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1445, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 35, in __init__
+    self.rhs = self.get_prep_lookup()
+               ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 391, in get_prep_lookup
+    return super().get_prep_lookup()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 93, in get_prep_lookup
+    return self.lhs.output_field.get_prep_value(self.rhs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\fields\__init__.py", line 2130, in get_prep_value
+    raise e.__class__(
+        "Field '%s' expected a number but got %r." % (self.name, value),
+    ) from e
+ValueError: Field 'id' expected a number but got 'other'.
+[2026-09-08 19:11:58,946] ERROR views Unexpected error while processing brand/category/unit. User=admin
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\fields\__init__.py", line 2128, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: 'other'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 1124, in add_product
+    category = Category.objects.filter(
+               ~~~~~~~~~~~~~~~~~~~~~~~^
+        id=category_id,
+        ^^^^^^^^^^^^^^^
+        retailer=retailer
+        ^^^^^^^^^^^^^^^^^
+    ).first()
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1542, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1560, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1570, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1676, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1708, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1618, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1445, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 35, in __init__
+    self.rhs = self.get_prep_lookup()
+               ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 391, in get_prep_lookup
+    return super().get_prep_lookup()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 93, in get_prep_lookup
+    return self.lhs.output_field.get_prep_value(self.rhs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\fields\__init__.py", line 2130, in get_prep_value
+    raise e.__class__(
+        "Field '%s' expected a number but got %r." % (self.name, value),
+    ) from e
+ValueError: Field 'id' expected a number but got 'other'.
+[2026-09-08 20:04:32,846] ERROR views Unexpected error while processing brand/category/unit. User=admin
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\fields\__init__.py", line 2128, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: 'other'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 1126, in add_product
+    category = Category.objects.filter(
+               ~~~~~~~~~~~~~~~~~~~~~~~^
+        id=category_id,
+        ^^^^^^^^^^^^^^^
+        retailer=retailer
+        ^^^^^^^^^^^^^^^^^
+    ).first()
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1542, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1560, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1570, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1676, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1708, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1618, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1445, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 35, in __init__
+    self.rhs = self.get_prep_lookup()
+               ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 391, in get_prep_lookup
+    return super().get_prep_lookup()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 93, in get_prep_lookup
+    return self.lhs.output_field.get_prep_value(self.rhs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\fields\__init__.py", line 2130, in get_prep_value
+    raise e.__class__(
+        "Field '%s' expected a number but got %r." % (self.name, value),
+    ) from e
+ValueError: Field 'id' expected a number but got 'other'.
+[2026-09-08 20:10:57,213] INFO views New category created. Category=Milk, Retailer=1, User=admin
+[2026-09-08 20:10:57,273] INFO views New brand created. Brand=Amul, Retailer=1, User=admin
+[2026-09-08 20:10:57,354] INFO views Product added successfully. Product ID=2, Product=Amul Taaza Fresh Milk 1L, Retailer=A Retailer Genral Store, Created By=admin
+[2026-09-08 20:11:53,780] INFO views User logged out: username=admin
+[2026-09-08 20:13:31,744] INFO views User logged in: username=a_retailer_store
+[2026-09-08 20:14:50,789] INFO views New category created. Category=Namkeen, Retailer=1, User=a_retailer_store
+[2026-09-08 20:14:50,848] INFO views New brand created. Brand=Haldiram, Retailer=1, User=a_retailer_store
+[2026-09-08 20:14:50,919] INFO views Product added successfully. Product ID=3, Product=Haldiram Bhujia Sev 400g, Retailer=A Retailer Genral Store, Created By=a_retailer_store
+[2026-09-08 20:15:05,770] INFO views Retailer 1: 3 low stock product(s) found.
+[2026-09-08 20:15:26,267] INFO views Retailer 1: 3 low stock product(s) found.
+[2026-09-08 20:24:59,181] WARNING views Unauthorized or invalid retailer access attempt. User ID: 2, Retailer ID: 2
+[2026-09-08 20:29:26,696] ERROR views Unexpected exception inside add_supplier view: The QuerySet value for an exact lookup must be limited to one result using slicing.
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 3489, in add_supplier
+    retailer = Retailer.objects.filter(
+               ~~~~~~~~~~~~~~~~~~~~~~~^
+        id=retailer_id,
+        ^^^^^^^^^^^^^^^
+        user=request.user,
+        ^^^^^^^^^^^^^^^^^^
+        is_active=True
+        ^^^^^^^^^^^^^^
+    ).first()
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1542, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1560, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1570, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1676, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1708, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1618, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1445, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 35, in __init__
+    self.rhs = self.get_prep_lookup()
+               ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 378, in get_prep_lookup
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: The QuerySet value for an exact lookup must be limited to one result using slicing.
+[2026-09-08 20:31:03,651] ERROR views Unexpected exception inside add_supplier view: 'QuerySet' object has no attribute 'id'
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 3462, in add_supplier
+    retailer_id = retailer.id
+                  ^^^^^^^^^^^
+AttributeError: 'QuerySet' object has no attribute 'id'
+[2026-09-08 20:31:45,451] ERROR views Unexpected exception inside add_supplier view: QuerySet indices must be integers or slices, not str.
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 3462, in add_supplier
+    retailer_id = retailer['id']
+                  ~~~~~~~~^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 410, in __getitem__
+    raise TypeError(
+    ...<2 lines>...
+    )
+TypeError: QuerySet indices must be integers or slices, not str.
+[2026-09-08 20:34:40,195] INFO views Supplier 'A Supplier' (ID: 1) created successfully by User ID 2 for Retailer ID 1
+[2026-09-08 21:05:29,527] INFO views User logged out: username=a_retailer_store
+[2026-09-08 21:05:39,203] INFO views User logged in: username=admin
+[2026-09-08 21:07:24,760] INFO views Superadmin 1 viewing low stock products for all retailers.
+[2026-09-08 21:07:24,762] INFO views Superadmin 1: 3 low stock product(s) found.
+[2026-09-08 21:19:27,076] INFO views Retailer account created successfully. Retailer ID=2, User ID=3, Username=b_retailer_store, Shop=B Retailer Genral Store, Created By=admin
+[2026-09-08 21:20:01,262] INFO views User logged out: username=admin
+[2026-09-08 21:20:10,421] INFO views User logged in: username=b_retailer_store
+[2026-09-08 21:20:16,851] INFO views Retailer 2: 0 low stock product(s) found.
+[2026-09-08 22:21:53,866] INFO views New category created. Category=Noodles, Retailer=2, User=b_retailer_store
+[2026-09-08 22:21:53,976] INFO views New brand created. Brand=Maggi, Retailer=2, User=b_retailer_store
+[2026-09-08 22:21:53,980] WARNING views Duplicate barcode attempted while adding product. Barcode=8901058002315, User=b_retailer_store
+[2026-09-08 22:23:05,411] INFO views Product added successfully. Product ID=4, Product=Maggi Noodles 4-Pack, Retailer=B Retailer Genral Store, Created By=b_retailer_store
+[2026-09-08 22:27:43,169] INFO views Supplier 'B Supplier' (ID: 2) created successfully by User ID 3 for Retailer ID 2
+[2026-09-08 22:36:57,129] INFO views Supplier 'B Supplier1' (ID: 3) created successfully by User ID 3 for Retailer ID 2
+[2026-09-08 22:43:15,313] INFO views New category created. Category=Milk, Retailer=2, User=b_retailer_store
+[2026-09-08 22:43:15,408] INFO views New brand created. Brand=Amul, Retailer=2, User=b_retailer_store
+[2026-09-08 22:43:15,484] INFO views Product added successfully. Product ID=5, Product=Amul Taaza Fresh Milk 1L, Retailer=B Retailer Genral Store, Created By=b_retailer_store
+[2026-09-08 22:45:41,620] INFO views Retailer 2: 2 low stock product(s) found.
+[2026-09-08 22:45:58,011] INFO views Retailer 2: 2 low stock product(s) found.
+[2026-09-08 22:48:29,450] INFO views User logged out: username=b_retailer_store
+[2026-09-08 22:48:40,570] INFO views User logged in: username=admin
+[2026-09-08 22:49:27,833] INFO views Supplier 'A Supplier1' (ID: 4) created successfully by User ID 1 for Retailer ID 1
+[2026-09-10 15:14:43,793] INFO views Superadmin 1 viewing low stock products for all retailers.
+[2026-09-10 15:14:43,795] INFO views Superadmin 1: 5 low stock product(s) found.
+[2026-09-10 15:15:34,345] INFO views Superadmin 1 viewing low stock products for all retailers.
+[2026-09-10 15:15:34,349] INFO views Superadmin 1: 5 low stock product(s) found.
+[2026-09-10 17:15:42,051] INFO views User logged out: username=admin
+[2026-09-10 17:15:57,521] INFO views User logged in: username=a_retailer_store
+[2026-09-10 17:16:58,080] INFO views User logged out: username=a_retailer_store
+[2026-09-10 17:17:06,557] INFO views User logged in: username=admin
+[2026-09-10 17:34:22,213] INFO views User logged out: username=admin
+[2026-09-10 17:34:31,169] INFO views User logged in: username=a_retailer_store
+[2026-09-10 18:19:05,171] INFO views Customer created successfully. customer_id=1 retailer_id=1
+[2026-09-10 21:30:04,540] WARNING views User without retailer profile attempted to create purchase. user=a_retailer_store
+[2026-09-10 21:30:04,541] WARNING views Purchase validation failed. user=a_retailer_store error=No retailer profile is linked to your account.
+[2026-09-11 15:58:52,645] WARNING views User without retailer profile attempted to create purchase. user=a_retailer_store
+[2026-09-11 15:58:52,645] WARNING views Purchase validation failed. user=a_retailer_store error=No retailer profile is linked to your account.
+[2026-09-11 16:05:07,022] WARNING views User without retailer profile attempted to create purchase. user=a_retailer_store
+[2026-09-11 16:05:07,022] WARNING views Purchase validation failed. user=a_retailer_store error=No retailer profile is linked to your account.
+[2026-09-11 16:06:09,203] WARNING views User without retailer profile attempted to create purchase. user=a_retailer_store
+[2026-09-11 16:06:09,203] WARNING views Purchase validation failed. user=a_retailer_store error=No retailer profile is linked to your account.
+[2026-09-11 16:06:55,400] WARNING views User without retailer profile attempted to create purchase. user=a_retailer_store
+[2026-09-11 16:06:55,401] WARNING views Purchase validation failed. user=a_retailer_store error=No retailer profile is linked to your account.
+[2026-09-11 16:07:39,621] WARNING views User without retailer profile attempted to create purchase. user=a_retailer_store
+[2026-09-11 16:07:39,622] WARNING views Purchase validation failed. user=a_retailer_store error=No retailer profile is linked to your account.
+[2026-09-11 16:08:23,458] WARNING views User without retailer profile attempted to create purchase. user=a_retailer_store
+[2026-09-11 16:08:23,459] WARNING views Purchase validation failed. user=a_retailer_store error=No retailer profile is linked to your account.
+[2026-09-11 16:14:58,924] ERROR views Unexpected error while creating purchase. user=a_retailer_store
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 2241, in _handle_add_order
+    retailer_id = retailers.id if retailer else None
+                                  ^^^^^^^^
+UnboundLocalError: cannot access local variable 'retailer' where it is not associated with a value
+[2026-09-11 16:15:47,292] INFO views Purchase item created and stock updated. purchase_id=1 product_id=2 product=Amul Taaza Fresh Milk 1L old_stock=0 purchase_quantity=60 free_quantity=0 stock_added=60 new_stock=60
+[2026-09-11 16:15:47,294] INFO views Purchase item created and stock updated. purchase_id=1 product_id=3 product=Haldiram Bhujia Sev 400g old_stock=0 purchase_quantity=48 free_quantity=0 stock_added=48 new_stock=48
+[2026-09-11 16:15:47,380] INFO views Purchase created successfully. user=a_retailer_store bill_number=BILL-2026-001 retailer=A Retailer Genral Store subtotal=2379.84 gst=0.00 grand_total=2379.84 paid=1379.84 due=1000.00
+[2026-09-11 16:16:32,290] INFO views Retailer 1: 1 low stock product(s) found.
+[2026-09-11 16:21:16,430] WARNING views Sale validation failed for retailer=1: Please add at least one product.
+[2026-09-11 16:23:35,814] WARNING views Sale validation failed for retailer=1: Please add at least one product.
+[2026-09-11 17:04:50,180] WARNING views Sale validation failed for retailer=1: Please add at least one product.
+[2026-09-11 17:14:15,515] WARNING views Sale validation failed for retailer=1: Please add at least one product.
+[2026-09-11 17:20:25,362] WARNING views Sale validation failed for retailer=1: Please add at least one product.
+[2026-09-11 17:21:35,995] WARNING views Sale validation failed for retailer=1: Please add at least one product.
+[2026-09-11 17:27:37,357] WARNING views Sale validation failed for retailer=1: Please add at least one product.
+[2026-09-11 17:28:39,733] WARNING views Sale validation failed for retailer=1: Please add at least one product.
+[2026-09-11 17:58:28,467] ERROR views Unexpected error while creating sale. user_id=2 retailer_id=1
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 4740, in sales_create
+    sorted_indexes = sorted(
+        item_indexes,
+        key=lambda x: int(x)
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 4742, in <lambda>
+    key=lambda x: int(x)
+                  ~~~^^^
+ValueError: invalid literal for int() with base 10: '1]'
+[2026-09-11 18:01:41,695] INFO views Sale created. sale_id=1 invoice=INV-2026-000001 user_id=2 retailer_id=1
+[2026-09-11 18:01:41,716] INFO views Sale transaction completed successfully. sale_id=1 invoice=INV-2026-000001 paid=36.00 due=0.00 user_id=2 retailer_id=1
+[2026-09-11 18:01:41,809] ERROR views Unexpected error while creating sale. user_id=2 retailer_id=1
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 5304, in sales_create
+    return redirect(
+        "sale_list"
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\shortcuts.py", line 51, in redirect
+    resolve_url(to, *args, **kwargs),
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\shortcuts.py", line 184, in resolve_url
+    return reverse(to, args=args, kwargs=kwargs)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\urls\base.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\urls\resolvers.py", line 842, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'sale_list' not found. 'sale_list' is not a valid view function or pattern name.
+[2026-09-11 18:03:37,201] INFO views Sale created. sale_id=2 invoice=INV-2026-000002 user_id=2 retailer_id=1
+[2026-09-11 18:03:37,216] INFO views Sale transaction completed successfully. sale_id=2 invoice=INV-2026-000002 paid=10.00 due=0.00 user_id=2 retailer_id=1
+[2026-09-11 18:18:59,233] INFO views User logged out: username=a_retailer_store
+[2026-09-11 18:19:09,204] INFO views User logged in: username=admin
+[2026-09-11 18:19:10,899] WARNING views Retailer validation failed. user_id=1 error=No active retailer is associated with this user.
+[2026-09-11 18:19:15,657] WARNING views Retailer validation failed. user_id=1 error=No active retailer is associated with this user.
+[2026-09-11 18:24:16,426] WARNING views Retailer validation failed. user_id=1 error=No active retailer is associated with this user.
+[2026-09-11 18:32:17,127] WARNING views Retailer validation failed. user_id=1 error=No active retailer is associated with this user.
+[2026-09-11 18:35:11,413] INFO views Purchase item created and stock updated. purchase_id=2 product_id=4 product=Maggi Noodles 4-Pack old_stock=0 purchase_quantity=24 free_quantity=0 stock_added=24 new_stock=24
+[2026-09-11 18:35:11,416] INFO views Purchase item created and stock updated. purchase_id=2 product_id=5 product=Amul Taaza Fresh Milk 1L old_stock=0 purchase_quantity=30 free_quantity=0 stock_added=30 new_stock=30
+[2026-09-11 18:35:11,530] INFO views Purchase created successfully. user=admin bill_number=BILL-2026-002 retailer=B Retailer Genral Store subtotal=1104.00 gst=0.00 grand_total=1174.00 paid=600 due=574.00
+[2026-09-11 18:35:40,011] WARNING views Retailer validation failed. user_id=1 error=No active retailer is associated with this user.
+[2026-09-11 18:35:46,999] INFO views User logged out: username=admin
+[2026-09-11 18:35:58,028] INFO views User logged in: username=b_retailer_store
+[2026-09-11 18:36:01,770] INFO views Retailer 2: 0 low stock product(s) found.
+[2026-09-14 17:58:13,000] INFO views Retailer 2: 0 low stock product(s) found.
+[2026-09-14 18:00:44,978] INFO views Retailer 2: 0 low stock product(s) found.
+[2026-09-14 18:18:08,033] INFO views User logged out: username=b_retailer_store
+[2026-09-14 18:18:23,231] INFO views User logged in: username=admin
+[2026-09-14 18:21:20,166] INFO views Superadmin 1 viewing low stock products for all retailers.
+[2026-09-14 18:21:20,168] INFO views Superadmin 1: 1 low stock product(s) found.
+[2026-09-14 18:22:15,227] WARNING views Retailer validation failed. user_id=1 error=No active retailer is associated with this user.
+[2026-09-14 18:22:35,626] WARNING views Retailer validation failed. user_id=1 error=No active retailer is associated with this user.
+[2026-09-14 18:23:59,189] WARNING views Retailer validation failed. user_id=1 error=No active retailer is associated with this user.
+[2026-09-14 18:39:59,951] WARNING views Retailer validation failed. user_id=1 error=No active retailer is associated with this user.
+[2026-09-14 18:40:49,800] ERROR views Unexpected error while loading sale create page. user_id=1 retailer_id=None
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\fields\__init__.py", line 2128, in get_prep_value
+    return int(value)
+TypeError: int() argument must be a string, a bytes-like object or a real number, not 'HttpResponse'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 4570, in sales_create
+    .filter(
+     ~~~~~~^
+        retailer=retailer,
+        ^^^^^^^^^^^^^^^^^^
+        is_active=True,
+        ^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1542, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1560, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\query.py", line 1570, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1676, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1708, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1618, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\sql\query.py", line 1445, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\lookups.py", line 35, in __init__
+    self.rhs = self.get_prep_lookup()
+               ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\fields\related_lookups.py", line 113, in get_prep_lookup
+    self.rhs = target_field.get_prep_value(self.rhs)
+               ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\db\models\fields\__init__.py", line 2130, in get_prep_value
+    raise e.__class__(
+        "Field '%s' expected a number but got %r." % (self.name, value),
+    ) from e
+TypeError: Field 'id' expected a number but got <HttpResponse status_code=200, "text/html; charset=utf-8">.
+[2026-09-14 18:42:33,466] WARNING views Retailer validation failed. user_id=1 error=Please select a retailer.
+[2026-09-14 18:44:48,106] ERROR views Unexpected error while loading sale create page. user_id=1 retailer_id=1
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 4633, in sales_create
+    return render(
+        request,
+        "sale_create.html",
+        context,
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader_tags.py", line 66, in render
+    result = block.nodelist.render(context)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\defaulttags.py", line 333, in render
+    return nodelist.render(context)
+           ~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\defaulttags.py", line 201, in render
+    values = list(values)
+TypeError: 'Retailer' object is not iterable
+[2026-09-14 18:45:09,707] ERROR views Unexpected error while loading sale create page. user_id=1 retailer_id=1
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 4634, in sales_create
+    return render(
+        request,
+        "sale_create.html",
+        context,
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader_tags.py", line 66, in render
+    result = block.nodelist.render(context)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\defaulttags.py", line 333, in render
+    return nodelist.render(context)
+           ~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\defaulttags.py", line 201, in render
+    values = list(values)
+TypeError: 'Retailer' object is not iterable
+[2026-09-14 18:55:01,211] ERROR views Unexpected error while loading sale create page. user_id=1 retailer_id=1
+Traceback (most recent call last):
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacy\pharma_app\views.py", line 4634, in sales_create
+    return render(
+        request,
+        "sale_create.html",
+        context,
+    )
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 166, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\loader_tags.py", line 66, in render
+    result = block.nodelist.render(context)
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\defaulttags.py", line 333, in render
+    return nodelist.render(context)
+           ~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1091, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\base.py", line 1052, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\nirdeshk\Desktop\Langchain\DjangoProject\pharmacyenv\Lib\site-packages\django\template\defaulttags.py", line 201, in render
+    values = list(values)
+TypeError: 'Retailer' object is not iterable
+[2026-09-14 19:07:31,157] INFO views Customer created successfully. customer_id=2 retailer_id=1
+[2026-09-22 17:41:17,872] INFO views Superadmin 1 viewing low stock products for all retailers.
+[2026-09-22 17:41:17,874] INFO views Superadmin 1: 1 low stock product(s) found.
+[2026-09-22 17:44:36,857] INFO views User logged out: username=admin
+[2026-09-22 17:47:02,459] INFO views User logged in: username=a_retailer_store
+[2026-09-22 18:36:34,255] INFO views User logged out: username=a_retailer_store
+[2026-09-22 18:36:43,447] INFO views User logged in: username=b_retailer_store
+[2026-09-22 18:44:09,064] INFO views User logged out: username=b_retailer_store
+[2026-09-22 18:44:19,517] INFO views User logged in: username=admin
+[2026-09-22 19:01:38,085] INFO views Sale created. sale_id=3 invoice=INV-2026-000001 user_id=1 retailer_id=1
+[2026-09-22 19:01:38,116] INFO views Sale transaction completed successfully. sale_id=3 invoice=INV-2026-000001 paid=10.00 due=0.00 user_id=1 retailer_id=1

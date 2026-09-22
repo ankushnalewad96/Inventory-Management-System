@@ -3,7 +3,6 @@
 {% block title %}Add Product - My Django Site{% endblock %}
 
 {% block css %}
-<!-- <link rel="stylesheet" href="{% static 'css/add_order.css' %}"> -->
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <link rel="stylesheet" href="{% static 'css/add_product.css' %}">
 <link rel="stylesheet" href="{% static 'css/error_message.css' %}">
@@ -36,6 +35,26 @@
                 </div>
 
                 <div class="form-grid">
+                    <!-- Retailer -->
+                    <div class="form-group">
+                        <label class="form-label" for="retailer">
+                            Retailer <span class="required">*</span>
+                        </label>
+                        <div class="select-wrapper"> 
+                            <select id="retailer" name="retailer" class="form-select">
+                                <option value="" disabled selected>Select retailer</option>
+                                {% for retailer in retailers %}
+                                    <option value="{{retailer.id}}">{{ retailer }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <span class="error-message" id="retailer_error">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span class="error-text">Please select a retailer</span>
+                        </span>
+                    </div>
                     <!-- Product Name -->
                     <div class="form-group span-2">
                         <label class="form-label" for="product_name">
@@ -103,16 +122,34 @@
                             Brand <span class="required">*</span>
                         </label>
                         <div class="select-wrapper">
-                            <select id="brand" name="brand" class="form-select">
+                            <select
+                                id="brand"
+                                name="brand"
+                                class="form-select"
+                                onchange="toggleOtherInput(this, 'brand_other_wrapper')"
+                            >
                                 <option value="" disabled selected>Select brand</option>
+
                                 {% for brand in brands %}
-                                    <option value="{{ brand.id }}">{{ brand }}</option>
+                                    <option value="{{ brand.id }}" data-retailer="{{ brand.retailer_id }}">{{ brand }}</option>
                                 {% endfor %}
-                                <!-- <option value="2">Aashirvaad</option>
-                                <option value="3">Nestle</option>
-                                <option value="4">Britannia</option>
-                                <option value="5">Parle</option> -->
+
+                                <option value="other">➕ Other (Add New)</option>
                             </select>
+                        </div>
+                        <!-- New Input Field for Other Brand -->
+                        <div
+                            id="brand_other_wrapper"
+                            class="other-input-wrapper"
+                            style="display: none; margin-top: 10px;"
+                        >
+                            <input
+                                type="text"
+                                id="brand_other"
+                                name="brand_other"
+                                class="form-input other-input"
+                                placeholder="Enter new brand name"
+                            >
                         </div>
                         <span class="error-message" id="brand_error">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -128,12 +165,17 @@
                             Category <span class="required">*</span>
                         </label>
                         <div class="select-wrapper">
-                            <select id="category" name="category" class="form-select">
+                            <select id="category" name="category" class="form-select" onchange="toggleOtherInput(this, 'category_other_wrapper')">
                                 <option value="" disabled selected>Select category</option>
                                 {% for category in categories %}
-                                    <option value="{{category.id}}">{{ category }}</option>
+                                    <option value="{{category.id}}" data-retailer="{{ category.retailer_id }}">{{ category }}</option>
                                 {% endfor %}
+                                <option value="other">➕ Other (Add New)</option>
                             </select>
+                        </div>
+                        <!-- New Input Field for Other Category -->
+                        <div id="category_other_wrapper" class="other-input-wrapper" style="display: none; margin-top: 10px;">
+                            <input type="text" id="category_other" name="category_other" class="form-input other-input" placeholder="Enter new category name">
                         </div>
                         <span class="error-message" id="category_error">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -149,12 +191,17 @@
                             Unit <span class="required">*</span>
                         </label>
                         <div class="select-wrapper">
-                            <select id="unit" name="unit" class="form-select">
+                            <select id="unit" name="unit" class="form-select" onchange="toggleOtherInput(this, 'unit_other_wrapper')">
                                 <option value="" disabled selected>Select unit</option>
                                 {% for unit in units %}
                                     <option value="{{unit.id}}">{{ unit }}</option>
                                 {% endfor %}
+                                <option value="other">➕ Other (Add New)</option>
                             </select>
+                        </div>
+                        <!-- New Input Field for Other Unit -->
+                        <div id="unit_other_wrapper" class="other-input-wrapper" style="display: none; margin-top: 10px;">
+                            <input type="text" id="unit_other" name="unit_other" class="form-input other-input" placeholder="Enter new unit (e.g., dozen, pack)">
                         </div>
                         <span class="error-message" id="unit_error">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -341,26 +388,7 @@
                         </span>
                     </div>
 
-                    <!-- Retailer -->
-                    <div class="form-group">
-                        <label class="form-label" for="retailer">
-                            Retailer <span class="required">*</span>
-                        </label>
-                        <div class="select-wrapper">
-                            <select id="retailer" name="retailer" class="form-select">
-                                <option value="" disabled selected>Select retailer</option>
-                                {% for retailer in retailers %}
-                                    <option value="{{retailer.id}}">{{ retailer }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <span class="error-message" id="retailer_error">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            <span class="error-text">Please select a retailer</span>
-                        </span>
-                    </div>
+                    
 
                     <!-- Active Status Toggle -->
                     <div class="form-group">
@@ -473,6 +501,184 @@
             closeMobileSidebar();
         }
     });
+
+    /*
+        For User selection Brand, Category, Unit
+    */
+    const form = document.getElementById('addProductForm');
+
+    // Show/Hide Other input
+    function toggleOtherInput(selectElement, wrapperId) {
+        const otherWrapper = document.getElementById(wrapperId);
+
+        if (selectElement.value === 'other') {
+            otherWrapper.style.display = 'block';
+        } else {
+            otherWrapper.style.display = 'none';
+
+            // Clear other input when existing option is selected
+            const input = otherWrapper.querySelector('input');
+
+            if (input) {
+                input.value = '';
+            }
+        }
+    }
+
+
+    // Form Submit
+    form.addEventListener('submit', function (event) {
+
+        /*
+        * We are NOT using AJAX.
+        * We are only preparing the form before normal POST submission.
+        */
+
+        // Remove previously created hidden fields
+        document.querySelectorAll('.dynamic-form-field').forEach(function (element) {
+            element.remove();
+        });
+
+
+        // ==========================
+        // BRAND
+        // ==========================
+
+        const brandSelect = document.getElementById('brand');
+        let brandValue = brandSelect.value;
+
+        if (brandValue === 'other') {
+
+            const brandOther = document.getElementById('brand_other').value.trim();
+
+            if (!brandOther) {
+                event.preventDefault();
+
+                alert('Please enter a new brand name.');
+                document.getElementById('brand_other').focus();
+
+                return;
+            }
+
+            brandValue = 'other:' + brandOther;
+        }
+
+
+        // ==========================
+        // CATEGORY
+        // ==========================
+
+        const categorySelect = document.getElementById('category');
+        let categoryValue = categorySelect.value;
+
+        if (categoryValue === 'other') {
+
+            const categoryOther = document.getElementById('category_other').value.trim();
+
+            if (!categoryOther) {
+                event.preventDefault();
+
+                alert('Please enter a new category name.');
+                document.getElementById('category_other').focus();
+
+                return;
+            }
+
+            categoryValue = 'other:' + categoryOther;
+        }
+
+
+        // ==========================
+        // UNIT
+        // ==========================
+
+        const unitSelect = document.getElementById('unit');
+        let unitValue = unitSelect.value;
+
+        if (unitValue === 'other') {
+
+            const unitOther = document.getElementById('unit_other').value.trim();
+
+            if (!unitOther) {
+                event.preventDefault();
+
+                alert('Please enter a new unit name.');
+                document.getElementById('unit_other').focus();
+
+                return;
+            }
+
+            unitValue = 'other:' + unitOther;
+        }
+
+
+        // ==========================
+        // CREATE HIDDEN FIELDS
+        // ==========================
+
+        addHiddenField('brand', brandValue);
+        addHiddenField('category', categoryValue);
+        addHiddenField('unit', unitValue);
+
+    });
+
+
+    /* =========================================================
+       Filetred Brand and Category in modal popup
+       ========================================================= */
+    document.addEventListener('DOMContentLoaded', function () {
+        const productRetailerSelect = document.getElementById('retailer');
+        const brandSelect = document.getElementById('brand');
+        const categorySelect = document.getElementById('category');
+
+        function filterRetailerOptions(selectElement, retailerId) {
+            if (!selectElement) {
+                return;
+            }
+
+            selectElement.querySelectorAll('option').forEach(function(option) {
+                // Keep default and Other options visible
+                if (
+                    option.value === '' ||
+                    option.value === 'other'
+                ) {
+                    option.hidden = false;
+                    return;
+                }
+
+                option.hidden = option.dataset.retailer !== retailerId;
+            });
+
+            // Reset selected value after retailer change
+            selectElement.value = '';
+        }
+
+        if (productRetailerSelect) {
+            productRetailerSelect.addEventListener('change', function() {
+                const retailerId = this.value;
+
+                filterRetailerOptions(brandSelect, retailerId);
+                filterRetailerOptions(categorySelect, retailerId);
+            });
+        }
+    });
+
+    // Function to create hidden input
+    function addHiddenField(name, value) {
+
+        const input = document.createElement('input');
+
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+
+        // Mark it so we can remove it on next submit
+        input.classList.add('dynamic-form-field');
+
+        form.appendChild(input);
+    }
+
+
 
     (function() {
         const form = document.getElementById('addProductForm');

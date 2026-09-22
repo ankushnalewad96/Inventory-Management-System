@@ -379,7 +379,7 @@
 }
 
 .totals-card::before {
-    content: '';
+    /* content: ''; */
     position: absolute;
     top: -30px;
     right: -30px;

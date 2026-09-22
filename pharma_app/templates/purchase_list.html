@@ -15,7 +15,7 @@
 
 {% block body %}
 <!-- Summary Cards -->
-<div class="summary-cards">
+<!-- <div class="summary-cards">
     <div class="summary-card">
         <div class="card-top">
             <div class="card-icon-wrap paid">
@@ -75,7 +75,7 @@
             <span>6.4% vs last month</span>
         </div>
     </div>
-</div>
+</div> -->
 
 <!-- Quick Actions -->
 <div class="quick-actions">
@@ -184,16 +184,6 @@
                 <i class="fas fa-times"></i>
                 Clear
             </a>
-
-            <button
-                type="button"
-                class="export-btn"
-                onclick="window.print()"
-            >
-                <i class="fas fa-print"></i>
-                Print
-            </button>
-
         </div>
 
     </form>
@@ -218,10 +208,7 @@
                         <td><strong>{{ purchase.bill_number }}</strong></td>
                         <td>
                             <div class="supplier-cell">
-                                <div class="supplier-avatar" style="background:#3b82f6;">
-                                    {{ purchase.supplier|slice:":2"|upper }}
-                                </div>
-                                <span>{{ purchase }}</span>
+                                <span>{{ purchase.supplier }}</span>
                             </div>
                         </td>
                         <td>{{ purchase.bill_date|date:"d M Y" }}</td>
@@ -258,9 +245,9 @@
                                 <a href="{% url 'purchase_detail' purchase.id %}" class="action-icon-btn" title="View Details">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="#" class="action-icon-btn" title="Print" target="_blank">
+                                <!-- <a href="#" class="action-icon-btn" title="Print" target="_blank">
                                     <i class="fas fa-print"></i>
-                                </a>
+                                </a> -->
                             </div>
                         </td>
                     </tr>

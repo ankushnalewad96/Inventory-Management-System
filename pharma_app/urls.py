@@ -29,6 +29,8 @@ urlpatterns = [
 
     # Sales Module 
     path('sale-create/', views.sales_create, name='sale_create'),
-
+    # path('sale-create1/', views.sales_create1, name='sale_create1'),
+    path("sales-customer-create/", views.create_customer_ajax, name="create_customer_ajax"),
+    path("sales-product/<int:product_id>/", views.sale_product_data, name="sale_product_data"),
 
 ]

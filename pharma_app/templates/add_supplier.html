@@ -38,6 +38,7 @@
             <div class="form-grid">
                 
                 <!-- Retailer Selection -->
+                {% if request.user.is_superuser %}
                 <div class="form-group">
                   <label for="retailer">Retailer Name <span class="required">*</span></label>
                   <select class="form-control" name="retailer" id="retailer" required>
@@ -47,6 +48,7 @@
                       {% endfor %}
                   </select>
                 </div>
+                {% endif %}
 
                 <!-- Supplier Name -->
                 <div class="form-group">

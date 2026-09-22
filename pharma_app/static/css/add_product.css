@@ -358,6 +358,28 @@
     color: var(--danger);
 }
 
+/* ===== ADD THIS BLOCK: "Other" Option Styles ===== */
+.other-input-wrapper {
+    margin-top: 8px;
+    animation: slideDown 0.3s ease;
+}
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.other-input {
+    border-color: #f59e0b !important;
+    background: #fffbeb !important;
+}
+.other-input:focus {
+    border-color: #d97706 !important;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15) !important;
+}
+select.form-control option[value="other"] {
+    font-weight: 600;
+    color: #d97706;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .form-grid {

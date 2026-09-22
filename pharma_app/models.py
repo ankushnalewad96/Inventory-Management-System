@@ -404,8 +404,6 @@ class Customer(models.Model):
 
     mobile = models.CharField(
         max_length=15,
-        blank=True,
-        null=True,
         verbose_name="Mobile Number",
     )
 
@@ -463,6 +461,12 @@ class Customer(models.Model):
         verbose_name = "Customer"
         verbose_name_plural = "Customers"
         ordering = ["customer_name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["retailer", "mobile"],
+                name="unique_customer_mobile_per_retailer",
+            ),
+        ]
 
         indexes = [
             models.Index(
@@ -481,9 +485,6 @@ class Customer(models.Model):
 
     def __str__(self):
         return f"{self.customer_name} - {self.mobile}"
-
-
-
 
 
 class Sale(models.Model):
@@ -752,9 +753,6 @@ class Sale(models.Model):
             self.due_amount = Decimal("0.00")
 
 
-
-
-
 class SaleItem(models.Model):
     """
     Represents an individual product/item sold as part of a Sale.
@@ -933,9 +931,6 @@ class SaleItem(models.Model):
         super().save(*args, **kwargs)
 
 
-
-
-
 class Payment(models.Model):
     """
     Represents an actual payment received from a customer.
@@ -1072,9 +1067,6 @@ class Payment(models.Model):
                 raise ValidationError(
                     "Payment retailer does not match the sale retailer."
                 )
-
-
-
 
 
 class CustomerLedger(models.Model):

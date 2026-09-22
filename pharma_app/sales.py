@@ -20,13 +20,6 @@ def add_sale_item(
     gst=Decimal("0.00"),
     discount=Decimal("0.00"),
 ):
-    """
-    Create a SaleItem and deduct the required quantity from stock.
-
-    The Product row is locked using select_for_update() so that
-    concurrent sales cannot consume the same stock simultaneously.
-    """
-
     quantity = Decimal(str(quantity))
 
     if quantity <= Decimal("0.00"):
@@ -34,7 +27,6 @@ def add_sale_item(
             "Sale quantity must be greater than zero."
         )
 
-    # Lock the product row until the transaction finishes.
     product = (
         Product.objects
         .select_for_update()
@@ -45,19 +37,20 @@ def add_sale_item(
         )
     )
 
-    # Validate stock while the product row is locked.
-    if quantity > product.current_stock:
+    available_stock = (
+        product.current_stock or Decimal("0.00")
+    )
+
+    if quantity > available_stock:
         raise ValidationError(
-            f"Insufficient stock for '{product.product_name}'. "
-            f"Available stock: {product.current_stock}, "
-            f"requested quantity: {quantity}."
+            f"Insufficient stock for "
+            f"'{product.product_name}'. "
+            f"Available stock: {available_stock}, "
+            f"requested: {quantity}."
         )
 
-    # Make sure the selected unit belongs to the retailer/product
-    # structure expected by your application.
     unit = Unit.objects.get(pk=unit_id)
 
-    # Create the sale item.
     sale_item = SaleItem(
         sale=sale,
         product=product,
@@ -69,13 +62,9 @@ def add_sale_item(
         discount=discount,
     )
 
-    # Run model-level validation.
     sale_item.full_clean()
-
-    # Save SaleItem.
     sale_item.save()
 
-    # Deduct stock.
     product.current_stock -= quantity
 
     product.save(

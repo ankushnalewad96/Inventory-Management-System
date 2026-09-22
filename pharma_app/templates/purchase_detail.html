@@ -29,13 +29,19 @@
         {% endif %}
     </div>
     <p>Invoice Date: {{ purchase.invoice_date|date:"d M Y" }} &nbsp;|&nbsp; Created: {{ purchase.created_at|date:"d M Y, h:i A" }}</p>
+    
 {% endblock %}
 
 {% block body %}
 
     <!-- Info Cards -->
+        <div>
+            <button type="button" class="export-btn" onclick="window.print()" style="margin-bottom: 4px;">
+                <i class="fas fa-print"></i>
+                Print
+            </button>
+        </div>
         <div class="info-grid">
-
             <!-- Bill Information -->
             <div class="info-card">
                 <div class="info-card-header">

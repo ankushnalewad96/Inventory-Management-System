@@ -49,8 +49,6 @@ def dashboard(request):
     return render(request, "dashboard.html", context)
 
 
-
-
 @login_required(login_url="/user-login/")
 def retailer_register(request):
     """
@@ -481,115 +479,6 @@ def _handle_retailer_registration(request):
     return redirect("retailer_register")
 
 
-
-
-
-
-
-
-
-
-# def retailer_register(request):
-#     """
-#     Handles retailer account creation.
-
-#     Restricted to admin/staff users only — retailers do not self-register.
-#     Creates a CustomUser account and a linked Retailer profile in a single
-#     atomic transaction — if profile creation fails, the user account is
-#     rolled back too, so we never end up with an orphaned user.
-#     """
-#     if request.method == "POST":
-#         return _handle_retailer_registration(request)
-
-#     return render(request, "register.html")
-
-
-# def _handle_retailer_registration(request):
-#     """Validates form data and creates the User + Retailer records."""
-
-#     # --- Collect form data ---
-#     username = request.POST.get("username", "").strip()
-#     password = request.POST.get("password", "")
-#     email = request.POST.get("email", "").strip()
-
-#     shop_name = request.POST.get("shop_name", "").strip()
-#     owner_name = request.POST.get("owner_name", "").strip()
-#     mobile = request.POST.get("mobile", "").strip()
-#     gst_number = request.POST.get("gst_number", "").strip()
-#     pan_number = request.POST.get("pan_number", "").strip()
-#     address = request.POST.get("address", "").strip()
-#     city = request.POST.get("city", "").strip()
-#     state = request.POST.get("state", "").strip()
-#     pincode = request.POST.get("pincode", "").strip()
-
-#     # --- Basic validation ---
-#     required_fields = {
-#         "Username": username,
-#         "Password": password,
-#         "Email": email,
-#         "Shop Name": shop_name,
-#         "Owner Name": owner_name,
-#         "Mobile": mobile,
-#         "Address": "address",
-#         "City": city,
-#         "State": state,
-#         "Pincode": pincode,
-#     }
-#     missing = [label for label, value in required_fields.items() if not value]
-#     if missing:
-#         messages.error(request, f"Missing required field(s): {', '.join(missing)}")
-#         return redirect("retailer_register")
-
-#     if CustomUser.objects.filter(username=username).exists():
-#         messages.error(request, "Username already exists.")
-#         return redirect("retailer_register")
-
-#     if CustomUser.objects.filter(email=email).exists():
-#         messages.error(request, "Email already exists.")
-#         return redirect("retailer_register")
-
-#     # --- Create user + retailer atomically ---
-#     try:
-#         with transaction.atomic():
-#             user = CustomUser.objects.create_user(
-#                 username=username,
-#                 email=email,
-#                 password=password,
-#                 user_type="retailer",
-#             )
-
-#             Retailer.objects.create(
-#                 user=user,
-#                 shop_name=shop_name,
-#                 owner_name=owner_name,
-#                 mobile=mobile,
-#                 email=email,
-#                 gst_number=gst_number or None,
-#                 pan_number=pan_number or None,
-#                 address=address,
-#                 city=city,
-#                 state=state,
-#                 pincode=pincode,
-#             )
-
-#         logger.info(
-#             "Retailer account created by admin=%s: username=%s, shop=%s",
-#             request.user.username, username, shop_name
-#         )
-#         messages.success(request, "Retailer registered successfully.")
-#         return redirect("user_login")
-
-#     except IntegrityError:
-#         logger.exception("IntegrityError during retailer registration for username=%s", username)
-#         messages.error(request, "Registration failed due to a data conflict. Please try again.")
-#         return redirect("retailer_register")
-
-#     except Exception:
-#         logger.exception("Unexpected error during retailer registration for username=%s", username)
-#         messages.error(request, "Something went wrong. Please try again later.")
-#         return redirect("retailer_register")
-
-
 def _login(request):
     """
     Handles user login.
@@ -646,7 +535,6 @@ def user_logout(request):
     return redirect("user_login")
 
 
-
 @login_required(login_url="/user-login/")
 def add_product(request):
     """
@@ -674,15 +562,20 @@ def add_product(request):
         retailers = Retailer.objects.filter(
             is_active=True
         )
+        categories = Category.objects.all()
+        brands = Brand.objects.all()
+        units = Unit.objects.all()
     else:
         retailers = Retailer.objects.filter(
             user=request.user,
             is_active=True
         )
 
-    categories = Category.objects.all()
-    brands = Brand.objects.all()
+        brands = Brand.objects.filter(retailer=retailers[0].id)
+        categories = Category.objects.filter(retailer=retailers[0].id)
     units = Unit.objects.all()
+
+    
 
     context = {
         "retailers": retailers,
@@ -1170,6 +1063,7 @@ def add_product(request):
         # ========================================================
         # CATEGORY
         # ========================================================
+        
         if category_id.startswith("other:"):
 
             category_name = category_id[
@@ -1487,367 +1381,7 @@ def add_product(request):
             "add_product.html",
             context
         )
-    # try:
-
-    #     if category_id.startswith("other:"):
-
-    #         category_name = (
-    #             category_id
-    #             .replace("other:", "")
-    #             .strip()
-    #         )
-
-    #         if not category_name:
-
-    #             error_message = "Category name is required."
-
-    #             if is_ajax:
-    #                 return JsonResponse(
-    #                     {
-    #                         "success": False,
-    #                         "message": error_message
-    #                     },
-    #                     status=400
-    #                 )
-
-    #             messages.error(request, error_message)
-
-    #             return render(
-    #                 request,
-    #                 "add_product.html",
-    #                 context
-    #             )
-
-    #         category = Category.objects.filter(
-    #             name__iexact=category_name
-    #         ).first()
-
-    #         if not category:
-
-    #             category = Category.objects.create(
-    #                 name=category_name
-    #             )
-
-    #             logger.info(
-    #                 "New category created: %s by user=%s",
-    #                 category_name,
-    #                 request.user.username
-    #             )
-
-    #     else:
-
-    #         category = Category.objects.get(
-    #             id=category_id
-    #         )
-
-    # except Category.DoesNotExist:
-
-    #     logger.warning(
-    #         "Invalid category selected. "
-    #         "User=%s Category=%s",
-    #         request.user.username,
-    #         category_id
-    #     )
-
-    #     error_message = "Selected category is invalid."
-
-    #     if is_ajax:
-    #         return JsonResponse(
-    #             {
-    #                 "success": False,
-    #                 "message": error_message
-    #             },
-    #             status=400
-    #         )
-
-    #     messages.error(request, error_message)
-
-    #     return render(
-    #         request,
-    #         "add_product.html",
-    #         context
-    #     )
-    # try:
-
-    #     category = Category.objects.get(
-    #         id=category_id
-    #     )
-
-    # except Category.DoesNotExist:
-
-    #     logger.warning(
-    #         "Invalid category selected while adding product. "
-    #         "User=%s, Category=%s",
-    #         request.user.username,
-    #         category_id
-    #     )
-
-    #     error_message = (
-    #         "Selected category is invalid."
-    #     )
-
-    #     if is_ajax:
-    #         return JsonResponse(
-    #             {
-    #                 "success": False,
-    #                 "message": error_message,
-    #             },
-    #             status=400
-    #         )
-
-    #     messages.error(
-    #         request,
-    #         error_message
-    #     )
-
-    #     return render(
-    #         request,
-    #         "add_product.html",
-    #         context
-    #     )
-
-    # ============================================================
-    # FETCH BRAND
-    # ============================================================
-    # try:
-
-    #     if brand_id.startswith("other:"):
-
-    #         brand_name = (
-    #             brand_id
-    #             .replace("other:", "")
-    #             .strip()
-    #         )
-
-    #         if not brand_name:
-
-    #             error_message = "Brand name is required."
-
-    #             if is_ajax:
-    #                 return JsonResponse(
-    #                     {
-    #                         "success": False,
-    #                         "message": error_message
-    #                     },
-    #                     status=400
-    #                 )
-
-    #             messages.error(request, error_message)
-
-    #             return render(
-    #                 request,
-    #                 "add_product.html",
-    #                 context
-    #             )
-
-    #         brand, created = Brand.objects.get_or_create(
-    #             name__iexact=brand_name
-    #         )
-
-    #         if created:
-    #             logger.info(
-    #                 "New brand created: %s by user=%s",
-    #                 brand_name,
-    #                 request.user.username
-    #             )
-
-    #     else:
-
-    #         brand = Brand.objects.get(
-    #             id=brand_id
-    #         )
-
-    # except Brand.DoesNotExist:
-
-    #     logger.warning(
-    #         "Invalid brand selected. "
-    #         "User=%s Brand=%s",
-    #         request.user.username,
-    #         brand_id
-    #     )
-
-    #     error_message = "Selected brand is invalid."
-
-    #     if is_ajax:
-    #         return JsonResponse(
-    #             {
-    #                 "success": False,
-    #                 "message": error_message
-    #             },
-    #             status=400
-    #         )
-
-    #     messages.error(request, error_message)
-
-    #     return render(
-    #         request,
-    #         "add_product.html",
-    #         context
-    #     )
-
-
-
-    # try:
-
-    #     brand = Brand.objects.get(
-    #         id=brand_id
-    #     )
-
-    # except Brand.DoesNotExist:
-
-    #     logger.warning(
-    #         "Invalid brand selected while adding product. "
-    #         "User=%s, Brand=%s",
-    #         request.user.username,
-    #         brand_id
-    #     )
-
-    #     error_message = (
-    #         "Selected brand is invalid."
-    #     )
-
-    #     if is_ajax:
-    #         return JsonResponse(
-    #             {
-    #                 "success": False,
-    #                 "message": error_message,
-    #             },
-    #             status=400
-    #         )
-
-    #     messages.error(
-    #         request,
-    #         error_message
-    #     )
-
-    #     return render(
-    #         request,
-    #         "add_product.html",
-    #         context
-    #     )
-
-    # ============================================================
-    # FETCH UNIT
-    # ============================================================
-    # try:
-
-    #     if unit_id.startswith("other:"):
-
-    #         unit_name = (
-    #             unit_id
-    #             .replace("other:", "")
-    #             .strip()
-    #         )
-
-    #         if not unit_name:
-
-    #             error_message = "Unit name is required."
-
-    #             if is_ajax:
-    #                 return JsonResponse(
-    #                     {
-    #                         "success": False,
-    #                         "message": error_message
-    #                     },
-    #                     status=400
-    #                 )
-
-    #             messages.error(request, error_message)
-
-    #             return render(
-    #                 request,
-    #                 "add_product.html",
-    #                 context
-    #             )
-
-    #         unit = Unit.objects.filter(
-    #             unit_name__iexact=unit_name
-    #         ).first()
-
-    #         if not unit:
-
-    #             unit = Unit.objects.create(
-    #                 unit_name=unit_name
-    #             )
-
-    #             logger.info(
-    #                 "New unit created: %s by user=%s",
-    #                 unit_name,
-    #                 request.user.username
-    #             )
-
-    #     else:
-
-    #         unit = Unit.objects.get(
-    #             id=unit_id
-    #         )
-
-    # except Unit.DoesNotExist:
-
-    #     logger.warning(
-    #         "Invalid unit selected. "
-    #         "User=%s Unit=%s",
-    #         request.user.username,
-    #         unit_id
-    #     )
-
-    #     error_message = "Selected unit is invalid."
-
-    #     if is_ajax:
-    #         return JsonResponse(
-    #             {
-    #                 "success": False,
-    #                 "message": error_message
-    #             },
-    #             status=400
-    #         )
-
-    #     messages.error(request, error_message)
-
-    #     return render(
-    #         request,
-    #         "add_product.html",
-    #         context
-    #     )
-    # try:
-
-    #     unit = Unit.objects.get(
-    #         id=unit_id
-    #     )
-
-    # except Unit.DoesNotExist:
-
-    #     logger.warning(
-    #         "Invalid unit selected while adding product. "
-    #         "User=%s, Unit=%s",
-    #         request.user.username,
-    #         unit_id
-    #     )
-
-    #     error_message = (
-    #         "Selected unit is invalid."
-    #     )
-
-    #     if is_ajax:
-    #         return JsonResponse(
-    #             {
-    #                 "success": False,
-    #                 "message": error_message,
-    #             },
-    #             status=400
-    #         )
-
-    #     messages.error(
-    #         request,
-    #         error_message
-    #     )
-
-    #     return render(
-    #         request,
-    #         "add_product.html",
-    #         context
-    #     )
-
+    
     # ============================================================
     # DUPLICATE BARCODE VALIDATION
     # ============================================================
@@ -2024,137 +1558,6 @@ def add_product(request):
             "add_product.html",
             context
         )
-
-
-
-
-
-
-# @login_required(login_url='/user-login/')
-# def add_product(request):
-#     """
-#     Handles product creation for a retailer.
-
-#     Displays a form pre-loaded with available retailers, categories,
-#     brands, and units, and creates a new Product record on submission.
-#     """
-#     retailers = Retailer.objects.all()
-#     categories = Category.objects.all()
-#     brands = Brand.objects.all()
-#     units = Unit.objects.all()
-
-#     context = {
-#         "retailers": retailers,
-#         "categories": categories,
-#         "brands": brands,
-#         "units": units,
-#     }
-
-#     if request.method == "POST":
-
-#         # --- Collect form data ---
-#         retailer_id = request.POST.get("retailer", "").strip()
-#         category_id = request.POST.get("category", "").strip()
-#         brand_id = request.POST.get("brand", "").strip()
-#         unit_id = request.POST.get("unit", "").strip()
-
-#         product_name = request.POST.get("product_name", "").strip()
-#         barcode = request.POST.get("barcode", "").strip()
-#         hsn_code = request.POST.get("hsn_code", "").strip()
-#         purchase_price = request.POST.get("purchase_price", "").strip()
-#         selling_price = request.POST.get("selling_price", "").strip()
-#         mrp = request.POST.get("mrp", "").strip()
-#         minimum_stock = request.POST.get("minimum_stock", "0").strip()
-#         current_stock = request.POST.get("current_stock", "10").strip()
-#         gst = request.POST.get("gst", "0").strip()
-
-#         # --- Basic required-field validation ---
-#         required_fields = {
-#             "Retailer": retailer_id,
-#             "Category": category_id,
-#             "Brand": brand_id,
-#             "Unit": unit_id,
-#             "Product Name": product_name,
-#             "HSN Code": hsn_code,
-#             "Purchase Price": purchase_price,
-#             "Selling Price": selling_price,
-#             "MRP": mrp,
-#         }
-#         missing = [label for label, value in required_fields.items() if not value]
-#         if missing:
-#             messages.error(request, f"Missing required field(s): {', '.join(missing)}")
-#             return render(request, "add_product.html", context)
-
-#         # --- Numeric field validation ---
-#         try:
-#             purchase_price = Decimal(purchase_price)
-#             selling_price = Decimal(selling_price)
-#             mrp = Decimal(mrp)
-#             gst = Decimal(gst) if gst else Decimal("0")
-#             minimum_stock = int(minimum_stock) if minimum_stock else 0
-#             current_stock = int(current_stock) if current_stock else 0
-#         except (InvalidOperation, ValueError):
-#             messages.error(request, "Please enter valid numeric values for price, stock, and GST fields.")
-#             return render(request, "add_product.html", context)
-
-#         # --- Fetch related objects safely ---
-#         try:
-#             retailer = get_object_or_404(Retailer, id=retailer_id)
-#             category = get_object_or_404(Category, id=category_id)
-#             brand = get_object_or_404(Brand, id=brand_id)
-#             unit = get_object_or_404(Unit, id=unit_id)
-#         except Exception:
-#             logger.warning(
-#                 "Invalid related object reference while adding product: "
-#                 "retailer=%s, category=%s, brand=%s, unit=%s",
-#                 retailer_id, category_id, brand_id, unit_id,
-#             )
-#             messages.error(request, "Selected retailer, category, brand, or unit is invalid.")
-#             return render(request, "add_product.html", context)
-
-#         # --- Create product ---
-#         try:
-#             with transaction.atomic():
-#                 Product.objects.create(
-#                     retailer=retailer,
-#                     category=category,
-#                     brand=brand,
-#                     unit=unit,
-#                     product_name=product_name,
-#                     barcode=barcode or None,
-#                     hsn_code=hsn_code,
-#                     purchase_price=purchase_price,
-#                     selling_price=selling_price,
-#                     mrp=mrp,
-#                     minimum_stock=minimum_stock,
-#                     current_stock=current_stock,
-#                     gst=gst,
-#                 )
-
-#             logger.info(
-#                 "Product added by user=%s: product=%s, retailer=%s",
-#                 request.user.username, product_name, retailer.shop_name,
-#             )
-#             messages.success(request, "Product added successfully.")
-#             return redirect("dashboard")
-
-#         except IntegrityError:
-#             logger.exception(
-#                 "IntegrityError while adding product=%s (likely duplicate barcode=%s)",
-#                 product_name, barcode,
-#             )
-#             messages.error(request, "A product with this barcode already exists.")
-#             return render(request, "add_product.html", context)
-
-#         except Exception:
-#             logger.exception("Unexpected error while adding product=%s", product_name)
-#             messages.error(request, "Something went wrong while adding the product. Please try again.")
-#             return render(request, "add_product.html", context)
-
-#     return render(request, "add_product.html", context)
-
-
-
 
 
 @login_required(login_url="/user-login/")
@@ -2345,7 +1748,6 @@ def low_stock_alert(request):
                 "is_admin": request.user.is_superuser,
             }
         )
-
 
 
 @login_required(login_url="/user-login/")
@@ -2612,10 +2014,7 @@ def product_list(request):
         )
 
 
-# =========================================================
 # GST RATE MAP
-# =========================================================
-
 GST_RATE_MAP = {
     "none": Decimal("0"),
     "gst5": Decimal("5"),
@@ -2624,18 +2023,10 @@ GST_RATE_MAP = {
     "gst28": Decimal("28"),
 }
 
-
-# =========================================================
 # COMMON DECIMAL VALUES
-# =========================================================
-
 MONEY_ZERO = Decimal("0.00")
 
-
-# =========================================================
 # MONEY HELPER
-# =========================================================
-
 def money(value):
     """
     Convert a value to Decimal with exactly 2 decimal places.
@@ -2648,11 +2039,7 @@ def money(value):
         rounding=ROUND_HALF_UP
     )
 
-
-# =========================================================
 # DECIMAL POST HELPER
-# =========================================================
-
 def decimal_from_post(value, field_name):
     """
     Safely convert POST value to Decimal.
@@ -2698,7 +2085,6 @@ def add_order(request):
     # =====================================================
 
     if request.method == "POST":
-
         return _handle_add_order(request)
 
 
@@ -2706,9 +2092,7 @@ def add_order(request):
     # PRODUCTS / SUPPLIERS
     # =====================================================
     if request.user.is_superuser:
-
         retailers = Retailer.objects.filter(is_active=True)
-
         products = (
             Product.objects
             .filter(
@@ -2733,13 +2117,25 @@ def add_order(request):
                 "supplier_name"
             )
         )
+
+        retailer_list = (
+            Retailer.objects
+            .filter(
+                is_active=True
+            )
+            .order_by(
+                "shop_name"
+            )
+        )
+        categories = Category.objects.all()
+        brands = Brand.objects.all()
 
     else:
-        retailers = Retailer.objects.filter(user=request.user, is_active=True)
+        retailers = Retailer.objects.filter(user=request.user, is_active=True).first()
         products = (
             Product.objects
             .filter(
-                retailer_id=request.user.id,
+                retailer_id=retailers.id,
                 is_active=True
             )
             .select_related(
@@ -2755,29 +2151,28 @@ def add_order(request):
         supplier_list = (
             Supplier.objects
             .filter(
-                retailer_id=request.user.id,
+                retailer_id=retailers.id,
                 is_active=True
             )
             .order_by(
                 "supplier_name"
             )
         )
+        brands = Brand.objects.filter(retailer=retailers.id)
+        categories = Category.objects.filter(retailer=retailers.id)
 
 
-    units = Unit.objects.all()
-
-
-    retailer_list = (
-        Retailer.objects
-        .filter(
-            is_active=True
+        retailer_list = (
+            Retailer.objects
+            .filter(
+                user=request.user,
+                is_active=True
+            )
+            .order_by(
+                "shop_name"
+            )
         )
-        .order_by(
-            "shop_name"
-        )
-    )
-    categories = Category.objects.all()
-    brands = Brand.objects.all()
+    
     units = Unit.objects.all()
 
 
@@ -2798,7 +2193,6 @@ def add_order(request):
     )
 
 
-
 def _handle_add_order(request):
     """
     Handles creation of Purchase and PurchaseItem records.
@@ -2817,7 +2211,6 @@ def _handle_add_order(request):
         10. Update product stock
         11. Commit transaction
     """
-
     try:
 
         # =====================================================
@@ -2842,12 +2235,8 @@ def _handle_add_order(request):
                 )
 
         else:
-
-            retailer_id = getattr(
-                request.user,
-                "retailer_id",
-                None
-            )
+            retailers = Retailer.objects.filter(user=request.user, is_active=True).first()
+            retailer_id = retailers.id if retailers else None
 
             if not retailer_id:
 
@@ -2869,11 +2258,14 @@ def _handle_add_order(request):
         # =====================================================
 
         try:
+            
 
             retailer = Retailer.objects.get(
                 id=retailer_id,
                 is_active=True
             )
+            print(retailer,"            #######################")
+
 
         except Retailer.DoesNotExist:
 
@@ -2882,7 +2274,7 @@ def _handle_add_order(request):
                 "or is inactive."
             )
 
-
+        print(retailer,"           ddd #######################")
         # =====================================================
         # 3. GET SUPPLIER
         # =====================================================
@@ -3397,7 +2789,6 @@ def _handle_add_order(request):
         )
 
 
-
 def _prepare_purchase_items(
     request,
     retailer
@@ -3851,104 +3242,51 @@ def _create_purchase_items(
             product.current_stock,
         )
 
-   
 
 @login_required(login_url='/user-login/')
 def purchase_list(request):
-
     try:
-        purchases = (
-            Purchase.objects
-            .select_related("retailer", "supplier")
-            .all()
-            .order_by("-bill_date", "-created_at")
-        )
+        # Base queryset with select_related optimization
+        purchases = Purchase.objects.select_related("retailer", "supplier").all()
+        supplier_list = Supplier.objects.filter(is_active=True)
 
-        # -------------------------
+        # ROLE-BASED ACCESS CONTROL
+        # Admin / Superuser sees everything
+        if not (request.user.is_superuser or request.user.is_staff):
+            user_retailer = getattr(request.user, 'retailer', request.user)
+            purchases = purchases.filter(retailer=user_retailer)
+            supplier_list = supplier_list.filter(retailer=user_retailer)
+
+        purchases = purchases.order_by("-bill_date", "-created_at")
+        supplier_list = supplier_list.order_by("supplier_name")
+
         # GET FILTER PARAMETERS
-        # -------------------------
-
         from_date = request.GET.get("from_date", "").strip()
         to_date = request.GET.get("to_date", "").strip()
         status = request.GET.get("status", "").strip()
         supplier_id = request.GET.get("supplier", "").strip()
-        # search = request.GET.get("search", "").strip()
 
-        # -------------------------
-        # DATE FILTER
-        # -------------------------
-
+        # APPLY FILTERS
         if from_date:
-            purchases = purchases.filter(
-                bill_date__gte=from_date
-            )
-
+            purchases = purchases.filter(bill_date__gte=from_date)
         if to_date:
-            purchases = purchases.filter(
-                bill_date__lte=to_date
-            )
-
-        # -------------------------
-        # STATUS FILTER
-        # -------------------------
-
+            purchases = purchases.filter(bill_date__lte=to_date)
         if status:
-            purchases = purchases.filter(
-                payment_status=status
-            )
-
-        # -------------------------
-        # SUPPLIER FILTER
-        # -------------------------
-
+            purchases = purchases.filter(payment_status=status)
         if supplier_id:
-            purchases = purchases.filter(
-                supplier_id=supplier_id
-            )
+            purchases = purchases.filter(supplier_id=supplier_id)
 
-        # -------------------------
-        # SEARCH
-        # -------------------------
-
-        # if search:
-        #     purchases = purchases.filter(
-        #         Q(bill_number__icontains=search) |
-        #         Q(supplier__supplier_name__icontains=search)
-        #     )
-
-        # -------------------------
         # PAGINATION
-        # -------------------------
-
         paginator = Paginator(purchases, 25)
-
         page_number = request.GET.get("page")
-
         page_obj = paginator.get_page(page_number)
-
-        # -------------------------
-        # SUPPLIER DROPDOWN
-        # -------------------------
-
-        supplier_list = (
-            Supplier.objects
-            .filter(is_active=True)
-            .order_by("supplier_name")
-        )
 
     except Exception:
         logger.exception("Failed to fetch purchase list.")
-
         messages.error(
-            request,
-            "Something went wrong while loading purchases."
+            request, "Something went wrong while loading purchases."
         )
-
-        page_obj = Paginator(
-            Purchase.objects.none(),
-            25
-        ).get_page(1)
-
+        page_obj = Paginator(Purchase.objects.none(), 25).get_page(1)
         supplier_list = Supplier.objects.none()
 
     context = {
@@ -3956,12 +3294,7 @@ def purchase_list(request):
         "page_obj": page_obj,
         "supplier_list": supplier_list,
     }
-
-    return render(
-        request,
-        "purchase_list.html",
-        context
-    )
+    return render(request, "purchase_list.html", context)
 
 
 @login_required(login_url="/user-login/")
@@ -4090,10 +3423,6 @@ def purchase_detail(request, purchase_id):
         return redirect("purchase_list")
 
 
-
-
-
-
 @login_required(login_url='/user-login/')
 def add_supplier(request):
     """
@@ -4136,7 +3465,12 @@ def add_supplier(request):
             # ----------------------------------------------------
             # GET RETAILER
             # ----------------------------------------------------
-            retailer_id = request.POST.get("retailer")
+            
+            if request.user.is_superuser:
+                retailer_id = request.POST.get("retailer")
+            else:
+                retailer = Retailer.objects.filter(user=request.user, is_active=True).first()
+                retailer_id = retailer.id if retailer else None
 
             if not retailer_id:
                 error_message = "Please select a retailer."
@@ -4545,117 +3879,6 @@ def add_supplier(request):
     return redirect("add_new_supplier")
 
 
-
-
-
-# @login_required(login_url='/user-login/')
-# def add_supplier(request):
-#     """
-#     Create a new supplier securely and safely.
-#     """
-#     # GET Request: Render the entry form
-#     if request.method != "POST":
-#         # SECURITY FIX: Filter retailers belonging strictly to the logged-in user
-#         # Replace 'user=request.user' with your actual model relationship (e.g., profile.retailer)
-        
-#         if request.user.is_superuser:
-#             retailers = Retailer.objects.filter(is_active=True)
-#         else:
-#             retailers = Retailer.objects.filter(user=request.user, is_active=True)
-#         return render(request, "add_supplier.html", {"retailers": retailers})
-
-#     # POST Request: Process and save the data
-#     try:
-#         with transaction.atomic():
-#             # SECURITY FIX: Ensure the user owns the retailer ID they sent
-#             retailer = Retailer.objects.get(
-#                 id=request.POST.get("retailer"),
-#                 is_active=True
-#             )
-
-#             # CLEANUP: Extract and sanitize crucial text values
-#             supplier_name = request.POST.get("supplier_name", "").strip()
-#             if not supplier_name:
-#                 messages.error(request, "Supplier Name is required.")
-#                 return redirect("add_new_supplier")
-
-#             # VALIDATION: Check for unique constraint violation early
-#             if Supplier.objects.filter(retailer=retailer, supplier_name__iexact=supplier_name).exists():
-#                 logger.warning("Duplicate supplier '%s' attempted for retailer %s", supplier_name, retailer.id)
-#                 messages.error(request, "Supplier already exists for this retailer.")
-#                 return redirect("add_new_supplier")
-
-#             # CLEANUP: Extract optional fields cleanly as Python None instead of empty strings
-#             contact_person = request.POST.get("contact_person", "").strip() or None
-#             alternate_mobile = request.POST.get("alternate_mobile", "").strip() or None
-#             email = request.POST.get("email", "").strip() or None
-#             gst_number = request.POST.get("gst_number", "").strip() or None
-#             pan_number = request.POST.get("pan_number", "").strip() or None
-#             notes = request.POST.get("notes", "").strip() or None
-
-#             # MANDATORY FIELDS: Fallback defaults if they arrive empty
-#             mobile = request.POST.get("mobile", "").strip()
-#             address = request.POST.get("address", "").strip()
-#             city = request.POST.get("city", "").strip()
-#             state = request.POST.get("state", "").strip()
-#             pincode = request.POST.get("pincode", "").strip()
-
-#             # CONVERSIONS: Safe decimal and integer handling
-#             try:
-#                 opening_balance = Decimal(request.POST.get("opening_balance") or "0.00")
-#                 credit_limit = Decimal(request.POST.get("credit_limit") or "0.00")
-#                 credit_days = int(request.POST.get("credit_days") or 0)
-#             except (InvalidOperation, ValueError):
-#                 logger.error("Data type conversion failed for financial/numeric values.")
-#                 messages.error(request, "Invalid numeric or decimal format provided.")
-#                 return redirect("add_new_supplier")
-
-#             # FIX: HTML checkboxes send 'on' when checked, and are absent when unchecked
-#             is_active = "is_active" in request.POST
-
-#             # PERSIST: Build and commit instance to database
-#             supplier = Supplier.objects.create(
-#                 retailer=retailer,
-#                 supplier_name=supplier_name,
-#                 contact_person=contact_person,
-#                 mobile=mobile,
-#                 alternate_mobile=alternate_mobile,
-#                 email=email,
-#                 gst_number=gst_number,
-#                 pan_number=pan_number,
-#                 address=address,
-#                 city=city,
-#                 state=state,
-#                 pincode=pincode,
-#                 opening_balance=opening_balance,
-#                 credit_limit=credit_limit,
-#                 credit_days=credit_days,
-#                 is_active=is_active,
-#                 notes=notes
-#             )
-
-#             logger.info("Supplier '%s' (ID: %s) created by retailer %s", supplier.supplier_name, supplier.id, retailer.id)
-#             messages.success(request, "Supplier added successfully.")
-#             return redirect("add_new_supplier")
-
-#     except Retailer.DoesNotExist:
-#         logger.error("Retailer not found or unauthorized access attempt by User ID %s", request.user.id)
-#         messages.error(request, "Retailer does not exist or unauthorized access.")
-        
-#     except IntegrityError:
-#         logger.exception("Database unique constraint validation dropped to database level.")
-#         messages.error(request, "Supplier already exists.")
-        
-#     except Exception as e:
-#         logger.exception("Unexpected exception inside add_supplier view: %s", str(e))
-#         messages.error(request, "Something went wrong. Please try again.")
-
-#     return redirect("add_new_supplier")
-
-
-
-
-
 @require_POST
 def update_product(request):
     """
@@ -5051,8 +4274,2857 @@ def delete_product(request, product_id):
         )
 
 
-
-
 # ********************************* Sales Module *********************************
+
+from decimal import Decimal, InvalidOperation
+from datetime import date
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
+
+from .models import (
+    Customer,
+    Sale,
+    SaleItem,
+    Payment,
+    CustomerLedger,
+    Product,
+    Unit,
+    Retailer,
+)
+
+from .sales import add_sale_item
+
+
+ZERO = Decimal("0.00")
+ONE_HUNDRED = Decimal("100.00")
+TWO_PLACES = Decimal("0.01")
+
+
+
+def decimal_value(value, field_name, default=ZERO):
+    """
+    Convert a POST value safely into Decimal.
+    """
+
+    if value in (None, ""):
+        return default
+
+    try:
+        value = Decimal(str(value))
+    except (InvalidOperation, ValueError, TypeError):
+        raise ValidationError(
+            f"Invalid value for {field_name}."
+        )
+
+    if value < ZERO:
+        raise ValidationError(
+            f"{field_name} cannot be negative."
+        )
+
+    return value.quantize(TWO_PLACES)
+
+
+def get_logged_in_retailer(request):
+    """
+    Return the retailer belonging to the logged-in user.
+    """
+
+    if not request.user.is_authenticated:
+        raise ValidationError(
+            "You must be logged in."
+        )
+
+    if request.user.is_superuser:
+        retailer = (
+                    Retailer.objects
+                    .filter(
+                        user=2,
+                        is_active=True,
+                    )
+                    .first()
+                )
+        print(retailer,"      LLLLLLLLLLLLLLLLLLLLLL")
+    else:
+
+        retailer = (
+            Retailer.objects
+            .filter(
+                user=request.user,
+                is_active=True,
+            )
+            .first()
+        )
+
+    if retailer is None:
+        raise ValidationError(
+            "No active retailer is associated with this user."
+        )
+
+    return retailer
+
+
+def get_customer_ledger_balance(customer):
+    """
+    Return customer's current outstanding balance.
+    """
+
+    last_entry = (
+        CustomerLedger.objects
+        .filter(customer=customer)
+        .order_by("-date", "-id")
+        .first()
+    )
+
+    if last_entry:
+        return last_entry.balance
+
+    return customer.opening_balance or ZERO
+
+
+def create_customer_ledger_entry(
+    *,
+    customer,
+    sale=None,
+    payment=None,
+    debit=ZERO,
+    credit=ZERO,
+    entry_date,
+    remarks="",
+):
+    """
+    Create one customer ledger entry.
+
+    Debit  = customer owes more.
+    Credit = customer paid money.
+    """
+
+    debit = Decimal(debit).quantize(TWO_PLACES)
+    credit = Decimal(credit).quantize(TWO_PLACES)
+
+    if debit < ZERO:
+        raise ValidationError(
+            "Ledger debit cannot be negative."
+        )
+
+    if credit < ZERO:
+        raise ValidationError(
+            "Ledger credit cannot be negative."
+        )
+
+    if debit > ZERO and credit > ZERO:
+        raise ValidationError(
+            "Ledger entry cannot contain both debit and credit."
+        )
+
+    previous_balance = get_customer_ledger_balance(
+        customer
+    )
+
+    balance = (
+        previous_balance
+        + debit
+        - credit
+    ).quantize(TWO_PLACES)
+
+    ledger_entry = CustomerLedger(
+        customer=customer,
+        sale=sale,
+        payment=payment,
+        date=entry_date,
+        debit=debit,
+        credit=credit,
+        balance=balance,
+        remarks=remarks,
+    )
+
+    ledger_entry.full_clean()
+    ledger_entry.save()
+
+    return ledger_entry
+
+
+def calculate_sale_totals(items):
+    """
+    Calculate invoice totals from trusted server-side values.
+    """
+
+    subtotal = ZERO
+    total_discount = ZERO
+    total_gst = ZERO
+
+    for item in items:
+
+        gross_amount = (
+            item["quantity"]
+            * item["selling_price"]
+        )
+
+        discount = item["discount"]
+
+        taxable_amount = (
+            gross_amount - discount
+        )
+
+        if taxable_amount < ZERO:
+            raise ValidationError(
+                f"Discount cannot be greater than "
+                f"the amount for "
+                f"'{item['product'].product_name}'."
+            )
+
+        gst_amount = (
+            taxable_amount
+            * item["gst"]
+            / ONE_HUNDRED
+        )
+
+        subtotal += gross_amount
+        total_discount += discount
+        total_gst += gst_amount
+
+    grand_total = (
+        subtotal
+        - total_discount
+        + total_gst
+    )
+
+    return {
+        "subtotal": subtotal.quantize(TWO_PLACES),
+        "discount": total_discount.quantize(TWO_PLACES),
+        "gst": total_gst.quantize(TWO_PLACES),
+        "grand_total": grand_total.quantize(TWO_PLACES),
+    }
+
+
+@login_required
 def sales_create(request):
-    return render(request,"sale_create.html")
+    """
+    Create a new sales invoice.
+
+    GET:
+        Display customers, products and units.
+
+    POST:
+        - Validate customer
+        - Read dynamic product rows
+        - Validate products
+        - Validate units
+        - Validate quantity
+        - Validate stock
+        - Get price/MRP/GST from database
+        - Calculate totals server-side
+        - Validate payment
+        - Validate credit limit
+        - Create Sale
+        - Create SaleItems
+        - Deduct stock
+        - Create payment
+        - Create customer ledger
+        - Commit everything atomically
+    """
+
+    retailer = None
+
+    # ==========================================================
+    # GET RETAILER
+    # ==========================================================
+
+    try:
+        retailer = get_logged_in_retailer(request)
+
+    except ValidationError as exc:
+
+        error_message = " ".join(
+            str(message)
+            for message in exc.messages
+        )
+
+        messages.error(
+            request,
+            error_message
+        )
+
+        logger.warning(
+            "Retailer validation failed. "
+            "user_id=%s error=%s",
+            request.user.id,
+            error_message,
+        )
+
+        return redirect("dashboard")
+
+    # ==========================================================
+    # GET
+    # ==========================================================
+
+    if request.method == "GET":
+
+        try:
+
+            customers = (
+                Customer.objects
+                .filter(
+                    retailer=retailer,
+                    is_active=True,
+                )
+                .order_by("customer_name")
+            )
+
+            products = (
+                Product.objects
+                .filter(
+                    retailer=retailer,
+                    is_active=True,
+                )
+                .select_related("unit")
+                .order_by("product_name")
+            )
+
+            units = (
+                Unit.objects
+                .all()
+                .order_by("name")
+            )
+
+            today = date.today()
+
+            prefix = f"INV-{today.year}-"
+
+            last_sale = (
+                Sale.objects
+                .filter(
+                    retailer=retailer,
+                    invoice_number__startswith=prefix,
+                )
+                .order_by("-invoice_number")
+                .first()
+            )
+
+            last_number = 0
+
+            if last_sale:
+                try:
+                    last_number = int(
+                        last_sale.invoice_number
+                        .split("-")[-1]
+                    )
+                except (ValueError, IndexError):
+                    last_number = 0
+
+            next_invoice_number = (
+                f"{prefix}{last_number + 1:06d}"
+            )
+            if request.user.is_superuser:
+                retailer = Retailer.objects.filter(is_active = True)
+                customers = (
+                                Customer.objects
+                                .filter(
+                                    is_active=True,
+                                )
+                                .order_by("customer_name")
+                            )
+
+            context = {
+                "customers": customers,
+                "products": products,
+                "units": units,
+                "today": today,
+                "next_invoice_number": next_invoice_number,
+                "retailers": retailer,
+            }
+
+            return render(
+                request,
+                "sale_create.html",
+                context,
+            )
+
+        except Exception:
+
+            logger.exception(
+                "Unexpected error while loading "
+                "sale create page. user_id=%s retailer_id=%s",
+                request.user.id,
+                getattr(retailer, "id", None),
+            )
+
+            messages.error(
+                request,
+                "Unable to load the sales page. "
+                "Please try again.",
+            )
+
+            return redirect("dashboard")
+
+    # ==========================================================
+    # POST
+    # ==========================================================
+
+    try:
+
+        # ======================================================
+        # 1. CUSTOMER
+        # ======================================================
+
+        customer_id = (
+            request.POST.get("customer") or ""
+        ).strip()
+
+        if not customer_id:
+            raise ValidationError(
+                "Please select a customer."
+            )
+
+        customer = (
+            Customer.objects
+            .filter(
+                pk=customer_id,
+                retailer=retailer,
+                is_active=True,
+            )
+            .first()
+        )
+
+        if customer is None:
+            raise ValidationError(
+                "Selected customer does not exist."
+            )
+
+        # ======================================================
+        # 2. INVOICE DATE
+        # ======================================================
+
+        invoice_date = date.today()
+
+        # ======================================================
+        # 3. READ DYNAMIC PRODUCT ROWS
+        # ======================================================
+        #
+        # IMPORTANT:
+        #
+        # HTML sends:
+        #
+        # items[1][product]
+        # items[1][unit]
+        # items[1][selling_price]
+        # items[1][mrp]
+        # items[1][gst]
+        # items[1][quantity]
+        # items[1][discount]
+        #
+        # We therefore cannot use:
+        #
+        # request.POST.getlist("product[]")
+        #
+        # ======================================================
+
+        processed_items = []
+
+        item_indexes = set()
+
+        for key in request.POST.keys():
+            match = re.match(r"^items\[(\d+)\]\[product\]$", key)
+
+            if match:
+                row_number = match.group(1)
+                item_indexes.add(row_number)
+
+        if not item_indexes:
+            raise ValidationError("Please add at least one product.")
+
+        sorted_indexes = sorted(
+            item_indexes,
+            key=int
+        )
+
+        # Prevent duplicate products
+        processed_product_ids = set()
+
+        # ======================================================
+        # 4. PROCESS EACH PRODUCT
+        # ======================================================
+
+        for row_number in sorted_indexes:
+
+            product_key = (
+                f"items[{row_number}][product]"
+            )
+
+            unit_key = (
+                f"items[{row_number}][unit]"
+            )
+
+            selling_price_key = (
+                f"items[{row_number}][selling_price]"
+            )
+
+            mrp_key = (
+                f"items[{row_number}][mrp]"
+            )
+
+            gst_key = (
+                f"items[{row_number}][gst]"
+            )
+
+            quantity_key = (
+                f"items[{row_number}][quantity]"
+            )
+
+            discount_key = (
+                f"items[{row_number}][discount]"
+            )
+
+            product_id = (
+                request.POST.get(product_key) or ""
+            ).strip()
+
+            unit_id = (
+                request.POST.get(unit_key) or ""
+            ).strip()
+
+            if not product_id:
+
+                raise ValidationError(
+                    f"Product is missing in row "
+                    f"{row_number}."
+                )
+
+            # ==================================================
+            # DUPLICATE PRODUCT
+            # ==================================================
+
+            if product_id in processed_product_ids:
+
+                raise ValidationError(
+                    "The same product cannot be added "
+                    "multiple times to the same invoice."
+                )
+
+            processed_product_ids.add(
+                product_id
+            )
+
+            # ==================================================
+            # PRODUCT
+            # ==================================================
+
+            product = (
+                Product.objects
+                .select_for_update()
+                .filter(
+                    pk=product_id,
+                    retailer=retailer,
+                    is_active=True,
+                )
+                .first()
+            )
+
+            if product is None:
+
+                raise ValidationError(
+                    f"Product in row {row_number} "
+                    f"does not exist."
+                )
+
+            # ==================================================
+            # UNIT
+            # ==================================================
+
+            if not unit_id:
+
+                raise ValidationError(
+                    f"Unit is missing for "
+                    f"'{product.product_name}'."
+                )
+
+            unit = (
+                Unit.objects
+                .filter(pk=unit_id)
+                .first()
+            )
+
+            if unit is None:
+
+                raise ValidationError(
+                    f"Invalid unit for "
+                    f"'{product.product_name}'."
+                )
+
+            # ==================================================
+            # IMPORTANT UNIT CHECK
+            # ==================================================
+
+            if product.unit_id != unit.id:
+
+                raise ValidationError(
+                    f"Invalid unit selected for "
+                    f"'{product.product_name}'."
+                )
+
+            # ==================================================
+            # QUANTITY
+            # ==================================================
+
+            quantity = decimal_value(
+                request.POST.get(quantity_key),
+                f"Quantity for {product.product_name}",
+            )
+
+            if quantity <= ZERO:
+
+                raise ValidationError(
+                    f"Quantity for "
+                    f"'{product.product_name}' "
+                    f"must be greater than zero."
+                )
+
+            # ==================================================
+            # STOCK
+            # ==================================================
+
+            available_stock = (
+                product.current_stock or ZERO
+            )
+
+            if quantity > available_stock:
+
+                raise ValidationError(
+                    f"Insufficient stock for "
+                    f"'{product.product_name}'. "
+                    f"Available stock: "
+                    f"{available_stock}. "
+                    f"Requested quantity: "
+                    f"{quantity}."
+                )
+
+            # ==================================================
+            # PRICE
+            # ==================================================
+            #
+            # NEVER TRUST PRICE FROM FRONTEND
+            #
+            # Frontend may display it.
+            # Backend takes actual value from Product.
+            #
+            # ==================================================
+
+            selling_price = Decimal(
+                str(product.selling_price)
+            ).quantize(TWO_PLACES)
+
+            mrp = (
+                Decimal(str(product.mrp))
+                if product.mrp is not None
+                else None
+            )
+
+            if mrp is not None:
+
+                mrp = mrp.quantize(
+                    TWO_PLACES
+                )
+
+            # ==================================================
+            # GST
+            # ==================================================
+
+            gst = Decimal(
+                str(
+                    getattr(
+                        product,
+                        "gst_percentage",
+                        ZERO
+                    ) or ZERO
+                )
+            ).quantize(TWO_PLACES)
+
+            # ==================================================
+            # DISCOUNT
+            # ==================================================
+
+            discount = decimal_value(
+                request.POST.get(discount_key),
+                f"Discount for {product.product_name}",
+            )
+
+            # ==================================================
+            # CALCULATE LINE
+            # ==================================================
+
+            gross_amount = (
+                quantity * selling_price
+            ).quantize(TWO_PLACES)
+
+            if discount > gross_amount:
+
+                raise ValidationError(
+                    f"Discount for "
+                    f"'{product.product_name}' "
+                    f"cannot exceed "
+                    f"₹{gross_amount}."
+                )
+
+            taxable_amount = (
+                gross_amount - discount
+            ).quantize(TWO_PLACES)
+
+            gst_amount = (
+                taxable_amount
+                * gst
+                / ONE_HUNDRED
+            ).quantize(TWO_PLACES)
+
+            line_amount = (
+                taxable_amount
+                + gst_amount
+            ).quantize(TWO_PLACES)
+
+            processed_items.append(
+                {
+                    "product": product,
+                    "product_id": product.id,
+                    "unit": unit,
+                    "unit_id": unit.id,
+                    "quantity": quantity,
+                    "selling_price": selling_price,
+                    "mrp": mrp,
+                    "gst": gst,
+                    "discount": discount,
+                    "gst_amount": gst_amount,
+                    "amount": line_amount,
+                }
+            )
+
+        # ======================================================
+        # 5. SERVER-SIDE TOTALS
+        # ======================================================
+
+        totals = calculate_sale_totals(
+            processed_items
+        )
+
+        subtotal = totals["subtotal"]
+
+        total_discount = totals["discount"]
+
+        total_gst = totals["gst"]
+
+        grand_total = totals["grand_total"]
+
+        if grand_total <= ZERO:
+
+            raise ValidationError(
+                "Grand total must be greater than zero."
+            )
+
+        # ======================================================
+        # 6. PAYMENT
+        # ======================================================
+
+        payment_type = (
+            request.POST.get("payment_type") or ""
+        ).strip()
+
+        paid_amount = decimal_value(
+            request.POST.get("paid_amount"),
+            "Paid amount",
+        )
+
+        if paid_amount > grand_total:
+
+            raise ValidationError(
+                "Paid amount cannot exceed "
+                f"grand total of ₹{grand_total}."
+            )
+
+        due_amount = (
+            grand_total - paid_amount
+        ).quantize(TWO_PLACES)
+
+        # ======================================================
+        # PAYMENT TYPE VALIDATION
+        # ======================================================
+
+        valid_payment_types = {
+            Sale.PAYMENT_TYPE_CASH,
+            Sale.PAYMENT_TYPE_UPI,
+            Sale.PAYMENT_TYPE_BANK,
+            Sale.PAYMENT_TYPE_CHEQUE,
+            Sale.PAYMENT_TYPE_CREDIT,
+        }
+
+        if payment_type not in valid_payment_types:
+
+            raise ValidationError(
+                "Please select a valid payment type."
+            )
+
+        # ======================================================
+        # CREDIT SALE
+        # ======================================================
+
+        if payment_type == Sale.PAYMENT_TYPE_CREDIT:
+
+            if paid_amount != ZERO:
+
+                raise ValidationError(
+                    "Credit sales cannot have "
+                    "a paid amount."
+                )
+
+        # ======================================================
+        # NORMAL PAYMENT
+        # ======================================================
+
+        elif paid_amount == ZERO:
+
+            raise ValidationError(
+                "Please enter the paid amount."
+            )
+
+        # ======================================================
+        # REMARKS
+        # ======================================================
+
+        remarks = (
+            request.POST.get("remarks") or ""
+        ).strip()
+
+        # ======================================================
+        # 7. ATOMIC TRANSACTION
+        # ======================================================
+
+        with transaction.atomic():
+
+            # --------------------------------------------------
+            # LOCK CUSTOMER
+            # --------------------------------------------------
+
+            customer = (
+                Customer.objects
+                .select_for_update()
+                .get(
+                    pk=customer.pk,
+                    retailer=retailer,
+                    is_active=True,
+                )
+            )
+
+            # --------------------------------------------------
+            # CURRENT CUSTOMER BALANCE
+            # --------------------------------------------------
+
+            current_balance = (
+                get_customer_ledger_balance(
+                    customer
+                )
+            )
+
+            # --------------------------------------------------
+            # CREDIT LIMIT
+            # --------------------------------------------------
+
+            credit_limit = (
+                customer.credit_limit or ZERO
+            )
+
+            projected_balance = (
+                current_balance
+                + due_amount
+            ).quantize(TWO_PLACES)
+
+            if (
+                due_amount > ZERO
+                and credit_limit > ZERO
+                and projected_balance > credit_limit
+            ):
+
+                raise ValidationError(
+                    f"Credit limit exceeded for "
+                    f"'{customer.customer_name}'. "
+                    f"Current outstanding: "
+                    f"₹{current_balance}. "
+                    f"New due: ₹{due_amount}. "
+                    f"Credit limit: "
+                    f"₹{credit_limit}."
+                )
+
+            # --------------------------------------------------
+            # CREATE SALE
+            # --------------------------------------------------
+
+            sale = Sale(
+                retailer=retailer,
+                customer=customer,
+                invoice_date=invoice_date,
+                subtotal=subtotal,
+                discount=total_discount,
+                gst=total_gst,
+                grand_total=grand_total,
+                paid_amount=paid_amount,
+                payment_type=payment_type,
+                remarks=remarks,
+            )
+
+            # Model validation
+            sale.full_clean()
+
+            # Sale.save() generates invoice number,
+            # due amount and payment status.
+            sale.save()
+
+            logger.info(
+                "Sale created. sale_id=%s "
+                "invoice=%s user_id=%s retailer_id=%s",
+                sale.id,
+                sale.invoice_number,
+                request.user.id,
+                retailer.id,
+            )
+
+            # --------------------------------------------------
+            # CREATE SALE ITEMS + DEDUCT STOCK
+            # --------------------------------------------------
+
+            for item in processed_items:
+
+                add_sale_item(
+                    sale=sale,
+                    product_id=item["product_id"],
+                    unit_id=item["unit_id"],
+                    quantity=item["quantity"],
+                    selling_price=item["selling_price"],
+                    mrp=item["mrp"],
+                    gst=item["gst"],
+                    discount=item["discount"],
+                )
+
+            # --------------------------------------------------
+            # CUSTOMER LEDGER - SALE DEBIT
+            # --------------------------------------------------
+
+            create_customer_ledger_entry(
+                customer=customer,
+                sale=sale,
+                debit=grand_total,
+                credit=ZERO,
+                entry_date=invoice_date,
+                remarks=(
+                    f"Sale invoice "
+                    f"{sale.invoice_number}"
+                ),
+            )
+
+            # --------------------------------------------------
+            # PAYMENT
+            # --------------------------------------------------
+
+            payment = None
+
+            if paid_amount > ZERO:
+
+                if payment_type == Sale.PAYMENT_TYPE_CREDIT:
+
+                    raise ValidationError(
+                        "Credit payment cannot be recorded."
+                    )
+
+                payment = Payment(
+                    retailer=retailer,
+                    customer=customer,
+                    sale=sale,
+                    payment_date=invoice_date,
+                    amount=paid_amount,
+                    payment_type=payment_type,
+                    payment_reference=(
+                        request.POST.get(
+                            "payment_reference"
+                        ) or None
+                    ),
+                    receipt_number=(
+                        request.POST.get(
+                            "receipt_number"
+                        ) or None
+                    ),
+                    remarks=remarks,
+                )
+
+                payment.full_clean()
+                payment.save()
+
+                # --------------------------------------------------
+                # CUSTOMER LEDGER - PAYMENT CREDIT
+                # --------------------------------------------------
+
+                create_customer_ledger_entry(
+                    customer=customer,
+                    payment=payment,
+                    debit=ZERO,
+                    credit=paid_amount,
+                    entry_date=invoice_date,
+                    remarks=(
+                        f"Payment received for "
+                        f"invoice "
+                        f"{sale.invoice_number}"
+                    ),
+                )
+
+            # --------------------------------------------------
+            # FINAL SALE VALIDATION
+            # --------------------------------------------------
+
+            sale.refresh_from_db()
+
+            if sale.due_amount != due_amount:
+
+                raise ValidationError(
+                    "Payment calculation mismatch."
+                )
+
+            logger.info(
+                "Sale transaction completed successfully. "
+                "sale_id=%s invoice=%s paid=%s due=%s "
+                "user_id=%s retailer_id=%s",
+                sale.id,
+                sale.invoice_number,
+                paid_amount,
+                due_amount,
+                request.user.id,
+                retailer.id,
+            )
+
+        # ======================================================
+        # SUCCESS
+        # ======================================================
+
+        action = (
+            request.POST.get("action") or "save"
+        ).strip()
+
+        messages.success(
+            request,
+            f"Sale {sale.invoice_number} "
+            f"created successfully."
+        )
+
+        if action == "save_print":
+
+            return redirect(
+                "sale_print",
+                sale_id=sale.id,
+            )
+
+        return redirect(
+            "sale_create"
+        )
+
+    # ==========================================================
+    # VALIDATION ERROR
+    # ==========================================================
+
+    except ValidationError as exc:
+
+        error_message = " ".join(
+            str(message)
+            for message in exc.messages
+        )
+
+        logger.warning(
+            "Sale validation failed. "
+            "user_id=%s retailer_id=%s error=%s",
+            request.user.id,
+            getattr(retailer, "id", None),
+            error_message,
+        )
+
+        messages.error(
+            request,
+            error_message,
+        )
+
+        return redirect(
+            "sale_create"
+        )
+
+    # ==========================================================
+    # DATABASE ERROR
+    # ==========================================================
+
+    except IntegrityError:
+
+        logger.exception(
+            "Database integrity error while "
+            "creating sale. "
+            "user_id=%s retailer_id=%s",
+            request.user.id,
+            getattr(retailer, "id", None),
+        )
+
+        messages.error(
+            request,
+            "Unable to create the sale because "
+            "of a database conflict. "
+            "Please try again.",
+        )
+
+        return redirect(
+            "sale_create"
+        )
+
+    # ==========================================================
+    # UNEXPECTED ERROR
+    # ==========================================================
+
+    except Exception:
+
+        logger.exception(
+            "Unexpected error while creating sale. "
+            "user_id=%s retailer_id=%s",
+            request.user.id,
+            getattr(retailer, "id", None),
+        )
+
+        messages.error(
+            request,
+            "An unexpected error occurred while "
+            "creating the sale. Please try again.",
+        )
+
+        return redirect(
+            "sale_create"
+        )
+
+
+
+
+@require_POST
+@login_required
+def create_customer_ajax(request):
+    """
+    Create customer from the Add Customer modal.
+
+    Mobile number is unique per retailer.
+    """
+    try:
+
+        retailer = get_logged_in_retailer(request)
+
+        customer_name = (
+            request.POST.get("customer_name") or ""
+        ).strip()
+
+        mobile = (
+            request.POST.get("mobile") or ""
+        ).strip()
+
+        email = (
+            request.POST.get("email") or ""
+        ).strip()
+
+        gst_number = (
+            request.POST.get("gst_number") or ""
+        ).strip()
+
+        address = (
+            request.POST.get("address") or ""
+        ).strip()
+
+        opening_balance = decimal_value(
+            request.POST.get("opening_balance"),
+            "Opening balance",
+        )
+
+        credit_limit = decimal_value(
+            request.POST.get("credit_limit"),
+            "Credit limit",
+        )
+
+        # ------------------------------------------------------
+        # NAME
+        # ------------------------------------------------------
+
+        if not customer_name:
+            raise ValidationError(
+                "Customer name is required."
+            )
+
+        if len(customer_name) > 200:
+            raise ValidationError(
+                "Customer name cannot exceed 200 characters."
+            )
+
+        # ------------------------------------------------------
+        # MOBILE
+        # ------------------------------------------------------
+
+        if not mobile:
+            raise ValidationError(
+                "Mobile number is required."
+            )
+
+        # Keep only digits for validation.
+        normalized_mobile = "".join(
+            character
+            for character in mobile
+            if character.isdigit()
+        )
+
+        if len(normalized_mobile) != 10:
+            raise ValidationError(
+                "Please enter a valid 10-digit mobile number."
+            )
+
+        # ------------------------------------------------------
+        # DUPLICATE CHECK
+        # ------------------------------------------------------
+
+        existing_customer = (
+            Customer.objects
+            .filter(
+                retailer=retailer,
+                mobile=normalized_mobile,
+            )
+            .first()
+        )
+
+        if existing_customer:
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "exists": True,
+                    "message": (
+                        "A customer with this mobile number "
+                        "already exists."
+                    ),
+                    "customer": {
+                        "id": existing_customer.id,
+                        "name": existing_customer.customer_name,
+                        "mobile": existing_customer.mobile,
+                    },
+                },
+                status=409,
+            )
+
+        # ------------------------------------------------------
+        # CREATE CUSTOMER
+        # ------------------------------------------------------
+
+        with transaction.atomic():
+
+            customer = Customer.objects.create(
+                retailer=retailer,
+                customer_name=customer_name,
+                mobile=normalized_mobile,
+                email=email or None,
+                gst_number=gst_number or None,
+                address=address or None,
+                opening_balance=opening_balance,
+                credit_limit=credit_limit,
+                is_active=True,
+            )
+
+        logger.info(
+            "Customer created successfully. "
+            "customer_id=%s retailer_id=%s",
+            customer.id,
+            retailer.id,
+        )
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Customer created successfully.",
+                "customer": {
+                    "id": customer.id,
+                    "name": customer.customer_name,
+                    "mobile": customer.mobile,
+                    "email": customer.email or "",
+                    "address": customer.address or "",
+                    "gst_number": customer.gst_number or "",
+                    "credit_limit": str(
+                        customer.credit_limit
+                    ),
+                    "opening_balance": str(
+                        customer.opening_balance
+                    ),
+                },
+            },
+            status=201,
+        )
+
+    except ValidationError as exc:
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": " ".join(
+                    str(message)
+                    for message in exc.messages
+                ),
+            },
+            status=400,
+        )
+
+    except IntegrityError:
+
+        logger.exception(
+            "Duplicate customer/mobile race condition."
+        )
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "A customer with this mobile number "
+                    "already exists."
+                ),
+            },
+            status=409,
+        )
+
+    except Exception:
+
+        logger.exception(
+            "Unexpected error while creating customer."
+        )
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "Unable to create customer. "
+                    "Please try again."
+                ),
+            },
+            status=500,
+        )
+
+
+@require_GET
+@login_required
+def sale_product_data(request, product_id):
+
+    try:
+        retailer = get_logged_in_retailer(request)
+        product = (
+            Product.objects
+            .filter(
+                pk=product_id,
+                retailer=retailer,
+                is_active=True,
+            )
+            .first()
+        )
+
+        if product is None:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Product not found.",
+                },
+                status=404,
+            )
+
+        return JsonResponse(
+            {
+                "success": True,
+                "product": {
+                    "id": product.id,
+                    "name": product.product_name,
+
+                    "stock": str(
+                        product.current_stock or ZERO
+                    ),
+
+                    "selling_price": str(
+                        product.selling_price
+                    ),
+
+                    "mrp": (
+                        str(product.mrp)
+                        if product.mrp is not None
+                        else ""
+                    ),
+
+                    "gst": str(
+                        product.gst or ZERO
+                    ),
+                },
+            }
+        )
+
+    except ValidationError as exc:
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": str(exc),
+            },
+            status=400,
+        )
+
+    except Exception:
+
+        logger.exception(
+            "Unable to fetch product data."
+        )
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Unable to fetch product.",
+            },
+            status=500,
+        )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# from decimal import Decimal, InvalidOperation
+# from datetime import date
+
+# from django.contrib import messages
+# from django.contrib.auth.decorators import login_required
+# from django.core.exceptions import ValidationError
+# from django.db import IntegrityError, transaction
+# from django.http import JsonResponse
+# from django.shortcuts import redirect, render
+# from django.views.decorators.http import require_POST
+# from django.views.decorators.http import require_GET, require_POST
+
+# from .models import (
+#     Customer,
+#     Sale,
+#     SaleItem,
+#     Payment,
+#     CustomerLedger,
+#     Product,
+#     Unit,
+#     Retailer,
+# )
+
+# from .sales import add_sale_item
+
+
+# ZERO = Decimal("0.00")
+# ONE_HUNDRED = Decimal("100.00")
+# TWO_PLACES = Decimal("0.01")
+
+
+
+# def decimal_value(value, field_name, default=ZERO):
+#     """
+#     Convert a POST value safely into Decimal.
+#     """
+
+#     if value in (None, ""):
+#         return default
+
+#     try:
+#         value = Decimal(str(value))
+#     except (InvalidOperation, ValueError, TypeError):
+#         raise ValidationError(
+#             f"Invalid value for {field_name}."
+#         )
+
+#     if value < ZERO:
+#         raise ValidationError(
+#             f"{field_name} cannot be negative."
+#         )
+
+#     return value.quantize(TWO_PLACES)
+
+
+# def get_logged_in_retailer(request):
+#     """
+#     Return the retailer belonging to the logged-in user.
+#     """
+
+#     if not request.user.is_authenticated:
+#         raise ValidationError(
+#             "You must be logged in."
+#         )
+
+#     if request.user.is_superuser:
+#         redirect 
+
+#     retailer = (
+#         Retailer.objects
+#         .filter(
+#             user=request.user,
+#             is_active=True,
+#         )
+#         .first()
+#     )
+
+#     if retailer is None:
+#         raise ValidationError(
+#             "No active retailer is associated with this user."
+#         )
+
+#     return retailer
+
+
+# def get_customer_ledger_balance(customer):
+#     """
+#     Return customer's current outstanding balance.
+#     """
+
+#     last_entry = (
+#         CustomerLedger.objects
+#         .filter(customer=customer)
+#         .order_by("-date", "-id")
+#         .first()
+#     )
+
+#     if last_entry:
+#         return last_entry.balance
+
+#     return customer.opening_balance or ZERO
+
+
+# def create_customer_ledger_entry(
+#     *,
+#     customer,
+#     sale=None,
+#     payment=None,
+#     debit=ZERO,
+#     credit=ZERO,
+#     entry_date,
+#     remarks="",
+# ):
+#     """
+#     Create one customer ledger entry.
+
+#     Debit  = customer owes more.
+#     Credit = customer paid money.
+#     """
+
+#     debit = Decimal(debit).quantize(TWO_PLACES)
+#     credit = Decimal(credit).quantize(TWO_PLACES)
+
+#     if debit < ZERO:
+#         raise ValidationError(
+#             "Ledger debit cannot be negative."
+#         )
+
+#     if credit < ZERO:
+#         raise ValidationError(
+#             "Ledger credit cannot be negative."
+#         )
+
+#     if debit > ZERO and credit > ZERO:
+#         raise ValidationError(
+#             "Ledger entry cannot contain both debit and credit."
+#         )
+
+#     previous_balance = get_customer_ledger_balance(
+#         customer
+#     )
+
+#     balance = (
+#         previous_balance
+#         + debit
+#         - credit
+#     ).quantize(TWO_PLACES)
+
+#     ledger_entry = CustomerLedger(
+#         customer=customer,
+#         sale=sale,
+#         payment=payment,
+#         date=entry_date,
+#         debit=debit,
+#         credit=credit,
+#         balance=balance,
+#         remarks=remarks,
+#     )
+
+#     ledger_entry.full_clean()
+#     ledger_entry.save()
+
+#     return ledger_entry
+
+
+# def calculate_sale_totals(items):
+#     """
+#     Calculate invoice totals from trusted server-side values.
+#     """
+
+#     subtotal = ZERO
+#     total_discount = ZERO
+#     total_gst = ZERO
+
+#     for item in items:
+
+#         gross_amount = (
+#             item["quantity"]
+#             * item["selling_price"]
+#         )
+
+#         discount = item["discount"]
+
+#         taxable_amount = (
+#             gross_amount - discount
+#         )
+
+#         if taxable_amount < ZERO:
+#             raise ValidationError(
+#                 f"Discount cannot be greater than "
+#                 f"the amount for "
+#                 f"'{item['product'].product_name}'."
+#             )
+
+#         gst_amount = (
+#             taxable_amount
+#             * item["gst"]
+#             / ONE_HUNDRED
+#         )
+
+#         subtotal += gross_amount
+#         total_discount += discount
+#         total_gst += gst_amount
+
+#     grand_total = (
+#         subtotal
+#         - total_discount
+#         + total_gst
+#     )
+
+#     return {
+#         "subtotal": subtotal.quantize(TWO_PLACES),
+#         "discount": total_discount.quantize(TWO_PLACES),
+#         "gst": total_gst.quantize(TWO_PLACES),
+#         "grand_total": grand_total.quantize(TWO_PLACES),
+#     }
+
+
+# @login_required
+# def sales_create(request):
+#     """
+#     Create a new sales invoice.
+
+#     GET:
+#         Display customers, products and units.
+
+#     POST:
+#         - Validate customer
+#         - Read dynamic product rows
+#         - Validate products
+#         - Validate units
+#         - Validate quantity
+#         - Validate stock
+#         - Get price/MRP/GST from database
+#         - Calculate totals server-side
+#         - Validate payment
+#         - Validate credit limit
+#         - Create Sale
+#         - Create SaleItems
+#         - Deduct stock
+#         - Create payment
+#         - Create customer ledger
+#         - Commit everything atomically
+#     """
+
+#     retailer = None
+
+#     # ==========================================================
+#     # GET RETAILER
+#     # ==========================================================
+
+#     try:
+#         retailer = get_logged_in_retailer(request)
+
+#     except ValidationError as exc:
+
+#         error_message = " ".join(
+#             str(message)
+#             for message in exc.messages
+#         )
+
+#         messages.error(
+#             request,
+#             error_message
+#         )
+
+#         logger.warning(
+#             "Retailer validation failed. "
+#             "user_id=%s error=%s",
+#             request.user.id,
+#             error_message,
+#         )
+
+#         return redirect("dashboard")
+
+#     # ==========================================================
+#     # GET
+#     # ==========================================================
+
+#     if request.method == "GET":
+
+#         try:
+
+#             customers = (
+#                 Customer.objects
+#                 .filter(
+#                     retailer=retailer,
+#                     is_active=True,
+#                 )
+#                 .order_by("customer_name")
+#             )
+
+#             products = (
+#                 Product.objects
+#                 .filter(
+#                     retailer=retailer,
+#                     is_active=True,
+#                 )
+#                 .select_related("unit")
+#                 .order_by("product_name")
+#             )
+
+#             units = (
+#                 Unit.objects
+#                 .all()
+#                 .order_by("name")
+#             )
+
+#             today = date.today()
+
+#             prefix = f"INV-{today.year}-"
+
+#             last_sale = (
+#                 Sale.objects
+#                 .filter(
+#                     retailer=retailer,
+#                     invoice_number__startswith=prefix,
+#                 )
+#                 .order_by("-invoice_number")
+#                 .first()
+#             )
+
+#             last_number = 0
+
+#             if last_sale:
+#                 try:
+#                     last_number = int(
+#                         last_sale.invoice_number
+#                         .split("-")[-1]
+#                     )
+#                 except (ValueError, IndexError):
+#                     last_number = 0
+
+#             next_invoice_number = (
+#                 f"{prefix}{last_number + 1:06d}"
+#             )
+
+#             context = {
+#                 "customers": customers,
+#                 "products": products,
+#                 "units": units,
+#                 "today": today,
+#                 "next_invoice_number": next_invoice_number,
+#                 "retailers": retailer,
+#             }
+
+#             return render(
+#                 request,
+#                 "sale_create.html",
+#                 context,
+#             )
+
+#         except Exception:
+
+#             logger.exception(
+#                 "Unexpected error while loading "
+#                 "sale create page. user_id=%s retailer_id=%s",
+#                 request.user.id,
+#                 getattr(retailer, "id", None),
+#             )
+
+#             messages.error(
+#                 request,
+#                 "Unable to load the sales page. "
+#                 "Please try again.",
+#             )
+
+#             return redirect("dashboard")
+
+#     # ==========================================================
+#     # POST
+#     # ==========================================================
+
+#     try:
+
+#         # ======================================================
+#         # 1. CUSTOMER
+#         # ======================================================
+
+#         customer_id = (
+#             request.POST.get("customer") or ""
+#         ).strip()
+
+#         if not customer_id:
+#             raise ValidationError(
+#                 "Please select a customer."
+#             )
+
+#         customer = (
+#             Customer.objects
+#             .filter(
+#                 pk=customer_id,
+#                 retailer=retailer,
+#                 is_active=True,
+#             )
+#             .first()
+#         )
+
+#         if customer is None:
+#             raise ValidationError(
+#                 "Selected customer does not exist."
+#             )
+
+#         # ======================================================
+#         # 2. INVOICE DATE
+#         # ======================================================
+
+#         invoice_date = date.today()
+
+#         # ======================================================
+#         # 3. READ DYNAMIC PRODUCT ROWS
+#         # ======================================================
+#         #
+#         # IMPORTANT:
+#         #
+#         # HTML sends:
+#         #
+#         # items[1][product]
+#         # items[1][unit]
+#         # items[1][selling_price]
+#         # items[1][mrp]
+#         # items[1][gst]
+#         # items[1][quantity]
+#         # items[1][discount]
+#         #
+#         # We therefore cannot use:
+#         #
+#         # request.POST.getlist("product[]")
+#         #
+#         # ======================================================
+
+#         processed_items = []
+
+#         item_indexes = set()
+
+#         for key in request.POST.keys():
+#             match = re.match(r"^items\[(\d+)\]\[product\]$", key)
+
+#             if match:
+#                 row_number = match.group(1)
+#                 item_indexes.add(row_number)
+
+#         if not item_indexes:
+#             raise ValidationError("Please add at least one product.")
+
+#         sorted_indexes = sorted(
+#             item_indexes,
+#             key=int
+#         )
+
+#         # Prevent duplicate products
+#         processed_product_ids = set()
+
+#         # ======================================================
+#         # 4. PROCESS EACH PRODUCT
+#         # ======================================================
+
+#         for row_number in sorted_indexes:
+
+#             product_key = (
+#                 f"items[{row_number}][product]"
+#             )
+
+#             unit_key = (
+#                 f"items[{row_number}][unit]"
+#             )
+
+#             selling_price_key = (
+#                 f"items[{row_number}][selling_price]"
+#             )
+
+#             mrp_key = (
+#                 f"items[{row_number}][mrp]"
+#             )
+
+#             gst_key = (
+#                 f"items[{row_number}][gst]"
+#             )
+
+#             quantity_key = (
+#                 f"items[{row_number}][quantity]"
+#             )
+
+#             discount_key = (
+#                 f"items[{row_number}][discount]"
+#             )
+
+#             product_id = (
+#                 request.POST.get(product_key) or ""
+#             ).strip()
+
+#             unit_id = (
+#                 request.POST.get(unit_key) or ""
+#             ).strip()
+
+#             if not product_id:
+
+#                 raise ValidationError(
+#                     f"Product is missing in row "
+#                     f"{row_number}."
+#                 )
+
+#             # ==================================================
+#             # DUPLICATE PRODUCT
+#             # ==================================================
+
+#             if product_id in processed_product_ids:
+
+#                 raise ValidationError(
+#                     "The same product cannot be added "
+#                     "multiple times to the same invoice."
+#                 )
+
+#             processed_product_ids.add(
+#                 product_id
+#             )
+
+#             # ==================================================
+#             # PRODUCT
+#             # ==================================================
+
+#             product = (
+#                 Product.objects
+#                 .select_for_update()
+#                 .filter(
+#                     pk=product_id,
+#                     retailer=retailer,
+#                     is_active=True,
+#                 )
+#                 .first()
+#             )
+
+#             if product is None:
+
+#                 raise ValidationError(
+#                     f"Product in row {row_number} "
+#                     f"does not exist."
+#                 )
+
+#             # ==================================================
+#             # UNIT
+#             # ==================================================
+
+#             if not unit_id:
+
+#                 raise ValidationError(
+#                     f"Unit is missing for "
+#                     f"'{product.product_name}'."
+#                 )
+
+#             unit = (
+#                 Unit.objects
+#                 .filter(pk=unit_id)
+#                 .first()
+#             )
+
+#             if unit is None:
+
+#                 raise ValidationError(
+#                     f"Invalid unit for "
+#                     f"'{product.product_name}'."
+#                 )
+
+#             # ==================================================
+#             # IMPORTANT UNIT CHECK
+#             # ==================================================
+
+#             if product.unit_id != unit.id:
+
+#                 raise ValidationError(
+#                     f"Invalid unit selected for "
+#                     f"'{product.product_name}'."
+#                 )
+
+#             # ==================================================
+#             # QUANTITY
+#             # ==================================================
+
+#             quantity = decimal_value(
+#                 request.POST.get(quantity_key),
+#                 f"Quantity for {product.product_name}",
+#             )
+
+#             if quantity <= ZERO:
+
+#                 raise ValidationError(
+#                     f"Quantity for "
+#                     f"'{product.product_name}' "
+#                     f"must be greater than zero."
+#                 )
+
+#             # ==================================================
+#             # STOCK
+#             # ==================================================
+
+#             available_stock = (
+#                 product.current_stock or ZERO
+#             )
+
+#             if quantity > available_stock:
+
+#                 raise ValidationError(
+#                     f"Insufficient stock for "
+#                     f"'{product.product_name}'. "
+#                     f"Available stock: "
+#                     f"{available_stock}. "
+#                     f"Requested quantity: "
+#                     f"{quantity}."
+#                 )
+
+#             # ==================================================
+#             # PRICE
+#             # ==================================================
+#             #
+#             # NEVER TRUST PRICE FROM FRONTEND
+#             #
+#             # Frontend may display it.
+#             # Backend takes actual value from Product.
+#             #
+#             # ==================================================
+
+#             selling_price = Decimal(
+#                 str(product.selling_price)
+#             ).quantize(TWO_PLACES)
+
+#             mrp = (
+#                 Decimal(str(product.mrp))
+#                 if product.mrp is not None
+#                 else None
+#             )
+
+#             if mrp is not None:
+
+#                 mrp = mrp.quantize(
+#                     TWO_PLACES
+#                 )
+
+#             # ==================================================
+#             # GST
+#             # ==================================================
+
+#             gst = Decimal(
+#                 str(
+#                     getattr(
+#                         product,
+#                         "gst_percentage",
+#                         ZERO
+#                     ) or ZERO
+#                 )
+#             ).quantize(TWO_PLACES)
+
+#             # ==================================================
+#             # DISCOUNT
+#             # ==================================================
+
+#             discount = decimal_value(
+#                 request.POST.get(discount_key),
+#                 f"Discount for {product.product_name}",
+#             )
+
+#             # ==================================================
+#             # CALCULATE LINE
+#             # ==================================================
+
+#             gross_amount = (
+#                 quantity * selling_price
+#             ).quantize(TWO_PLACES)
+
+#             if discount > gross_amount:
+
+#                 raise ValidationError(
+#                     f"Discount for "
+#                     f"'{product.product_name}' "
+#                     f"cannot exceed "
+#                     f"₹{gross_amount}."
+#                 )
+
+#             taxable_amount = (
+#                 gross_amount - discount
+#             ).quantize(TWO_PLACES)
+
+#             gst_amount = (
+#                 taxable_amount
+#                 * gst
+#                 / ONE_HUNDRED
+#             ).quantize(TWO_PLACES)
+
+#             line_amount = (
+#                 taxable_amount
+#                 + gst_amount
+#             ).quantize(TWO_PLACES)
+
+#             processed_items.append(
+#                 {
+#                     "product": product,
+#                     "product_id": product.id,
+#                     "unit": unit,
+#                     "unit_id": unit.id,
+#                     "quantity": quantity,
+#                     "selling_price": selling_price,
+#                     "mrp": mrp,
+#                     "gst": gst,
+#                     "discount": discount,
+#                     "gst_amount": gst_amount,
+#                     "amount": line_amount,
+#                 }
+#             )
+
+#         # ======================================================
+#         # 5. SERVER-SIDE TOTALS
+#         # ======================================================
+
+#         totals = calculate_sale_totals(
+#             processed_items
+#         )
+
+#         subtotal = totals["subtotal"]
+
+#         total_discount = totals["discount"]
+
+#         total_gst = totals["gst"]
+
+#         grand_total = totals["grand_total"]
+
+#         if grand_total <= ZERO:
+
+#             raise ValidationError(
+#                 "Grand total must be greater than zero."
+#             )
+
+#         # ======================================================
+#         # 6. PAYMENT
+#         # ======================================================
+
+#         payment_type = (
+#             request.POST.get("payment_type") or ""
+#         ).strip()
+
+#         paid_amount = decimal_value(
+#             request.POST.get("paid_amount"),
+#             "Paid amount",
+#         )
+
+#         if paid_amount > grand_total:
+
+#             raise ValidationError(
+#                 "Paid amount cannot exceed "
+#                 f"grand total of ₹{grand_total}."
+#             )
+
+#         due_amount = (
+#             grand_total - paid_amount
+#         ).quantize(TWO_PLACES)
+
+#         # ======================================================
+#         # PAYMENT TYPE VALIDATION
+#         # ======================================================
+
+#         valid_payment_types = {
+#             Sale.PAYMENT_TYPE_CASH,
+#             Sale.PAYMENT_TYPE_UPI,
+#             Sale.PAYMENT_TYPE_BANK,
+#             Sale.PAYMENT_TYPE_CHEQUE,
+#             Sale.PAYMENT_TYPE_CREDIT,
+#         }
+
+#         if payment_type not in valid_payment_types:
+
+#             raise ValidationError(
+#                 "Please select a valid payment type."
+#             )
+
+#         # ======================================================
+#         # CREDIT SALE
+#         # ======================================================
+
+#         if payment_type == Sale.PAYMENT_TYPE_CREDIT:
+
+#             if paid_amount != ZERO:
+
+#                 raise ValidationError(
+#                     "Credit sales cannot have "
+#                     "a paid amount."
+#                 )
+
+#         # ======================================================
+#         # NORMAL PAYMENT
+#         # ======================================================
+
+#         elif paid_amount == ZERO:
+
+#             raise ValidationError(
+#                 "Please enter the paid amount."
+#             )
+
+#         # ======================================================
+#         # REMARKS
+#         # ======================================================
+
+#         remarks = (
+#             request.POST.get("remarks") or ""
+#         ).strip()
+
+#         # ======================================================
+#         # 7. ATOMIC TRANSACTION
+#         # ======================================================
+
+#         with transaction.atomic():
+
+#             # --------------------------------------------------
+#             # LOCK CUSTOMER
+#             # --------------------------------------------------
+
+#             customer = (
+#                 Customer.objects
+#                 .select_for_update()
+#                 .get(
+#                     pk=customer.pk,
+#                     retailer=retailer,
+#                     is_active=True,
+#                 )
+#             )
+
+#             # --------------------------------------------------
+#             # CURRENT CUSTOMER BALANCE
+#             # --------------------------------------------------
+
+#             current_balance = (
+#                 get_customer_ledger_balance(
+#                     customer
+#                 )
+#             )
+
+#             # --------------------------------------------------
+#             # CREDIT LIMIT
+#             # --------------------------------------------------
+
+#             credit_limit = (
+#                 customer.credit_limit or ZERO
+#             )
+
+#             projected_balance = (
+#                 current_balance
+#                 + due_amount
+#             ).quantize(TWO_PLACES)
+
+#             if (
+#                 due_amount > ZERO
+#                 and credit_limit > ZERO
+#                 and projected_balance > credit_limit
+#             ):
+
+#                 raise ValidationError(
+#                     f"Credit limit exceeded for "
+#                     f"'{customer.customer_name}'. "
+#                     f"Current outstanding: "
+#                     f"₹{current_balance}. "
+#                     f"New due: ₹{due_amount}. "
+#                     f"Credit limit: "
+#                     f"₹{credit_limit}."
+#                 )
+
+#             # --------------------------------------------------
+#             # CREATE SALE
+#             # --------------------------------------------------
+
+#             sale = Sale(
+#                 retailer=retailer,
+#                 customer=customer,
+#                 invoice_date=invoice_date,
+#                 subtotal=subtotal,
+#                 discount=total_discount,
+#                 gst=total_gst,
+#                 grand_total=grand_total,
+#                 paid_amount=paid_amount,
+#                 payment_type=payment_type,
+#                 remarks=remarks,
+#             )
+
+#             # Model validation
+#             sale.full_clean()
+
+#             # Sale.save() generates invoice number,
+#             # due amount and payment status.
+#             sale.save()
+
+#             logger.info(
+#                 "Sale created. sale_id=%s "
+#                 "invoice=%s user_id=%s retailer_id=%s",
+#                 sale.id,
+#                 sale.invoice_number,
+#                 request.user.id,
+#                 retailer.id,
+#             )
+
+#             # --------------------------------------------------
+#             # CREATE SALE ITEMS + DEDUCT STOCK
+#             # --------------------------------------------------
+
+#             for item in processed_items:
+
+#                 add_sale_item(
+#                     sale=sale,
+#                     product_id=item["product_id"],
+#                     unit_id=item["unit_id"],
+#                     quantity=item["quantity"],
+#                     selling_price=item["selling_price"],
+#                     mrp=item["mrp"],
+#                     gst=item["gst"],
+#                     discount=item["discount"],
+#                 )
+
+#             # --------------------------------------------------
+#             # CUSTOMER LEDGER - SALE DEBIT
+#             # --------------------------------------------------
+
+#             create_customer_ledger_entry(
+#                 customer=customer,
+#                 sale=sale,
+#                 debit=grand_total,
+#                 credit=ZERO,
+#                 entry_date=invoice_date,
+#                 remarks=(
+#                     f"Sale invoice "
+#                     f"{sale.invoice_number}"
+#                 ),
+#             )
+
+#             # --------------------------------------------------
+#             # PAYMENT
+#             # --------------------------------------------------
+
+#             payment = None
+
+#             if paid_amount > ZERO:
+
+#                 if payment_type == Sale.PAYMENT_TYPE_CREDIT:
+
+#                     raise ValidationError(
+#                         "Credit payment cannot be recorded."
+#                     )
+
+#                 payment = Payment(
+#                     retailer=retailer,
+#                     customer=customer,
+#                     sale=sale,
+#                     payment_date=invoice_date,
+#                     amount=paid_amount,
+#                     payment_type=payment_type,
+#                     payment_reference=(
+#                         request.POST.get(
+#                             "payment_reference"
+#                         ) or None
+#                     ),
+#                     receipt_number=(
+#                         request.POST.get(
+#                             "receipt_number"
+#                         ) or None
+#                     ),
+#                     remarks=remarks,
+#                 )
+
+#                 payment.full_clean()
+#                 payment.save()
+
+#                 # --------------------------------------------------
+#                 # CUSTOMER LEDGER - PAYMENT CREDIT
+#                 # --------------------------------------------------
+
+#                 create_customer_ledger_entry(
+#                     customer=customer,
+#                     payment=payment,
+#                     debit=ZERO,
+#                     credit=paid_amount,
+#                     entry_date=invoice_date,
+#                     remarks=(
+#                         f"Payment received for "
+#                         f"invoice "
+#                         f"{sale.invoice_number}"
+#                     ),
+#                 )
+
+#             # --------------------------------------------------
+#             # FINAL SALE VALIDATION
+#             # --------------------------------------------------
+
+#             sale.refresh_from_db()
+
+#             if sale.due_amount != due_amount:
+
+#                 raise ValidationError(
+#                     "Payment calculation mismatch."
+#                 )
+
+#             logger.info(
+#                 "Sale transaction completed successfully. "
+#                 "sale_id=%s invoice=%s paid=%s due=%s "
+#                 "user_id=%s retailer_id=%s",
+#                 sale.id,
+#                 sale.invoice_number,
+#                 paid_amount,
+#                 due_amount,
+#                 request.user.id,
+#                 retailer.id,
+#             )
+
+#         # ======================================================
+#         # SUCCESS
+#         # ======================================================
+
+#         action = (
+#             request.POST.get("action") or "save"
+#         ).strip()
+
+#         messages.success(
+#             request,
+#             f"Sale {sale.invoice_number} "
+#             f"created successfully."
+#         )
+
+#         if action == "save_print":
+
+#             return redirect(
+#                 "sale_print",
+#                 sale_id=sale.id,
+#             )
+
+#         return redirect(
+#             "sale_create"
+#         )
+
+#     # ==========================================================
+#     # VALIDATION ERROR
+#     # ==========================================================
+
+#     except ValidationError as exc:
+
+#         error_message = " ".join(
+#             str(message)
+#             for message in exc.messages
+#         )
+
+#         logger.warning(
+#             "Sale validation failed. "
+#             "user_id=%s retailer_id=%s error=%s",
+#             request.user.id,
+#             getattr(retailer, "id", None),
+#             error_message,
+#         )
+
+#         messages.error(
+#             request,
+#             error_message,
+#         )
+
+#         return redirect(
+#             "sale_create"
+#         )
+
+#     # ==========================================================
+#     # DATABASE ERROR
+#     # ==========================================================
+
+#     except IntegrityError:
+
+#         logger.exception(
+#             "Database integrity error while "
+#             "creating sale. "
+#             "user_id=%s retailer_id=%s",
+#             request.user.id,
+#             getattr(retailer, "id", None),
+#         )
+
+#         messages.error(
+#             request,
+#             "Unable to create the sale because "
+#             "of a database conflict. "
+#             "Please try again.",
+#         )
+
+#         return redirect(
+#             "sale_create"
+#         )
+
+#     # ==========================================================
+#     # UNEXPECTED ERROR
+#     # ==========================================================
+
+#     except Exception:
+
+#         logger.exception(
+#             "Unexpected error while creating sale. "
+#             "user_id=%s retailer_id=%s",
+#             request.user.id,
+#             getattr(retailer, "id", None),
+#         )
+
+#         messages.error(
+#             request,
+#             "An unexpected error occurred while "
+#             "creating the sale. Please try again.",
+#         )
+
+#         return redirect(
+#             "sale_create"
+#         )
+
+
+
+
+# @require_POST
+# @login_required
+# def create_customer_ajax(request):
+#     """
+#     Create customer from the Add Customer modal.
+
+#     Mobile number is unique per retailer.
+#     """
+#     try:
+
+#         retailer = get_logged_in_retailer(request)
+
+#         customer_name = (
+#             request.POST.get("customer_name") or ""
+#         ).strip()
+
+#         mobile = (
+#             request.POST.get("mobile") or ""
+#         ).strip()
+
+#         email = (
+#             request.POST.get("email") or ""
+#         ).strip()
+
+#         gst_number = (
+#             request.POST.get("gst_number") or ""
+#         ).strip()
+
+#         address = (
+#             request.POST.get("address") or ""
+#         ).strip()
+
+#         opening_balance = decimal_value(
+#             request.POST.get("opening_balance"),
+#             "Opening balance",
+#         )
+
+#         credit_limit = decimal_value(
+#             request.POST.get("credit_limit"),
+#             "Credit limit",
+#         )
+
+#         # ------------------------------------------------------
+#         # NAME
+#         # ------------------------------------------------------
+
+#         if not customer_name:
+#             raise ValidationError(
+#                 "Customer name is required."
+#             )
+
+#         if len(customer_name) > 200:
+#             raise ValidationError(
+#                 "Customer name cannot exceed 200 characters."
+#             )
+
+#         # ------------------------------------------------------
+#         # MOBILE
+#         # ------------------------------------------------------
+
+#         if not mobile:
+#             raise ValidationError(
+#                 "Mobile number is required."
+#             )
+
+#         # Keep only digits for validation.
+#         normalized_mobile = "".join(
+#             character
+#             for character in mobile
+#             if character.isdigit()
+#         )
+
+#         if len(normalized_mobile) != 10:
+#             raise ValidationError(
+#                 "Please enter a valid 10-digit mobile number."
+#             )
+
+#         # ------------------------------------------------------
+#         # DUPLICATE CHECK
+#         # ------------------------------------------------------
+
+#         existing_customer = (
+#             Customer.objects
+#             .filter(
+#                 retailer=retailer,
+#                 mobile=normalized_mobile,
+#             )
+#             .first()
+#         )
+
+#         if existing_customer:
+
+#             return JsonResponse(
+#                 {
+#                     "success": False,
+#                     "exists": True,
+#                     "message": (
+#                         "A customer with this mobile number "
+#                         "already exists."
+#                     ),
+#                     "customer": {
+#                         "id": existing_customer.id,
+#                         "name": existing_customer.customer_name,
+#                         "mobile": existing_customer.mobile,
+#                     },
+#                 },
+#                 status=409,
+#             )
+
+#         # ------------------------------------------------------
+#         # CREATE CUSTOMER
+#         # ------------------------------------------------------
+
+#         with transaction.atomic():
+
+#             customer = Customer.objects.create(
+#                 retailer=retailer,
+#                 customer_name=customer_name,
+#                 mobile=normalized_mobile,
+#                 email=email or None,
+#                 gst_number=gst_number or None,
+#                 address=address or None,
+#                 opening_balance=opening_balance,
+#                 credit_limit=credit_limit,
+#                 is_active=True,
+#             )
+
+#         logger.info(
+#             "Customer created successfully. "
+#             "customer_id=%s retailer_id=%s",
+#             customer.id,
+#             retailer.id,
+#         )
+
+#         return JsonResponse(
+#             {
+#                 "success": True,
+#                 "message": "Customer created successfully.",
+#                 "customer": {
+#                     "id": customer.id,
+#                     "name": customer.customer_name,
+#                     "mobile": customer.mobile,
+#                     "email": customer.email or "",
+#                     "address": customer.address or "",
+#                     "gst_number": customer.gst_number or "",
+#                     "credit_limit": str(
+#                         customer.credit_limit
+#                     ),
+#                     "opening_balance": str(
+#                         customer.opening_balance
+#                     ),
+#                 },
+#             },
+#             status=201,
+#         )
+
+#     except ValidationError as exc:
+
+#         return JsonResponse(
+#             {
+#                 "success": False,
+#                 "message": " ".join(
+#                     str(message)
+#                     for message in exc.messages
+#                 ),
+#             },
+#             status=400,
+#         )
+
+#     except IntegrityError:
+
+#         logger.exception(
+#             "Duplicate customer/mobile race condition."
+#         )
+
+#         return JsonResponse(
+#             {
+#                 "success": False,
+#                 "message": (
+#                     "A customer with this mobile number "
+#                     "already exists."
+#                 ),
+#             },
+#             status=409,
+#         )
+
+#     except Exception:
+
+#         logger.exception(
+#             "Unexpected error while creating customer."
+#         )
+
+#         return JsonResponse(
+#             {
+#                 "success": False,
+#                 "message": (
+#                     "Unable to create customer. "
+#                     "Please try again."
+#                 ),
+#             },
+#             status=500,
+#         )
+
+
+# @require_GET
+# @login_required
+# def sale_product_data(request, product_id):
+
+#     try:
+#         retailer = get_logged_in_retailer(request)
+#         product = (
+#             Product.objects
+#             .filter(
+#                 pk=product_id,
+#                 retailer=retailer,
+#                 is_active=True,
+#             )
+#             .first()
+#         )
+
+#         if product is None:
+#             return JsonResponse(
+#                 {
+#                     "success": False,
+#                     "message": "Product not found.",
+#                 },
+#                 status=404,
+#             )
+
+#         return JsonResponse(
+#             {
+#                 "success": True,
+#                 "product": {
+#                     "id": product.id,
+#                     "name": product.product_name,
+
+#                     "stock": str(
+#                         product.current_stock or ZERO
+#                     ),
+
+#                     "selling_price": str(
+#                         product.selling_price
+#                     ),
+
+#                     "mrp": (
+#                         str(product.mrp)
+#                         if product.mrp is not None
+#                         else ""
+#                     ),
+
+#                     "gst": str(
+#                         product.gst or ZERO
+#                     ),
+#                 },
+#             }
+#         )
+
+#     except ValidationError as exc:
+
+#         return JsonResponse(
+#             {
+#                 "success": False,
+#                 "message": str(exc),
+#             },
+#             status=400,
+#         )
+
+#     except Exception:
+
+#         logger.exception(
+#             "Unable to fetch product data."
+#         )
+
+#         return JsonResponse(
+#             {
+#                 "success": False,
+#                 "message": "Unable to fetch product.",
+#             },
+#             status=500,
+#         )
+
+
+
+
+
+
+
+

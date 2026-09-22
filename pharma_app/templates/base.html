@@ -59,23 +59,24 @@
             <a href="{% url 'purchase_product_list' %}" class="nav-item {% if request.path == '/purchase-product-list/' or request.path == '/add-order/' %}active{% endif %}">
                 <i class="fas fa-shopping-cart"></i>
                 <span>Purchase</span>
-                <span class="nav-badge">12</span>
+                <!-- <span class="nav-badge">12</span> -->
             </a>
+            
             <a href="{% url 'sale_create' %}" class="nav-item {% if request.path == '/sale-create/' %}active{% endif %}">
                 <i class="fas fa-chart-line"></i>
                 <span>Sales</span>
             </a>
-            <a href="#" class="nav-item">
+            <!-- <a href="#" class="nav-item">
                 <i class="fas fa-receipt"></i>
                 <span>Expenses</span>
             </a>
             <a href="#" class="nav-item">
                 <i class="fas fa-box"></i>
                 <span>Inventory</span>
-            </a>
+            </a> -->
         </div>
 
-        <div class="nav-section">
+        <!-- <div class="nav-section">
             <div class="nav-section-title">Insights</div>
             <a href="#" class="nav-item">
                 <i class="fas fa-chart-bar"></i>
@@ -85,9 +86,9 @@
                 <i class="fas fa-cog"></i>
                 <span>Settings</span>
             </a>
-        </div>
+        </div> -->
 
-        <div class="sidebar-footer">
+        <!-- <div class="sidebar-footer">
             <div class="cash-pulse">
                 <div class="cash-pulse-header">
                     <span class="cash-pulse-title">Cash flow pulse</span>
@@ -106,7 +107,7 @@
                     <div class="pulse-bar" style="height:90%"></div>
                 </div>
             </div>
-        </div>
+        </div> -->
     </aside>
 
     <!-- Main Content -->
@@ -148,17 +149,24 @@
                 <button class="header-icon-btn" onclick="toggleTheme()" title="Toggle theme">
                     <i class="fas fa-moon" id="themeIcon"></i>
                 </button>
-                <button class="header-icon-btn" style="position:relative;">
+                <!-- <button class="header-icon-btn" style="position:relative;">
                     <i class="fas fa-bell"></i>
                     <span class="notification-badge">9</span>
-                </button>
+                </button> -->
                 <!-- USER PROFILE + DROPDOWN (see .user-dropdown-menu CSS above form-card) -->
                 <div class="user-profile" id="userProfile">
-                    <div class="user-avatar">RAs</div>
+                    {% if request.user.is_superuser %}
+                    <div class="user-avatar">Admin</div>
                     <div class="user-info">
                         <div class="user-name">{{request.user}}</div>
-                        <div class="user-role">Purchasing Manager</div>
                     </div>
+                    {% else %}
+                    <div class="user-avatar">Retailer</div>
+                    <div class="user-info">
+                        <div class="user-name">{{request.user.retailer.shop_name}}</div>
+                    </div>
+                    {% endif %}
+                    
                     <i class="fas fa-chevron-down" style="font-size:10px;color:var(--text-muted);"></i>
 
                     <div class="user-dropdown-menu" id="userDropdownMenu">

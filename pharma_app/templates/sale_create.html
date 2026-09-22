@@ -5,15 +5,19 @@
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/sale_create.css' %}">
 <link rel="stylesheet" href="{% static 'css/error_message.css' %}">
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+
 {% endblock %}
 
 {% block page_title %}
-    <h1 class="page-title">
+    <h1>
         <i class="fas fa-file-invoice-dollar"></i>
         Create New Sale
     </h1>
-    <p class="page-subtitle">Generate a new sales invoice for your customer</p>
+    <p>Generate a new sales invoice for your customer</p>
 {% endblock %}
+
 
 {% block body %}
 <!-- Product Data JSON (rendered server-side, consumed by JS) -->
@@ -22,15 +26,16 @@
     {% for product in products %}
     {
         "id": "{{ product.id }}",
-        "name": "{{ product.name|escapejs }}",
+        "name": "{{ product.product_name|escapejs }}",
         "barcode": "{{ product.barcode|default:''|escapejs }}",
-        "code": "{{ product.code|escapejs }}",
+        "hsn_code": "{{ product.hsn_code|escapejs }}",
         "unit_name": "{{ product.unit.name|default:''|escapejs }}",
         "unit_id": "{{ product.unit.id|default:'' }}",
-        "stock": "{{ product.available_stock|default:0 }}",
+        "stock": "{{ product.current_stock|default:0 }}",
         "selling_price": "{{ product.selling_price|default:0 }}",
         "mrp": "{{ product.mrp|default:0 }}",
-        "gst": "{{ product.gst_percentage|default:0 }}"
+        "gst": "{{ product.gst_percentage|default:0 }}",
+        "retailer": "{{ product.retailer_id|default:'' }}"
     }{% if not forloop.last %},{% endif %}
     {% endfor %}
 ]
@@ -43,10 +48,28 @@
         {% csrf_token %}
 
         <div class="sale-grid">
+            <div class="form-group" id="retailerField">
+                <label>
+                    Select Retailer <span class="required">*</span>
+                </label>
 
+                <select name="retailer" id="retailerSelect" class="form-control">
+                    <option value="">Select Retailer</option>
+                    {% if not request.user.is_superuser %}
+                        <option value="{{ retailers.id }}" selected>
+                            {{ retailers }}
+                        </option>
+                    {% else %}
+                        {% for retailer in retailers %}
+                            <option value="{{ retailer.id }}">
+                                {{ retailer }}
+                            </option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
             <!-- ========== SECTION A & B ========== -->
             <div class="info-cards-row">
-
                 <!-- Section A: Customer Info -->
                 <div class="card card-customer">
                     <div class="card-header">
@@ -67,12 +90,13 @@
                                         <option value="">-- Search Customer --</option>
                                         {% for customer in customers %}
                                         <option value="{{ customer.id }}"
-                                                data-mobile="{{ customer.mobile|default:'' }}"
-                                                data-address="{{ customer.address|default:'' }}"
-                                                data-gst="{{ customer.gst_number|default:'' }}"
+                                                data-retailer="{{ customer.retailer.id|default:'--' }}"
+                                                data-mobile="{{ customer.mobile|default:'--' }}"
+                                                data-address="{{ customer.address|default:'NA' }}"
+                                                data-gst="{{ customer.gst_number|default:'0' }}"
                                                 data-credit-limit="{{ customer.credit_limit }}"
                                                 data-outstanding="{{ customer.opening_balance }}">
-                                            {{ customer.customer_name }} {% if customer.mobile %}- {{ customer.mobile }}{% endif %}
+                                            {{ customer.customer_name }} {% if customer.mobile %} - {{ customer.mobile }}{% endif %}
                                         </option>
                                         {% endfor %}
                                     </select>
@@ -136,7 +160,7 @@
                                     <i class="fas fa-calendar" style="pointer-events:none;"></i>
                                     <input type="date" id="invoice_date" name="invoice_date"
                                            class="form-control" value="{{ today|date:'Y-m-d' }}" required
-                                           onclick="event.stopPropagation(); if(this.showPicker)this.showPicker();">
+                                           onclick="event.stopPropagation(); if(this.showPicker)this.showPicker();" readonly>
                                 </div>
                             </div>
                         </div>
@@ -323,15 +347,36 @@
             </button>
         </div>
         <div class="modal-body" style="padding:24px;">
-            <form id="customerForm">
+            <form id="customerForm" method="POST" action="{% url 'create_customer_ajax' %}">
                 {% csrf_token %}
                 <div class="modal-form-grid" style="display:grid; grid-template-columns:repeat(2,1fr); gap:16px;">
                     <div class="form-group" style="grid-column:1 / -1;">
                         <label>Customer Name <span class="required">*</span></label>
                         <input type="text" name="customer_name" class="form-control" required>
                     </div>
+                    <div class="form-group" id="retailerField">
+                        <label>
+                            Select Retailer <span class="required">*</span>
+                        </label>
+
+                        <select name="retailer" id="retailerSelect" class="form-control">
+                            <option value="">Select Retailer</option>
+                            {% if not request.user.is_superuser %}
+                                <option value="{{ retailers.id }}">
+                                    {{ retailers }}
+                                </option>
+                            {% else %}
+                                {% for retailer in retailers %}
+                                    <option value="{{ retailer.id }}">
+                                        {{ retailer }}
+                                    </option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+                    
                     <div class="form-group">
-                        <label>Mobile Number</label>
+                        <label>Mobile Number <span class="required">*</span></label>
                         <input type="tel" name="mobile" class="form-control" maxlength="15" pattern="[0-9]*">
                     </div>
                     <div class="form-group">
@@ -359,7 +404,12 @@
         </div>
         <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:10px; padding:16px 24px; border-top:1px solid var(--border,#e2e8f0); background:var(--table-header-bg,#f8fafc); border-radius:0 0 16px 16px;">
             <button type="button" class="btn btn-outline-secondary" id="cancelCustomerModal">Cancel</button>
-            <button type="button" class="btn btn-primary" id="saveCustomerModal">
+            <button
+                type="submit"
+                class="btn btn-primary"
+                id="saveCustomerModal"
+                form="customerForm"
+            >
                 <i class="fas fa-save"></i> Save Customer
             </button>
         </div>
@@ -372,7 +422,14 @@
 {% endblock %}
 
 {% block js %}
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+
 <script>
+
 // ===== SIDEBAR TOGGLE =====
 const sidebar = document.getElementById('sidebar');
 const mainContent = document.getElementById('mainContent');
@@ -460,6 +517,21 @@ document.addEventListener('DOMContentLoaded', function() {
             productsData = [];
         }
     }
+    
+
+    // ===== Retailer Filtering (Super Admin) =====
+    // The main "Select Retailer" dropdown lives in #saleForm; the Add
+    // Customer modal has its own, separate "retailer" select, so we
+    // scope this lookup to #saleForm to avoid picking the wrong one.
+    var mainRetailerSelect = document.querySelector('#saleForm select[name="retailer"]');
+    var currentRetailerId = mainRetailerSelect ? (mainRetailerSelect.value || '') : '';
+
+    function getFilteredProducts() {
+        if (!currentRetailerId) return [];
+        return productsData.filter(function (p) {
+            return String(p.retailer) === String(currentRetailerId);
+        });
+    }
 
     // ===== State =====
     var rowCounter = 0;
@@ -492,53 +564,190 @@ document.addEventListener('DOMContentLoaded', function() {
         return div.innerHTML;
     }
 
-    // ===== Initialize Select2 for Customer =====
-    if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.select2 && customerSelect) {
+
+    // ===== Initialize Customer Select2 =====
+    if (!customerSelect) {
+        console.error("ERROR: customer_select element not found!");
+    }
+
+    if (typeof jQuery === 'undefined') {
+        console.error("ERROR: jQuery is not loaded!");
+    }
+
+    if (
+        typeof jQuery !== 'undefined' &&
+        (!jQuery.fn || !jQuery.fn.select2)
+    ) {
+        console.error("ERROR: Select2 is not loaded!");
+    }
+    if (
+        customerSelect &&
+        typeof jQuery !== 'undefined' &&
+        jQuery.fn &&
+        jQuery.fn.select2
+    ) {
+
+        // Initialize Select2
         jQuery(customerSelect).select2({
             placeholder: '-- Search Customer --',
             allowClear: true,
-            width: '100%'
-        });
+            width: '100%',
+            matcher: function (params, data) {
+                // Placeholder / empty option always stays.
+                if (!data.id) {
+                    return data;
+                }
 
-        jQuery(customerSelect).on('select2:select', function(e) {
-            if (e.params && e.params.data && e.params.data.element && e.params.data.element.dataset) {
-                updateCustomerDetails(e.params.data.element.dataset);
+                // No retailer chosen yet -> hide every customer.
+                if (!currentRetailerId) {
+                    return null;
+                }
+
+                var optionRetailer = data.element ? data.element.getAttribute('data-retailer') : null;
+                if (optionRetailer !== String(currentRetailerId)) {
+                    return null;
+                }
+
+                var term = params.term ? params.term.trim() : '';
+                if (!term) {
+                    return data;
+                }
+                if (data.text && data.text.toUpperCase().indexOf(term.toUpperCase()) > -1) {
+                    return data;
+                }
+                return null;
             }
         });
 
-        jQuery(customerSelect).on('select2:clear', function() {
-            clearCustomerDetails();
+
+        // Customer selected / changed
+        jQuery(customerSelect).on('change', function () {
+
+            var selectedOption = this.options[this.selectedIndex];
+
+            console.log('Selected Customer:', selectedOption);
+
+            // If no customer is selected
+            if (!selectedOption || !selectedOption.value) {
+                clearCustomerDetails();
+                return;
+            }
+
+            // Read data-* attributes directly
+            var customerData = {
+                mobile: selectedOption.getAttribute('data-mobile') || '',
+                address: selectedOption.getAttribute('data-address') || '',
+                gst: selectedOption.getAttribute('data-gst') || '',
+                creditLimit: selectedOption.getAttribute('data-credit-limit') || '',
+                outstanding: selectedOption.getAttribute('data-outstanding') || ''
+            };
+
+            console.log('Customer Details:', customerData);
+
+            updateCustomerDetails(customerData);
         });
     }
 
+
+    // ===== Update Customer Details =====
     function updateCustomerDetails(data) {
+
         var elMobile = document.getElementById('custMobile');
         var elAddress = document.getElementById('custAddress');
         var elGST = document.getElementById('custGST');
         var elCredit = document.getElementById('custCreditLimit');
         var elOutstanding = document.getElementById('custOutstanding');
 
-        if (elMobile) elMobile.textContent = data.mobile || '--';
-        if (elAddress) elAddress.textContent = data.address || '--';
-        if (elGST) elGST.textContent = data.gst || '--';
-        if (elCredit) elCredit.textContent = data.creditLimit ? '\u20B9 ' + parseFloat(data.creditLimit).toFixed(2) : '--';
-        if (elOutstanding) elOutstanding.textContent = data.outstanding ? '\u20B9 ' + parseFloat(data.outstanding).toFixed(2) : '--';
-        if (customerDetails) customerDetails.style.opacity = '1';
+
+        // Mobile
+        if (elMobile) {
+            elMobile.textContent = data.mobile || '--';
+        }
+
+
+        // Address
+        if (elAddress) {
+            elAddress.textContent = data.address || '--';
+        }
+
+
+        // GST
+        if (elGST) {
+            elGST.textContent = data.gst || '--';
+        }
+
+
+        // Credit Limit
+        if (elCredit) {
+
+            var creditLimit = parseFloat(data.creditLimit);
+
+            if (!isNaN(creditLimit)) {
+                elCredit.textContent = '₹ ' + creditLimit.toFixed(2);
+            } else {
+                elCredit.textContent = '--';
+            }
+        }
+
+
+        // Outstanding Balance
+        if (elOutstanding) {
+
+            var outstanding = parseFloat(data.outstanding);
+
+            if (!isNaN(outstanding)) {
+                elOutstanding.textContent = '₹ ' + outstanding.toFixed(2);
+            } else {
+                elOutstanding.textContent = '--';
+            }
+        }
+
+
+        // Show customer details
+        if (customerDetails) {
+            customerDetails.style.opacity = '1';
+            customerDetails.style.display = '';
+        }
     }
+    
+
+    // ===== Clear Customer Details =====
 
     function clearCustomerDetails() {
+
         var elMobile = document.getElementById('custMobile');
         var elAddress = document.getElementById('custAddress');
         var elGST = document.getElementById('custGST');
         var elCredit = document.getElementById('custCreditLimit');
         var elOutstanding = document.getElementById('custOutstanding');
 
-        if (elMobile) elMobile.textContent = '--';
-        if (elAddress) elAddress.textContent = '--';
-        if (elGST) elGST.textContent = '--';
-        if (elCredit) elCredit.textContent = '--';
-        if (elOutstanding) elOutstanding.textContent = '--';
+
+        if (elMobile) {
+            elMobile.textContent = '--';
+        }
+
+        if (elAddress) {
+            elAddress.textContent = '--';
+        }
+
+        if (elGST) {
+            elGST.textContent = '--';
+        }
+
+        if (elCredit) {
+            elCredit.textContent = '--';
+        }
+
+        if (elOutstanding) {
+            elOutstanding.textContent = '--';
+        }
+
+
+        if (customerDetails) {
+            customerDetails.style.opacity = '1';
+        }
     }
+
 
     // ===== Helper: Initialize Select2 on a product select =====
     function initProductSelect2(element) {
@@ -561,9 +770,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Build product options from JSON data (string concatenation — safe from backtick issues)
         var optionsHtml = '<option value="">-- Select Product --</option>';
-        for (var i = 0; i < productsData.length; i++) {
-            var p = productsData[i];
-            var displayText = p.name + ' | ' + (p.barcode || p.code) + ' | ' + p.code;
+        var rowProducts = getFilteredProducts();
+        for (var i = 0; i < rowProducts.length; i++) {
+            var p = rowProducts[i];
+            var displayText = p.name + ' | ' + (p.barcode || p.code);
             optionsHtml += '<option value="' + escapeHtml(p.id) + '"' +
                 ' data-unit="' + escapeHtml(p.unit_name || '') + '"' +
                 ' data-unit-id="' + escapeHtml(p.unit_id || '') + '"' +
@@ -914,6 +1124,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Validate items
             var rows = saleItemsBody ? saleItemsBody.querySelectorAll('tr') : [];
+            
+            console.log("Validate items :::::::::::::::::               ",rows)
             if (rows.length === 0) {
                 isValid = false;
                 errors.push('Please add at least one product');
@@ -1069,33 +1281,299 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    if (saveCustomerModal) {
-        saveCustomerModal.addEventListener('click', function() {
-            var customerName = customerForm.querySelector('[name="customer_name"]');
-            var mobile = customerForm.querySelector('[name="mobile"]');
-            var email = customerForm.querySelector('[name="email"]');
+    if (customerForm) {
+
+        customerForm.addEventListener('submit', function(event) {
+
+            event.preventDefault();
+
+            var customerName = customerForm.querySelector(
+                '[name="customer_name"]'
+            );
+
+            var mobile = customerForm.querySelector(
+                '[name="mobile"]'
+            );
+
+            var email = customerForm.querySelector(
+                '[name="email"]'
+            );
+
+
+            // --------------------------------------------------
+            // Customer Name Validation
+            // --------------------------------------------------
 
             if (!customerName || !customerName.value.trim()) {
-                showToastMessage('Customer name is required', 'error');
+
+                showToastMessage(
+                    'Customer name is required',
+                    'error'
+                );
+
+                if (customerName) {
+                    customerName.focus();
+                }
+
                 return;
             }
 
+
+            // --------------------------------------------------
+            // Mobile Validation
+            // --------------------------------------------------
+
             if (mobile && mobile.value.trim()) {
-                if (!/^\d{10,15}$/.test(mobile.value.trim().replace(/\D/g, ''))) {
-                    showToastMessage('Please enter a valid mobile number', 'error');
+
+                var cleanMobile = mobile.value
+                    .trim()
+                    .replace(/\D/g, '');
+
+                if (!/^\d{10,15}$/.test(cleanMobile)) {
+
+                    showToastMessage(
+                        'Please enter a valid mobile number',
+                        'error'
+                    );
+
+                    mobile.focus();
+
                     return;
                 }
+
+                mobile.value = cleanMobile;
             }
+
+
+            // --------------------------------------------------
+            // Email Validation
+            // --------------------------------------------------
 
             if (email && email.value.trim()) {
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
-                    showToastMessage('Please enter a valid email address', 'error');
+
+                var emailValue = email.value.trim();
+
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
+
+                    showToastMessage(
+                        'Please enter a valid email address',
+                        'error'
+                    );
+
+                    email.focus();
+
                     return;
                 }
             }
 
-            showToastMessage('Customer added successfully!', 'success');
-            closeModal();
+
+            // --------------------------------------------------
+            // Disable Save Button
+            // --------------------------------------------------
+
+            saveCustomerModal.disabled = true;
+
+            var originalButtonHTML =
+                saveCustomerModal.innerHTML;
+
+            saveCustomerModal.innerHTML =
+                '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+
+            // --------------------------------------------------
+            // Prepare FormData
+            // --------------------------------------------------
+
+            var formData = new FormData(customerForm);
+
+
+            // --------------------------------------------------
+            // Get CSRF Token
+            // --------------------------------------------------
+
+            var csrfToken = customerForm.querySelector(
+                '[name="csrfmiddlewaretoken"]'
+            ).value;
+
+
+            // --------------------------------------------------
+            // AJAX Request
+            // --------------------------------------------------
+
+            fetch(customerForm.action, {
+
+                method: 'POST',
+
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+
+                body: formData,
+
+                credentials: 'same-origin'
+
+            })
+
+            .then(function(response) {
+
+                return response.json().then(function(data) {
+
+                    return {
+                        ok: response.ok,
+                        status: response.status,
+                        data: data
+                    };
+
+                });
+
+            })
+
+
+            // --------------------------------------------------
+            // Handle Response
+            // --------------------------------------------------
+
+            .then(function(result) {
+
+                var data = result.data;
+
+
+                // ----------------------------------------------
+                // Success
+                // ----------------------------------------------
+
+                if (result.ok && data.success) {
+
+                    showToastMessage(
+                        data.message ||
+                        'Customer added successfully!',
+                        'success'
+                    );
+
+
+                    // ------------------------------------------
+                    // Add New Customer To Customer Dropdown
+                    // ------------------------------------------
+
+                    var customerSelect =
+                        document.getElementById('customerSelect');
+
+
+                    if (customerSelect && data.customer) {
+
+                        var option =
+                            document.createElement('option');
+
+                        option.value =
+                            data.customer.id;
+
+                        option.textContent =
+                            data.customer.name +
+                            (
+                                data.customer.mobile
+                                    ? ' - ' + data.customer.mobile
+                                    : ''
+                            );
+
+
+                        customerSelect.appendChild(option);
+
+                        customerSelect.value =
+                            data.customer.id;
+
+
+                        customerSelect.dispatchEvent(
+                            new Event(
+                                'change',
+                                {
+                                    bubbles: true
+                                }
+                            )
+                        );
+                    }
+
+
+                    // ------------------------------------------
+                    // Reset Form
+                    // ------------------------------------------
+
+                    customerForm.reset();
+
+
+                    // ------------------------------------------
+                    // Close Modal
+                    // ------------------------------------------
+
+                    closeModal();
+
+                }
+
+
+                // ----------------------------------------------
+                // Customer Already Exists
+                // ----------------------------------------------
+
+                else if (result.status === 409) {
+
+                    showToastMessage(
+                        data.message ||
+                        'Customer already exists.',
+                        'error'
+                    );
+
+                }
+
+
+                // ----------------------------------------------
+                // Other Error
+                // ----------------------------------------------
+
+                else {
+
+                    showToastMessage(
+                        data.message ||
+                        'Unable to create customer.',
+                        'error'
+                    );
+
+                }
+
+            })
+
+
+            // --------------------------------------------------
+            // AJAX Error
+            // --------------------------------------------------
+
+            .catch(function(error) {
+
+                console.error(
+                    'Create customer AJAX error:',
+                    error
+                );
+
+                showToastMessage(
+                    'Unable to connect to the server. Please try again.',
+                    'error'
+                );
+
+            })
+
+
+            // --------------------------------------------------
+            // Enable Button Again
+            // --------------------------------------------------
+
+            .finally(function() {
+
+                saveCustomerModal.disabled = false;
+
+                saveCustomerModal.innerHTML =
+                    originalButtonHTML;
+
+            });
+
         });
     }
 
@@ -1124,6 +1602,38 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnAddRow) {
         btnAddRow.addEventListener('click', function() {
             addProductRow();
+        });
+    }
+
+    // ===== Retailer Change (Super Admin) =====
+    // Re-scope the customer list and product rows to the newly
+    // selected retailer; data for other retailers must never remain
+    // visible/selectable once the retailer changes.
+    if (mainRetailerSelect) {
+        mainRetailerSelect.addEventListener('change', function () {
+            currentRetailerId = this.value || '';
+
+            // Reset customer selection (its list re-filters via the
+            // select2 matcher, which reads currentRetailerId live).
+            if (customerSelect) {
+                if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.select2) {
+                    jQuery(customerSelect).val('').trigger('change');
+                } else {
+                    customerSelect.value = '';
+                }
+            }
+            clearCustomerDetails();
+
+            // Rebuild the product line items for the new retailer.
+            if (saleItemsBody) {
+                saleItemsBody.innerHTML = '';
+            }
+            rowCounter = 0;
+            if (emptyState) emptyState.style.display = 'block';
+            if (currentRetailerId) {
+                addProductRow();
+            }
+            calculateTotals();
         });
     }
 
