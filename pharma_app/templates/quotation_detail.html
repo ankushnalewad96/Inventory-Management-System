@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load i18n i18n_extras %}
+{% load static humanize qty %}
+{% block title %}{{ quotation.quotation_number }} - {{ app_name }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/list_pages.css' %}">
+<link rel="stylesheet" href="{% static 'css/quotation.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <div class="page-title-row">
+        <a href="{% url 'quotation_list' %}" class="page-back-btn" title="{% translate "Back to Quotations" %}" aria-label="{% translate "Back to Quotations" %}">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            <h1>{% translate "Quotation" %} {{ quotation.quotation_number }}</h1>
+            <p>{{ quotation.retailer.shop_name }} · {{ quotation.quotation_date|date:"d M Y" }}</p>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+
+<div class="qt-actions qt-actions-top">
+    {% if expired %}
+        <span class="status-pill unpaid"><span class="dot"></span>{% translate "Expired on" %} {{ quotation.valid_until|date:"d M Y" }}</span>
+    {% elif quotation.status == "open" %}
+        <span class="status-pill partial"><span class="dot"></span>{% translate "Open" %}</span>
+    {% elif quotation.status == "converted" %}
+        <span class="status-pill paid"><span class="dot"></span>{% translate "Converted" %}</span>
+    {% else %}
+        <span class="status-pill inactive"><span class="dot"></span>{% translate "Cancelled" %}</span>
+    {% endif %}
+
+    <span class="qt-spacer"></span>
+
+    <a href="{% url 'quotation_print' quotation.id %}" target="_blank" rel="noopener" class="export-btn"><i class="fas fa-print"></i> {% translate "Print" %}</a>
+
+    {% if quotation.status == "open" %}
+        <form method="post" action="{% url 'quotation_cancel' quotation.id %}" onsubmit="return confirm('Cancel this quotation?');">
+            {% csrf_token %}
+            <button type="submit" class="export-btn"><i class="fas fa-ban"></i> {% translate "Cancel quotation" %}</button>
+        </form>
+        <a href="{{ convert_url }}" class="export-btn primary"><i class="fas fa-cart-arrow-down"></i> {% translate "Convert to sale" %}</a>
+    {% elif quotation.converted_sale %}
+        <a href="{% url 'sale_detail' quotation.converted_sale.id %}" class="export-btn primary"><i class="fas fa-receipt"></i> {% translate "Sale" %} {{ quotation.converted_sale.invoice_number }}</a>
+    {% endif %}
+</div>
+
+<div class="qt-grid qt-grid-2">
+    <section class="qt-card">
+        <h2 class="qt-card-title">{% translate "Customer" %}</h2>
+        <p class="qt-strong">{{ quotation.customer.customer_name }}</p>
+        <p class="qt-muted">{{ quotation.customer.mobile }}{% if quotation.customer.gst_number %} · {% translate "GSTIN" %} {{ quotation.customer.gst_number }}{% endif %}</p>
+        {% if shop_features.price_levels %}
+            <p class="qt-muted">{% translate "Price level:" %} {{ quotation.customer.get_price_level_display|tr }}</p>
+        {% endif %}
+    </section>
+    <section class="qt-card">
+        <h2 class="qt-card-title">{% translate "Details" %}</h2>
+        <p class="qt-muted">{% translate "Date:" %} <strong>{{ quotation.quotation_date|date:"d M Y" }}</strong></p>
+        <p class="qt-muted">{% translate "Valid until:" %} <strong>{{ quotation.valid_until|date:"d M Y"|default:"—" }}</strong></p>
+        {% if quotation.remarks %}<p class="qt-muted">{{ quotation.remarks|linebreaksbr }}</p>{% endif %}
+    </section>
+</div>
+
+<section class="qt-card">
+    <div class="qt-table-wrap">
+        <table class="qt-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>{% translate "Product" %}</th>
+                    <th class="num">{% translate "Qty" %}</th>
+                    <th class="num">{% translate "Price" %}</th>
+                    <th class="num">{% translate "Discount" %}</th>
+                    <th class="num">GST</th>
+                    <th class="num">{% translate "Amount" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        <div class="qt-strong">{{ item.product.product_name }}</div>
+                        {% if shop_features.product_specification and item.product.specification %}<div class="qt-muted">{{ item.product.specification }}</div>{% endif %}
+                    </td>
+                    <td class="num">{{ item.quantity|qty_unit:item.unit.short_name }}</td>
+                    <td class="num">₹{{ item.selling_price }}</td>
+                    <td class="num">₹{{ item.discount }}</td>
+                    <td class="num">{{ item.gst|floatformat:"-2" }}%</td>
+                    <td class="num"><strong>₹{{ item.amount }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <table class="qt-totals qt-totals-right">
+        <tr><td>{% translate "Subtotal" %}</td><td>₹{{ quotation.subtotal|floatformat:2|intcomma }}</td></tr>
+        <tr><td>{% translate "Discount" %}</td><td>- ₹{{ quotation.discount|floatformat:2|intcomma }}</td></tr>
+        <tr><td>GST</td><td>+ ₹{{ quotation.gst|floatformat:2|intcomma }}</td></tr>
+        <tr class="grand"><td>{% translate "Total" %}</td><td>₹{{ quotation.grand_total|floatformat:2|intcomma }}</td></tr>
+    </table>
+</section>
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'jss/dashboard.js' %}"></script>
+{% endblock %}

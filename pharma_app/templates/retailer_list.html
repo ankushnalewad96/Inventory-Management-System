@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% load i18n i18n_extras %}
+{% load static %}
+{% block title %}{% translate "Retailers" %} - {{ app_name }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/list_pages.css' %}">
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <h1>{% translate "Retailers" %}</h1>
+    <p>{% translate "All retailer shops registered on the platform" %}</p>
+{% endblock %}
+
+{% block body %}
+
+<div class="summary-cards compact">
+    <div class="summary-card">
+        <div class="card-top"><div class="card-icon-wrap total"><i class="fas fa-store"></i></div></div>
+        <div class="card-label">{% translate "Registered shops" %}</div>
+        <div class="card-value">{{ total_count }}</div>
+    </div>
+    <div class="summary-card">
+        <div class="card-top"><div class="card-icon-wrap paid"><i class="fas fa-circle-check"></i></div></div>
+        <div class="card-label">{% translate "Active" %}</div>
+        <div class="card-value">{{ active_count }}</div>
+    </div>
+    <div class="summary-card">
+        <div class="card-top"><div class="card-icon-wrap overdue"><i class="fas fa-circle-pause"></i></div></div>
+        <div class="card-label">{% translate "Inactive" %}</div>
+        <div class="card-value">{{ inactive_count }}</div>
+    </div>
+</div>
+
+<!-- Quick Actions (phones only; on larger screens the button sits in the section header) -->
+<div class="quick-actions only-mobile">
+    <a href="{% url 'retailer_register' %}" class="action-btn primary"><i class="fas fa-plus"></i> {% translate "Add retailer" %}</a>
+</div>
+
+<div class="purchases-section">
+    <div class="section-header with-count">
+        <div>
+            <h2>{% translate "Retailer list" %}</h2>
+            <p>{% blocktranslate count counter=page_obj.paginator.count %}{{ counter }} retailer found{% plural %}{{ counter }} retailers found{% endblocktranslate %}</p>
+        </div>
+        <div class="section-actions">
+            {% if search or status or shop_type %}
+                <span class="active-filter-note"><i class="fas fa-filter"></i> {% translate "Filters applied" %}</span>
+            {% endif %}
+            <a href="{% url 'retailer_register' %}" class="action-btn primary hide-mobile"><i class="fas fa-plus"></i> {% translate "Add retailer" %}</a>
+        </div>
+    </div>
+
+    <!-- Shops per type (click to filter) -->
+    <div class="type-chips" aria-label="{% translate "Shops per type" %}">
+        {% for value, label, count in shop_type_counts %}
+            <a href="?shop_type={{ value }}" class="type-chip type-{{ value }}{% if shop_type == value %} active{% endif %}">
+                {{ label|tr }} <span>{{ count }}</span>
+            </a>
+        {% endfor %}
+    </div>
+
+    <form method="GET" class="filters-bar">
+        <div class="filter-group filter-text">
+            <i class="fas fa-search"></i>
+            <input type="text" name="search" class="filter-input" placeholder="{% translate "Shop, owner, username, mobile, city..." %}" value="{{ search }}" aria-label="{% translate "Search retailers" %}">
+        </div>
+        <div class="filter-group">
+            <label for="filterShopType">{% translate "Shop type" %}</label>
+            <select name="shop_type" id="filterShopType" class="filter-select">
+                <option value="">{% translate "All types" %}</option>
+                {% for value, label in shop_type_choices %}
+                    <option value="{{ value }}" {% if shop_type == value %}selected{% endif %}>{{ label|tr }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="filterStatus">{% translate "Status" %}</label>
+            <select name="status" id="filterStatus" class="filter-select">
+                <option value="">{% translate "All Status" %}</option>
+                <option value="active" {% if status == "active" %}selected{% endif %}>{% translate "Active" %}</option>
+                <option value="inactive" {% if status == "inactive" %}selected{% endif %}>{% translate "Inactive" %}</option>
+            </select>
+        </div>
+        <div class="export-btns">
+            <button type="submit" class="export-btn primary"><i class="fas fa-filter"></i> {% translate "Filter" %}</button>
+            <a href="{% url 'retailer_list' %}" class="export-btn"><i class="fas fa-times"></i> {% translate "Clear" %}</a>
+        </div>
+    </form>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{% translate "Shop" %}</th>
+                    <th>{% translate "Shop type" %}</th>
+                    <th>{% translate "Login" %}</th>
+                    <th>{% translate "Contact" %}</th>
+                    <th>{% translate "Location" %}</th>
+                    <th>{% translate "GSTIN" %}</th>
+                    <th class="text-center">{% translate "Products" %}</th>
+                    <th class="text-center">{% translate "Customers" %}</th>
+                    <th>{% translate "Joined" %}</th>
+                    <th>{% translate "Status" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for retailer in retailers %}
+                <tr>
+                    <td>
+                        <div class="shop-cell">
+                            <span class="shop-avatar">{{ retailer.shop_name|slice:":2" }}</span>
+                            <div class="cell-stack">
+                                <span class="primary-text">{{ retailer.shop_name }}</span>
+                                <span class="secondary-text">{{ retailer.owner_name }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="type-badge type-{{ retailer.shop_type }}">{{ retailer.get_shop_type_display|tr }}</span></td>
+                    <td><span class="count-pill" style="text-align:left;">{{ retailer.user.username }}</span></td>
+                    <td>
+                        <div class="cell-stack">
+                            <span class="primary-text">{{ retailer.mobile }}</span>
+                            <span class="secondary-text">{{ retailer.email }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="cell-stack">
+                            <span class="primary-text">{{ retailer.city }}</span>
+                            <span class="secondary-text">{{ retailer.state|title }} - {{ retailer.pincode }}</span>
+                        </div>
+                    </td>
+                    <td>{{ retailer.gst_number|default:"—" }}</td>
+                    <td class="text-center"><span class="count-pill">{{ retailer.product_count }}</span></td>
+                    <td class="text-center"><span class="count-pill">{{ retailer.customer_count }}</span></td>
+                    <td>{{ retailer.created_at|date:"d M Y" }}</td>
+                    <td>
+                        {% if retailer.is_active %}
+                            <span class="status-pill active"><span class="dot"></span>{% translate "Active" %}</span>
+                        {% else %}
+                            <span class="status-pill inactive"><span class="dot"></span>{% translate "Inactive" %}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="empty-state">
+                        <i class="fas fa-store-slash"></i>
+                        {% if search or status or shop_type %}
+                            <div class="empty-title">{% translate "No retailers match your filters" %}</div>
+                            <a href="{% url 'retailer_list' %}">{% translate "Clear filters" %}</a>
+                        {% else %}
+                            <div class="empty-title">{% translate "No retailers registered yet" %}</div>
+                            <a href="{% url 'retailer_register' %}">{% translate "Register the first retailer" %}</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-footer">
+        <div class="showing-text">
+            {% if page_obj.paginator.count %}
+                {% blocktranslate with start=page_obj.start_index end=page_obj.end_index total=page_obj.paginator.count %}Showing {{ start }} - {{ end }} of {{ total }} retailers{% endblocktranslate %}
+            {% else %}
+                {% translate "No retailers to show" %}
+            {% endif %}
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn" title="{% translate "Previous" %}"><i class="fas fa-chevron-left"></i></a>
+            {% else %}
+                <button class="page-btn" disabled><i class="fas fa-chevron-left"></i></button>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                    <button class="page-btn active">{{ num }}</button>
+                {% else %}
+                    <a href="?page={{ num }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn" title="{% translate "Next" %}"><i class="fas fa-chevron-right"></i></a>
+            {% else %}
+                <button class="page-btn" disabled><i class="fas fa-chevron-right"></i></button>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'jss/dashboard.js' %}"></script>
+{% endblock %}

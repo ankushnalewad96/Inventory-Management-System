@@ -1,0 +1,389 @@
+/* ===================================================================
+   SHARED STYLES FOR THE SUPPLIER AND SALES TABLES
+   Builds on dashboard.css (table, filters, pagination, quick actions).
+   =================================================================== */
+
+/* --- Section header with count on the right --- */
+.section-header.with-count {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Right side of the section header: filter note + primary action */
+.section-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
+.section-actions:empty {
+    display: none;
+}
+
+.section-actions .action-btn {
+    white-space: nowrap;
+}
+
+/* --- Filters --- */
+.filters-bar .filter-text {
+    position: relative;
+}
+
+.filters-bar .filter-text i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 12px;
+    pointer-events: none;
+}
+
+.filters-bar .filter-text .filter-input {
+    padding-left: 30px;
+    min-width: 200px;
+}
+
+.filters-bar .export-btns {
+    margin-left: auto;
+}
+
+a.export-btn,
+a.action-icon-btn,
+a.action-btn {
+    text-decoration: none;
+}
+
+.export-btn.primary {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+
+.export-btn.primary:hover {
+    background: var(--primary-dark);
+    color: #fff;
+}
+
+.active-filter-note {
+    font-size: 12px;
+    color: var(--primary);
+    font-weight: 500;
+}
+
+/* --- Table cells --- */
+/* Slightly tighter than dashboard.css so wide tables fit beside the sidebar */
+.purchases-section .data-table thead th,
+.purchases-section .data-table tbody td {
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.supplier-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+}
+
+.cell-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.cell-stack .primary-text {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.cell-stack .secondary-text {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.shop-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--info);
+}
+
+.count-pill {
+    display: inline-block;
+    min-width: 26px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--table-header-bg);
+    border: 1px solid var(--border);
+    color: var(--text-dark);
+}
+
+.muted {
+    color: var(--placeholder);
+}
+
+.text-right {
+    text-align: right !important;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.amount-due {
+    color: var(--danger);
+    font-weight: 600;
+}
+
+.amount-paid {
+    color: var(--success);
+    font-weight: 600;
+}
+
+/* --- Status badges --- */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-pill .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.status-pill.active,
+.status-pill.paid {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--success);
+}
+
+.status-pill.inactive {
+    background: rgba(100, 116, 139, 0.12);
+    color: var(--text-muted);
+}
+
+.status-pill.partial {
+    background: rgba(245, 158, 11, 0.14);
+    color: #d97706;
+}
+
+.status-pill.unpaid {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--danger);
+}
+
+/* --- Action buttons --- */
+.action-icon-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+}
+
+.action-icon-btn.edit:hover {
+    color: var(--warning);
+    border-color: var(--warning);
+}
+
+.action-icon-btn.danger:hover {
+    color: var(--danger);
+    border-color: var(--danger);
+    background: rgba(239, 68, 68, 0.06);
+}
+
+.action-icon-btn.success:hover {
+    color: var(--success);
+    border-color: var(--success);
+}
+
+/* --- Empty state --- */
+.empty-state {
+    text-align: center;
+    padding: 56px 20px !important;
+    color: var(--text-muted);
+    white-space: normal !important;
+}
+
+.empty-state i {
+    font-size: 40px;
+    display: block;
+    margin-bottom: 12px;
+    color: var(--placeholder);
+}
+
+.empty-state .empty-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.empty-state a {
+    color: var(--primary);
+    font-weight: 500;
+}
+
+/* --- Pagination: links behave like buttons --- */
+a.page-btn {
+    text-decoration: none;
+}
+
+.page-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* --- Summary cards (sales) --- */
+.summary-cards.compact .summary-card {
+    padding: 16px 18px;
+}
+
+.summary-cards.compact .card-top {
+    margin-bottom: 10px;
+}
+
+.summary-cards.compact .card-value {
+    font-size: 22px;
+    margin-bottom: 0;
+}
+
+/* --- View modal: detail grid --- */
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px 24px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    min-width: 0;
+}
+
+.detail-item.full {
+    grid-column: 1 / -1;
+}
+
+.detail-item .label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-muted);
+}
+
+.detail-item .value {
+    font-size: 14px;
+    color: var(--text-dark);
+    word-break: break-word;
+}
+
+/* --- Confirm dialog --- */
+.confirm-dialog {
+    max-width: 440px;
+}
+
+.confirm-body {
+    text-align: center;
+    padding: 8px 4px 4px;
+}
+
+.confirm-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--danger);
+}
+
+.confirm-body h4 {
+    font-size: 16px;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+}
+
+.confirm-body p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.btn-modal-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    border: none;
+}
+
+.btn-modal[disabled] {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .filters-bar {
+        align-items: stretch;
+    }
+
+    .filters-bar .filter-group {
+        flex: 1 1 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+    }
+
+    .filters-bar .filter-input,
+    .filters-bar .filter-select,
+    .filters-bar .filter-text .filter-input {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .filters-bar .export-btns {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .filters-bar .export-btns > * {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-cards {
+        grid-template-columns: 1fr 1fr;
+    }
+}

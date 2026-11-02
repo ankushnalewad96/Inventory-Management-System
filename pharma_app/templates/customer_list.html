@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static humanize %}
+{% block title %}{% translate "Customers" %} - {{ app_name }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/list_pages.css' %}">
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <h1>{% translate "Customers" %}</h1>
+    {% if is_admin %}
+        <p>{% translate "Customer accounts (khata) of all retailer shops" %}</p>
+    {% else %}
+        <p>{% blocktranslate with shop=request.user.retailer.shop_name %}Customer accounts (khata) of {{ shop }}{% endblocktranslate %}</p>
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+
+<div class="summary-cards compact">
+    <div class="summary-card">
+        <div class="card-top"><div class="card-icon-wrap total"><i class="fas fa-users"></i></div></div>
+        <div class="card-label">{% translate "Customers" %}</div>
+        <div class="card-value">{{ summary.count }}</div>
+    </div>
+    <div class="summary-card">
+        <div class="card-top"><div class="card-icon-wrap overdue"><i class="fas fa-user-clock"></i></div></div>
+        <div class="card-label">{% translate "With dues (udhari)" %}</div>
+        <div class="card-value">{{ summary.with_dues }}</div>
+    </div>
+    <div class="summary-card">
+        <div class="card-top"><div class="card-icon-wrap unpaid"><i class="fas fa-hand-holding-dollar"></i></div></div>
+        <div class="card-label">{% translate "Total to collect" %}</div>
+        <div class="card-value">₹{{ summary.outstanding|floatformat:2|intcomma }}</div>
+    </div>
+</div>
+
+<!-- Quick Actions (phones only; on larger screens the button sits in the section header) -->
+<div class="quick-actions only-mobile">
+    <a href="{% url 'sale_create' %}" class="action-btn primary"><i class="fas fa-plus"></i> {% translate "New sale" %}</a>
+</div>
+
+<div class="purchases-section">
+    <div class="section-header with-count">
+        <div>
+            <h2>{% translate "Customer accounts" %}</h2>
+            <p>{% blocktranslate count counter=page_obj.paginator.count %}{{ counter }} customer found{% plural %}{{ counter }} customers found{% endblocktranslate %}</p>
+        </div>
+        <div class="section-actions">
+            {% if search or selected_retailer or dues_only %}
+                <span class="active-filter-note"><i class="fas fa-filter"></i> {% translate "Filters applied" %}</span>
+            {% endif %}
+            <a href="{% url 'sale_create' %}" class="action-btn primary hide-mobile"><i class="fas fa-plus"></i> {% translate "New sale" %}</a>
+        </div>
+    </div>
+
+    <form method="GET" class="filters-bar">
+        <div class="filter-group filter-text">
+            <i class="fas fa-search"></i>
+            <input type="text" name="search" class="filter-input" placeholder="{% translate "Customer name or mobile..." %}" value="{{ search }}" aria-label="{% translate "Customer name or mobile" %}">
+        </div>
+
+        {% if is_admin %}
+        <div class="filter-group">
+            <label for="filterRetailer">{% translate "Retailer" %}</label>
+            <select name="retailer" id="filterRetailer" class="filter-select">
+                <option value="">{% translate "All Retailers" %}</option>
+                {% for retailer in retailers %}
+                    <option value="{{ retailer.id }}" {% if selected_retailer == retailer.id|stringformat:"s" %}selected{% endif %}>{{ retailer.shop_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <div class="filter-group">
+            <label class="filter-check">
+                <input type="checkbox" name="dues" value="1" {% if dues_only %}checked{% endif %}>
+                {% translate "Only customers with dues" %}
+            </label>
+        </div>
+
+        <div class="export-btns">
+            <button type="submit" class="export-btn primary"><i class="fas fa-filter"></i> {% translate "Filter" %}</button>
+            <a href="{% url 'customer_list' %}" class="export-btn"><i class="fas fa-times"></i> {% translate "Clear" %}</a>
+        </div>
+    </form>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{% translate "Customer" %}</th>
+                    {% if is_admin %}<th>{% translate "Retailer Shop" %}</th>{% endif %}
+                    <th class="text-center">{% translate "Bills" %}</th>
+                    <th>{% translate "Last purchase" %}</th>
+                    <th class="text-right">{% translate "Total billed" %}</th>
+                    <th class="text-right">{% translate "Total paid" %}</th>
+                    <th class="text-right">{% translate "Due (udhari)" %}</th>
+                    <th class="text-right">{% translate "Credit limit" %}</th>
+                    <th class="text-center">{% translate "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td>
+                        <a href="{% url 'customer_account' customer.id %}" style="text-decoration:none;color:inherit;">
+                            <div class="cell-stack">
+                                <span class="primary-text">{{ customer.customer_name }}{% if customer.price_level == "wholesale" %} <span class="type-chip">{% translate "Wholesale" %}</span>{% endif %}</span>
+                                <span class="secondary-text">{{ customer.mobile }}</span>
+                            </div>
+                        </a>
+                    </td>
+                    {% if is_admin %}
+                    <td><span class="shop-tag"><i class="fas fa-store"></i>{{ customer.retailer.shop_name }}</span></td>
+                    {% endif %}
+                    <td class="text-center"><span class="count-pill">{{ customer.invoice_count }}</span></td>
+                    <td>{{ customer.last_sale_date|date:"d M Y"|default:"—" }}</td>
+                    <td class="text-right">₹{{ customer.total_billed|floatformat:2 }}</td>
+                    <td class="text-right amount-paid">₹{{ customer.total_paid|floatformat:2 }}</td>
+                    <td class="text-right">
+                        {% if customer.outstanding > 0 %}
+                            <span class="due-chip has-due">₹{{ customer.outstanding|floatformat:2 }}</span>
+                        {% elif customer.outstanding < 0 %}
+                            <span class="due-chip advance" title="{% translate "Customer has paid in advance" %}">{% translate "Advance" %}</span>
+                        {% else %}
+                            <span class="due-chip clear">{% translate "Clear" %}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right">{% if customer.credit_limit > 0 %}₹{{ customer.credit_limit|floatformat:2 }}{% else %}<span class="muted">—</span>{% endif %}</td>
+                    <td>
+                        <div class="action-btns" style="justify-content:center;">
+                            <a href="{% url 'customer_account' customer.id %}" class="action-icon-btn" title="{% translate "View account history" %}" aria-label="{% translate "View account history" %}">
+                                <i class="fas fa-book-open"></i>
+                            </a>
+                            {% if customer.outstanding > 0 %}
+                            <a href="{% url 'customer_account' customer.id %}?pay=1" class="action-icon-btn success" title="{% translate "Receive payment" %}" aria-label="{% translate "Receive payment" %}">
+                                <i class="fas fa-hand-holding-dollar"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'customer_statement' customer.id %}" target="_blank" rel="noopener" class="action-icon-btn" title="{% translate "Print statement" %}" aria-label="{% translate "Print statement" %}">
+                                <i class="fas fa-print"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if is_admin %}9{% else %}8{% endif %}" class="empty-state">
+                        <i class="fas fa-users"></i>
+                        {% if search or selected_retailer or dues_only %}
+                            <div class="empty-title">{% translate "No customers match your filters" %}</div>
+                            <a href="{% url 'customer_list' %}">{% translate "Clear filters" %}</a>
+                        {% else %}
+                            <div class="empty-title">{% translate "No customers yet" %}</div>
+                            <a href="{% url 'sale_create' %}">{% translate "Add a customer while creating a sale" %}</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-footer">
+        <div class="showing-text">
+            {% if page_obj.paginator.count %}
+                {% blocktranslate with start=page_obj.start_index end=page_obj.end_index total=page_obj.paginator.count %}Showing {{ start }} - {{ end }} of {{ total }} customers{% endblocktranslate %}
+            {% else %}
+                {% translate "No customers to show" %}
+            {% endif %}
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn" title="{% translate "Previous" %}"><i class="fas fa-chevron-left"></i></a>
+            {% else %}
+                <button class="page-btn" disabled><i class="fas fa-chevron-left"></i></button>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                    <button class="page-btn active">{{ num }}</button>
+                {% else %}
+                    <a href="?page={{ num }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn" title="{% translate "Next" %}"><i class="fas fa-chevron-right"></i></a>
+            {% else %}
+                <button class="page-btn" disabled><i class="fas fa-chevron-right"></i></button>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'jss/dashboard.js' %}"></script>
+{% endblock %}

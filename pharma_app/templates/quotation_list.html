@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% load i18n i18n_extras %}
+{% load static humanize %}
+{% block title %}{% translate "Quotations" %} - {{ app_name }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/list_pages.css' %}">
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <h1>{% translate "Quotations" %}</h1>
+    <p>{% translate "Price estimates for customers. Convert one to a sale when the customer agrees." %}</p>
+{% endblock %}
+
+{% block body %}
+
+<div class="summary-cards compact">
+    <div class="summary-card">
+        <div class="card-top"><div class="card-icon-wrap partial"><i class="fas fa-file-signature"></i></div></div>
+        <div class="card-label">{% translate "Open quotations" %}</div>
+        <div class="card-value">{{ open_count }}</div>
+    </div>
+    <div class="summary-card">
+        <div class="card-top"><div class="card-icon-wrap total"><i class="fas fa-file-invoice"></i></div></div>
+        <div class="card-label">{% translate "Converted to sales" %}</div>
+        <div class="card-value">{{ converted_count }}</div>
+    </div>
+</div>
+
+<div class="quick-actions only-mobile">
+    <a href="{% url 'quotation_create' %}" class="action-btn primary"><i class="fas fa-plus"></i> {% translate "New quotation" %}</a>
+</div>
+
+<div class="purchases-section">
+    <div class="section-header with-count">
+        <div>
+            <h2>{% translate "All quotations" %}</h2>
+            <p>{% blocktranslate count counter=page_obj.paginator.count %}{{ counter }} quotation found{% plural %}{{ counter }} quotations found{% endblocktranslate %}</p>
+        </div>
+        <div class="section-actions">
+            <a href="{% url 'quotation_create' %}" class="action-btn primary hide-mobile"><i class="fas fa-plus"></i> {% translate "New quotation" %}</a>
+        </div>
+    </div>
+
+    <form method="GET" class="filters-bar">
+        <div class="filter-group filter-text">
+            <i class="fas fa-search"></i>
+            <input type="text" name="search" class="filter-input" placeholder="{% translate "Quotation no., customer or mobile..." %}" value="{{ search }}" aria-label="{% translate "Search quotations" %}">
+        </div>
+        <div class="filter-group">
+            <label for="filterStatus">{% translate "Status" %}</label>
+            <select name="status" id="filterStatus" class="filter-select">
+                <option value="">{% translate "All" %}</option>
+                {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label|tr }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="export-btns">
+            <button type="submit" class="export-btn primary"><i class="fas fa-filter"></i> {% translate "Filter" %}</button>
+            <a href="{% url 'quotation_list' %}" class="export-btn"><i class="fas fa-times"></i> {% translate "Clear" %}</a>
+        </div>
+    </form>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{% translate "Quotation" %}</th>
+                    {% if is_admin %}<th>{% translate "Retailer Shop" %}</th>{% endif %}
+                    <th>{% translate "Customer" %}</th>
+                    <th>{% translate "Valid until" %}</th>
+                    <th class="text-right">{% translate "Amount" %}</th>
+                    <th class="text-center">{% translate "Status" %}</th>
+                    <th class="text-center">{% translate "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for quotation in quotations %}
+                <tr>
+                    <td>
+                        <a href="{% url 'quotation_detail' quotation.id %}" style="text-decoration:none;color:inherit;">
+                            <div class="cell-stack">
+                                <span class="primary-text">{{ quotation.quotation_number }}</span>
+                                <span class="secondary-text">{{ quotation.quotation_date|date:"d M Y" }}</span>
+                            </div>
+                        </a>
+                    </td>
+                    {% if is_admin %}
+                    <td><span class="shop-tag"><i class="fas fa-store"></i>{{ quotation.retailer.shop_name }}</span></td>
+                    {% endif %}
+                    <td>
+                        <div class="cell-stack">
+                            <span class="primary-text">{{ quotation.customer.customer_name }}</span>
+                            <span class="secondary-text">{{ quotation.customer.mobile }}</span>
+                        </div>
+                    </td>
+                    <td>{{ quotation.valid_until|date:"d M Y"|default:"—" }}</td>
+                    <td class="text-right">₹{{ quotation.grand_total|floatformat:2|intcomma }}</td>
+                    <td class="text-center">
+                        {% if quotation.expired %}
+                            <span class="status-pill unpaid"><span class="dot"></span>{% translate "Expired" %}</span>
+                        {% elif quotation.status == "open" %}
+                            <span class="status-pill partial"><span class="dot"></span>{% translate "Open" %}</span>
+                        {% elif quotation.status == "converted" %}
+                            <span class="status-pill paid"><span class="dot"></span>{% translate "Converted" %}</span>
+                        {% else %}
+                            <span class="status-pill inactive"><span class="dot"></span>{% translate "Cancelled" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-btns" style="justify-content:center;">
+                            <a href="{% url 'quotation_detail' quotation.id %}" class="action-icon-btn" title="{% translate "View" %}" aria-label="{% translate "View quotation" %}">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'quotation_print' quotation.id %}" target="_blank" rel="noopener" class="action-icon-btn" title="{% translate "Print" %}" aria-label="{% translate "Print quotation" %}">
+                                <i class="fas fa-print"></i>
+                            </a>
+                            {% if quotation.status == "open" %}
+                            <a href="{% url 'sale_create' %}?quotation={{ quotation.id }}" class="action-icon-btn success" title="{% translate "Convert to sale" %}" aria-label="{% translate "Convert to sale" %}">
+                                <i class="fas fa-cart-arrow-down"></i>
+                            </a>
+                            {% elif quotation.converted_sale %}
+                            <a href="{% url 'sale_detail' quotation.converted_sale.id %}" class="action-icon-btn" title="Open sale {{ quotation.converted_sale.invoice_number }}" aria-label="{% translate "Open sale" %}">
+                                <i class="fas fa-receipt"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if is_admin %}7{% else %}6{% endif %}" class="empty-state">
+                        <i class="fas fa-file-signature"></i>
+                        {% if search or status %}
+                            <div class="empty-title">{% translate "No quotations match your filters" %}</div>
+                            <a href="{% url 'quotation_list' %}">{% translate "Clear filters" %}</a>
+                        {% else %}
+                            <div class="empty-title">{% translate "No quotations yet" %}</div>
+                            <a href="{% url 'quotation_create' %}">{% translate "Create the first quotation" %}</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-footer">
+        <div class="showing-text">
+            {% if page_obj.paginator.count %}
+                {% blocktranslate with start=page_obj.start_index end=page_obj.end_index total=page_obj.paginator.count %}Showing {{ start }} - {{ end }} of {{ total }} quotations{% endblocktranslate %}
+            {% else %}
+                {% translate "No quotations to show" %}
+            {% endif %}
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn" title="{% translate "Previous" %}"><i class="fas fa-chevron-left"></i></a>
+            {% else %}
+                <button class="page-btn" disabled><i class="fas fa-chevron-left"></i></button>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                    <button class="page-btn active">{{ num }}</button>
+                {% else %}
+                    <a href="?page={{ num }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn" title="{% translate "Next" %}"><i class="fas fa-chevron-right"></i></a>
+            {% else %}
+                <button class="page-btn" disabled><i class="fas fa-chevron-right"></i></button>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'jss/dashboard.js' %}"></script>
+{% endblock %}

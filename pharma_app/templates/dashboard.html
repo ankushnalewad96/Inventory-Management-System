@@ -1,87 +1,549 @@
-
 {% extends "base.html" %}
-{% load static %}
-{% block title %}Home Page - My Django Site{% endblock %}
+{% load i18n i18n_extras %}
+{% load static humanize %}{% load qty %}
+{% block title %}{% translate "Dashboard" %} - {{ app_name }}{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-<link rel="stylesheet" href="{% static 'css/error_message.css' %}">
+<link rel="stylesheet" href="{% static 'css/list_pages.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard_home.css' %}">
 {% endblock %}
 
 {% block page_title %}
-    <h1>Dashboard Page</h1>
-    <!-- <p>A quick pulse on your cash position</p> -->
+    <h1>{{ greeting|default:"Welcome" }}, {% if is_admin %}{{ request.user.username }}{% else %}{{ request.user.retailer.shop_name }}{% endif %}</h1>
+    <p>
+        {{ today|date:"l, d F Y" }} ·
+        {% if is_admin %}{% if shop %}{{ shop.shop_name }}{% else %}{% translate "All retailer shops" %}{% endif %}{% else %}{% translate "Your shop at a glance" %}{% endif %}
+        {% if shop %}<span class="type-badge type-{{ shop.shop_type }}">{{ shop.get_shop_type_display|tr }}</span>{% endif %}
+    </p>
 {% endblock %}
 
 {% block body %}
-<!-- Summary Cards -->
-<div class="summary-cards">
-    <div class="summary-card">
-        <div class="card-top">
-            <div class="card-icon-wrap paid">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="card-menu"><i class="fas fa-ellipsis-v"></i></div>
-        </div>
-        <div class="card-label">Paid</div>
-        <div class="card-value">₹5,42,100</div>
-        <div class="card-trend up">
-            <i class="fas fa-arrow-up" style="font-size:10px;"></i>
-            <span>12.5% vs last month</span>
-        </div>
-    </div>
 
-    <div class="summary-card">
-        <div class="card-top">
-            <div class="card-icon-wrap unpaid">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="card-menu"><i class="fas fa-ellipsis-v"></i></div>
-        </div>
-        <div class="card-label">Unpaid</div>
-        <div class="card-value">₹2,14,900</div>
-        <div class="card-trend down">
-            <i class="fas fa-arrow-down" style="font-size:10px;"></i>
-            <span>3.1% vs last month</span>
-        </div>
-    </div>
+{% if no_shop %}
+<div class="db-card db-empty-page">
+    <i class="fas fa-store-slash"></i>
+    <h2>{% translate "No shop linked to your account" %}</h2>
+    <p>{% translate "Please contact the administrator to activate your retailer profile." %}</p>
+</div>
+{% else %}
 
-    <div class="summary-card">
-        <div class="card-top">
-            <div class="card-icon-wrap overdue">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <div class="card-menu"><i class="fas fa-ellipsis-v"></i></div>
-        </div>
-        <div class="card-label">Overdue</div>
-        <div class="card-value">₹84,750</div>
-        <div class="card-trend down">
-            <i class="fas fa-arrow-down" style="font-size:10px;"></i>
-            <span>1.8% vs last month</span>
-        </div>
-    </div>
+<!-- ============ Toolbar: shop filter (admin) + quick actions ============ -->
+<div class="db-toolbar">
+    {% if is_admin %}
+    <form method="GET" class="db-filter" id="shopFilter">
+        <label for="dbRetailer"><i class="fas fa-store"></i> {% translate "Showing" %}</label>
+        <select name="retailer" id="dbRetailer" class="db-select" onchange="this.form.submit()">
+            <option value="">{% translate "All shops" %}</option>
+            {% for retailer in retailers %}
+                <option value="{{ retailer.id }}" {% if selected_retailer == retailer.id|stringformat:"s" %}selected{% endif %}>{{ retailer.shop_name }}</option>
+            {% endfor %}
+        </select>
+        <noscript><button type="submit" class="db-btn">{% translate "Apply" %}</button></noscript>
+    </form>
+    {% endif %}
 
-    <div class="summary-card">
-        <div class="card-top">
-            <div class="card-icon-wrap total">
-                <i class="fas fa-wallet"></i>
-            </div>
-            <div class="card-menu"><i class="fas fa-ellipsis-v"></i></div>
-        </div>
-        <div class="card-label">Total</div>
-        <div class="card-value">₹8,41,750</div>
-        <div class="card-trend up">
-            <i class="fas fa-arrow-up" style="font-size:10px;"></i>
-            <span>6.4% vs last month</span>
-        </div>
+    <div class="db-quick" aria-label="{% translate "Quick actions" %}">
+        <a href="{% url 'sale_create' %}" class="db-btn primary"><i class="fas fa-file-invoice"></i> {% translate "New sale" %}</a>
+        <a href="{% url 'add_new_order' %}" class="db-btn"><i class="fas fa-cart-plus"></i> {% translate "New purchase" %}</a>
+        <a href="{% url 'customer_list' %}?dues=1" class="db-btn"><i class="fas fa-hand-holding-dollar"></i> {% translate "Collect dues" %}</a>
+        <a href="{% url 'add_product' %}" class="db-btn"><i class="fas fa-box"></i> {% translate "Add product" %}</a>
+        <a href="{% url 'add_new_supplier' %}" class="db-btn"><i class="fas fa-truck"></i> {% translate "Add supplier" %}</a>
+        {% if is_admin %}
+        <a href="{% url 'retailer_register' %}" class="db-btn"><i class="fas fa-store"></i> {% translate "Add retailer" %}</a>
+        {% endif %}
     </div>
 </div>
 
+<!-- ============ Headline figures ============ -->
+<section class="db-kpis" aria-label="{% translate "Key figures" %}">
+    <a class="db-kpi" href="{% url 'sales_list' %}?from_date={{ today|date:'Y-m-d' }}&to_date={{ today|date:'Y-m-d' }}">
+        <div class="db-kpi-top">
+            <span class="db-kpi-label">{% translate "Today's sales" %}</span>
+            <span class="db-kpi-icon blue"><i class="fas fa-bolt"></i></span>
+        </div>
+        <div class="db-kpi-value">₹{{ sales_today_total|floatformat:2|intcomma }}</div>
+        <div class="db-kpi-meta">
+            {% blocktranslate count counter=sales_today_count %}{{ counter }} invoice{% plural %}{{ counter }} invoices{% endblocktranslate %} · ₹{{ collected_today|floatformat:2|intcomma }} {% translate "collected" %}
+        </div>
+    </a>
 
+    <a class="db-kpi" href="{% url 'sales_list' %}?from_date={{ month_start|date:'Y-m-d' }}&to_date={{ today|date:'Y-m-d' }}">
+        <div class="db-kpi-top">
+            <span class="db-kpi-label">{% translate "Sales this month" %}</span>
+            <span class="db-kpi-icon green"><i class="fas fa-chart-line"></i></span>
+        </div>
+        <div class="db-kpi-value">₹{{ sales_month_total|floatformat:2|intcomma }}</div>
+        <div class="db-kpi-meta">
+            {% if sales_change is not None %}
+                <span class="db-delta {% if sales_change >= 0 %}up{% else %}down{% endif %}">
+                    <i class="fas {% if sales_change >= 0 %}fa-arrow-up{% else %}fa-arrow-down{% endif %}"></i>
+                    {% if sales_change >= 0 %}+{% endif %}{{ sales_change }}%
+                </span>
+                {% translate "vs same days last month" %}
+            {% else %}
+                {% blocktranslate count counter=sales_month_count %}{{ counter }} invoice so far{% plural %}{{ counter }} invoices so far{% endblocktranslate %}
+            {% endif %}
+        </div>
+    </a>
 
+    <a class="db-kpi" href="{% url 'customer_list' %}?dues=1">
+        <div class="db-kpi-top">
+            <span class="db-kpi-label">{% translate "To collect from customers" %}</span>
+            <span class="db-kpi-icon amber"><i class="fas fa-hand-holding-dollar"></i></span>
+        </div>
+        <div class="db-kpi-value">₹{{ receivable.total|floatformat:2|intcomma }}</div>
+        <div class="db-kpi-meta">{% blocktranslate count counter=receivable.count %}{{ counter }} customer with dues (udhari){% plural %}{{ counter }} customers with dues (udhari){% endblocktranslate %}</div>
+    </a>
+
+    <a class="db-kpi" href="{% url 'purchase_product_list' %}">
+        <div class="db-kpi-top">
+            <span class="db-kpi-label">{% translate "To pay suppliers" %}</span>
+            <span class="db-kpi-icon red"><i class="fas fa-file-invoice-dollar"></i></span>
+        </div>
+        <div class="db-kpi-value">₹{{ payable_total|floatformat:2|intcomma }}</div>
+        <div class="db-kpi-meta">
+            {% if overdue_count %}
+                <span class="db-delta down"><i class="fas fa-triangle-exclamation"></i> ₹{{ overdue_total|floatformat:2|intcomma }}</span> {% translate "overdue" %}
+            {% else %}
+                {% blocktranslate count counter=open_bill_count %}{{ counter }} open bill{% plural %}{{ counter }} open bills{% endblocktranslate %} · {% translate "nothing overdue" %}
+            {% endif %}
+        </div>
+    </a>
+
+    {% if expiry %}
+    <!-- Shown only when a shop in view has expiry tracking (pharmacy) -->
+    <a class="db-kpi" href="{% url 'near_expiry' %}">
+        <div class="db-kpi-top">
+            <span class="db-kpi-label">{% translate "Expiring in 90 days" %}</span>
+            <span class="db-kpi-icon amber"><i class="fas fa-hourglass-half"></i></span>
+        </div>
+        <div class="db-kpi-value">{% blocktranslate count counter=expiry.near_expiry_count %}{{ counter }} batch{% plural %}{{ counter }} batches{% endblocktranslate %}</div>
+        <div class="db-kpi-meta">
+            {% if expiry.expired_count %}
+                <span class="db-delta down"><i class="fas fa-ban"></i> {{ expiry.expired_count }}</span> {% translate "expired in stock" %}
+            {% else %}
+                {% translate "No expired stock" %}
+            {% endif %}
+        </div>
+    </a>
+    {% endif %}
+</section>
+
+<!-- ============ Sales trend + attention ============ -->
+<div class="db-grid db-grid-main">
+    <section class="db-card db-chart-card" aria-labelledby="chartTitle">
+        <div class="db-card-head">
+            <div>
+                <h2 id="chartTitle">{% translate "Daily sales" %}</h2>
+                <p>{% translate "Last 14 days" %} · ₹{{ chart.total|floatformat:2|intcomma }} {% translate "in total" %}{% if chart.best %} · {% translate "best day" %} {{ chart.best.date|date:"d M" }}{% endif %}</p>
+            </div>
+            <a href="{% url 'sales_list' %}" class="db-link">{% translate "All sales" %} <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        {% if chart.has_data %}
+        <div class="db-chart" role="img" aria-label="{% translate "Column chart of daily sales for the last 14 days" %}">
+            <div class="db-chart-axis" aria-hidden="true">
+                {% for tick in chart.ticks %}<span style="bottom: {{ tick.position }}%;">₹{{ tick.label }}</span>{% endfor %}
+            </div>
+            <div class="db-chart-plot">
+                {% for tick in chart.ticks %}<span class="db-gridline" style="bottom: {{ tick.position }}%;" aria-hidden="true"></span>{% endfor %}
+                <div class="db-columns">
+                    {% for day in chart.days %}
+                    <div class="db-col{% if day.is_today %} today{% endif %}" tabindex="0"
+                         data-date="{{ day.date|date:'D, d M' }}"
+                         data-value="₹{{ day.total|floatformat:2|intcomma }}"
+                         data-count="{% blocktranslate count counter=day.invoices %}{{ counter }} invoice{% plural %}{{ counter }} invoices{% endblocktranslate %}">
+                        <span class="db-bar" style="height: {{ day.height }}%;"></span>
+                        <span class="db-col-label">{{ day.date|date:"d" }}<small>{{ day.date|date:"D"|slice:":2" }}</small></span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="db-tooltip" id="chartTooltip" role="status" hidden>
+                    <strong></strong><span class="db-tooltip-date"></span><span class="db-tooltip-count"></span>
+                </div>
+            </div>
+        </div>
+        <details class="db-table-view">
+            <summary>{% translate "View as table" %}</summary>
+            <table>
+                <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Invoices" %}</th><th>{% translate "Sales" %}</th></tr></thead>
+                <tbody>
+                    {% for day in chart.days %}
+                    <tr><td>{{ day.date|date:"D, d M Y" }}</td><td>{{ day.invoices }}</td><td>₹{{ day.total|floatformat:2|intcomma }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </details>
+        {% else %}
+        <div class="db-empty">
+            <i class="fas fa-chart-column"></i>
+            <strong>{% translate "No sales in the last 14 days" %}</strong>
+            <a href="{% url 'sale_create' %}">{% translate "Create a sale" %}</a>
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="db-card" aria-labelledby="attentionTitle">
+        <div class="db-card-head">
+            <div>
+                <h2 id="attentionTitle">{% translate "Needs attention" %}</h2>
+                <p>{% translate "Things to act on today" %}</p>
+            </div>
+        </div>
+        {% if alerts %}
+        <ul class="db-alerts">
+            {% for alert in alerts %}
+            <li>
+                <a href="{{ alert.url }}" class="db-alert {{ alert.tone }}">
+                    <span class="db-alert-icon"><i class="fas {{ alert.icon }}"></i></span>
+                    <span class="db-alert-text">
+                        <strong>{{ alert.title }}</strong>
+                        <span>{{ alert.text }}</span>
+                    </span>
+                    <i class="fas fa-chevron-right db-alert-go"></i>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="db-empty good">
+            <i class="fas fa-circle-check"></i>
+            <strong>{% translate "All clear" %}</strong>
+            <span>{% translate "No overdue bills, stock alerts or customer dues." %}</span>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<!-- ============ Modules ============ -->
+<section aria-labelledby="modulesTitle">
+    <div class="db-section-title">
+        <h2 id="modulesTitle">{% translate "Manage your business" %}</h2>
+        <p>{% translate "Open any module or add something new" %}</p>
+    </div>
+    <div class="db-modules">
+        <div class="db-module">
+            <div class="db-module-head">
+                <span class="db-module-icon blue"><i class="fas fa-chart-line"></i></span>
+                <h3>{% translate "Sales" %}</h3>
+            </div>
+            <div class="db-module-stats">
+                <div><strong>{{ sales_month_count }}</strong><span>{% translate "invoices this month" %}</span></div>
+                <div><strong>₹{{ sales_month_total|floatformat:0|intcomma }}</strong><span>{% translate "sold this month" %}</span></div>
+            </div>
+            <div class="db-module-links">
+                <a href="{% url 'sales_list' %}">{% translate "View sales" %}</a>
+                <a href="{% url 'sale_create' %}" class="add"><i class="fas fa-plus"></i> {% translate "New sale" %}</a>
+            </div>
+        </div>
+
+        <div class="db-module">
+            <div class="db-module-head">
+                <span class="db-module-icon indigo"><i class="fas fa-shopping-cart"></i></span>
+                <h3>{% translate "Purchases" %}</h3>
+            </div>
+            <div class="db-module-stats">
+                <div><strong>{{ purchases_month_count }}</strong><span>{% translate "bills this month" %}</span></div>
+                <div><strong>₹{{ purchases_month_total|floatformat:0|intcomma }}</strong><span>{% translate "bought this month" %}</span></div>
+            </div>
+            <div class="db-module-links">
+                <a href="{% url 'purchase_product_list' %}">{% translate "View purchases" %}</a>
+                <a href="{% url 'add_new_order' %}" class="add"><i class="fas fa-plus"></i> {% translate "New order" %}</a>
+            </div>
+        </div>
+
+        <div class="db-module">
+            <div class="db-module-head">
+                <span class="db-module-icon amber"><i class="fas fa-address-book"></i></span>
+                <h3>{% translate "Customers" %}</h3>
+            </div>
+            <div class="db-module-stats">
+                <div><strong>{{ customer_count }}</strong><span>{% translate "customers" %}</span></div>
+                <div><strong>{{ receivable.count }}</strong><span>{% translate "with dues" %}</span></div>
+            </div>
+            <div class="db-module-links">
+                <a href="{% url 'customer_list' %}">{% translate "View customers" %}</a>
+                <a href="{% url 'customer_list' %}?dues=1" class="add"><i class="fas fa-hand-holding-dollar"></i> {% translate "Collect" %}</a>
+            </div>
+        </div>
+
+        <div class="db-module">
+            <div class="db-module-head">
+                <span class="db-module-icon teal"><i class="fas fa-truck"></i></span>
+                <h3>{% translate "Suppliers" %}</h3>
+            </div>
+            <div class="db-module-stats">
+                <div><strong>{{ supplier_count }}</strong><span>{% translate "active suppliers" %}</span></div>
+                <div><strong>₹{{ payable_total|floatformat:0|intcomma }}</strong><span>{% translate "to pay" %}</span></div>
+            </div>
+            <div class="db-module-links">
+                <a href="{% url 'supplier_list' %}">{% translate "View suppliers" %}</a>
+                <a href="{% url 'add_new_supplier' %}" class="add"><i class="fas fa-plus"></i> {% translate "Add" %}</a>
+            </div>
+        </div>
+
+        <div class="db-module">
+            <div class="db-module-head">
+                <span class="db-module-icon green"><i class="fas fa-boxes-stacked"></i></span>
+                <h3>{% translate "Products" %}</h3>
+            </div>
+            <div class="db-module-stats">
+                <div><strong>{{ product_count }}</strong><span>{% translate "active products" %}</span></div>
+                <div><strong class="{% if low_stock_count or out_of_stock_count %}warn{% endif %}">{{ low_stock_count|add:out_of_stock_count }}</strong><span>{% translate "to reorder" %}</span></div>
+            </div>
+            <div class="db-module-links">
+                <a href="{% url 'product_list' %}">{% translate "View products" %}</a>
+                <a href="{% url 'add_product' %}" class="add"><i class="fas fa-plus"></i> {% translate "Add" %}</a>
+            </div>
+        </div>
+
+        {% if is_admin %}
+        <div class="db-module">
+            <div class="db-module-head">
+                <span class="db-module-icon slate"><i class="fas fa-store"></i></span>
+                <h3>{% translate "Retailers" %}</h3>
+            </div>
+            <div class="db-module-stats">
+                <div><strong>{{ retailer_count }}</strong><span>{% translate "active shops" %}</span></div>
+                <div><strong>₹{{ stock_value|floatformat:0|intcomma }}</strong><span>{% translate "stock value" %}{% if not shop %} {% translate "(all)" %}{% endif %}</span></div>
+            </div>
+            <div class="db-module-links">
+                <a href="{% url 'retailer_list' %}">{% translate "View retailers" %}</a>
+                <a href="{% url 'retailer_register' %}" class="add"><i class="fas fa-plus"></i> {% translate "Add" %}</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="db-module">
+            <div class="db-module-head">
+                <span class="db-module-icon slate"><i class="fas fa-warehouse"></i></span>
+                <h3>{% translate "Stock" %}</h3>
+            </div>
+            <div class="db-module-stats">
+                <div><strong>₹{{ stock_value|floatformat:0|intcomma }}</strong><span>{% translate "stock value (cost)" %}</span></div>
+                <div><strong class="{% if out_of_stock_count %}warn{% endif %}">{{ out_of_stock_count }}</strong><span>{% translate "out of stock" %}</span></div>
+            </div>
+            <div class="db-module-links">
+                <a href="{% url 'low_stock_alert' %}">{% translate "Reorder list" %}</a>
+                <a href="{% url 'add_new_order' %}" class="add"><i class="fas fa-cart-plus"></i> {% translate "Restock" %}</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- ============ Recent activity ============ -->
+<div class="db-grid db-grid-2">
+    <section class="db-card" aria-labelledby="recentSalesTitle">
+        <div class="db-card-head">
+            <div><h2 id="recentSalesTitle">{% translate "Recent sales" %}</h2><p>{% translate "Latest invoices" %}</p></div>
+            <a href="{% url 'sales_list' %}" class="db-link">{% translate "View all" %} <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="db-table-wrap">
+            <table class="db-table">
+                <thead>
+                    <tr><th>{% translate "Invoice" %}</th><th>{% translate "Customer" %}</th><th class="num">{% translate "Amount" %}</th><th>{% translate "Status" %}</th></tr>
+                </thead>
+                <tbody>
+                    {% for sale in recent_sales %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'sale_detail' sale.id %}" class="db-strong-link">{{ sale.invoice_number }}</a>
+                            <small>{{ sale.invoice_date|date:"d M Y" }}{% if is_admin and not shop %} · {{ sale.retailer.shop_name }}{% endif %}</small>
+                        </td>
+                        <td>{{ sale.customer.customer_name }}</td>
+                        <td class="num">₹{{ sale.grand_total|floatformat:2|intcomma }}</td>
+                        <td><span class="status-pill {{ sale.payment_status|lower }}"><span class="dot"></span>{{ sale.payment_status|tr }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="db-table-empty">{% translate "No sales yet." %} <a href="{% url 'sale_create' %}">{% translate "Create one" %}</a></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="db-card" aria-labelledby="recentPurchasesTitle">
+        <div class="db-card-head">
+            <div><h2 id="recentPurchasesTitle">{% translate "Recent purchases" %}</h2><p>{% translate "Latest supplier bills" %}</p></div>
+            <a href="{% url 'purchase_product_list' %}" class="db-link">{% translate "View all" %} <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="db-table-wrap">
+            <table class="db-table">
+                <thead>
+                    <tr><th>{% translate "Bill" %}</th><th>{% translate "Supplier" %}</th><th class="num">{% translate "Amount" %}</th><th>{% translate "Status" %}</th></tr>
+                </thead>
+                <tbody>
+                    {% for purchase in recent_purchases %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'purchase_detail' purchase.id %}" class="db-strong-link">{{ purchase.bill_number }}</a>
+                            <small>{{ purchase.bill_date|date:"d M Y" }}{% if is_admin and not shop %} · {{ purchase.retailer.shop_name }}{% endif %}</small>
+                        </td>
+                        <td>{{ purchase.supplier.supplier_name }}</td>
+                        <td class="num">₹{{ purchase.grand_total|floatformat:2|intcomma }}</td>
+                        <td><span class="status-pill {{ purchase.payment_status|lower }}"><span class="dot"></span>{{ purchase.payment_status|tr }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="db-table-empty">{% translate "No purchases yet." %} <a href="{% url 'add_new_order' %}">{% translate "Add one" %}</a></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<!-- ============ Money & stock watch ============ -->
+<div class="db-grid db-grid-3">
+    <section class="db-card" aria-labelledby="billsTitle">
+        <div class="db-card-head">
+            <div><h2 id="billsTitle">{% translate "Bills to pay" %}</h2><p>{% translate "Earliest due first" %}</p></div>
+        </div>
+        <ul class="db-list">
+            {% for bill in bills_to_pay %}
+            <li>
+                <a href="{% url 'purchase_detail' bill.id %}">
+                    <span class="db-list-main">
+                        <strong>{{ bill.supplier.supplier_name }}</strong>
+                        <small>
+                            {{ bill.bill_number }} ·
+                            {% if bill.due_date %}
+                                {% if bill.due_date < today %}<span class="db-tag critical">{% translate "Overdue" %} {{ bill.due_date|date:"d M" }}</span>
+                                {% else %}{% translate "Due" %} {{ bill.due_date|date:"d M" }}{% endif %}
+                            {% else %}{% translate "No due date" %}{% endif %}
+                        </small>
+                    </span>
+                    <span class="db-list-value due">₹{{ bill.due_amount|floatformat:2|intcomma }}</span>
+                </a>
+            </li>
+            {% empty %}
+            <li class="db-list-empty"><i class="fas fa-circle-check"></i> {% translate "No unpaid supplier bills" %}</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="db-card" aria-labelledby="duesTitle">
+        <div class="db-card-head">
+            <div><h2 id="duesTitle">{% translate "Customer dues" %}</h2><p>{% translate "Highest udhari first" %}</p></div>
+            <a href="{% url 'customer_list' %}?dues=1" class="db-link">{% translate "All" %} <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <ul class="db-list">
+            {% for customer in receivable.top %}
+            <li>
+                <a href="{% url 'customer_account' customer.id %}">
+                    <span class="db-list-main">
+                        <strong>{{ customer.customer_name }}</strong>
+                        <small>{{ customer.mobile }}{% if is_admin and not shop %} · {{ customer.retailer.shop_name }}{% endif %}</small>
+                    </span>
+                    <span class="db-list-value due">₹{{ customer.due|floatformat:2|intcomma }}</span>
+                </a>
+            </li>
+            {% empty %}
+            <li class="db-list-empty"><i class="fas fa-circle-check"></i> {% translate "No customer dues" %}</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="db-card" aria-labelledby="stockTitle">
+        <div class="db-card-head">
+            <div><h2 id="stockTitle">{% translate "Low stock" %}</h2><p>{% translate "Reorder these soon" %}</p></div>
+            <a href="{% url 'low_stock_alert' %}" class="db-link">{% translate "Reorder list" %} <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <ul class="db-list">
+            {% for product in low_stock_products %}
+            <li>
+                <a href="{% url 'low_stock_alert' %}?search={{ product.product_name|urlencode }}">
+                    <span class="db-list-main">
+                        <strong>{{ product.product_name }}</strong>
+                        <small>{% translate "Min" %} {{ product.minimum_stock|qty }}{% if is_admin and not shop %} · {{ product.retailer.shop_name }}{% endif %}</small>
+                    </span>
+                    <span class="db-tag {% if product.current_stock == 0 %}critical{% else %}warning{% endif %}">
+                        {% if product.current_stock == 0 %}{% translate "Out of stock" %}{% else %}{{ product.current_stock|qty_unit:product.unit.short_name }} {% translate "left" %}{% endif %}
+                    </span>
+                </a>
+            </li>
+            {% empty %}
+            <li class="db-list-empty"><i class="fas fa-circle-check"></i> {% translate "Stock levels look good" %}</li>
+            {% endfor %}
+        </ul>
+    </section>
+</div>
+
+<!-- ============ Top products ============ -->
+<section class="db-card" aria-labelledby="topTitle">
+    <div class="db-card-head">
+        <div><h2 id="topTitle">{% translate "Top selling products" %}</h2><p>{% translate "This month, by sales amount" %}</p></div>
+        <a href="{% url 'product_list' %}" class="db-link">{% translate "All products" %} <i class="fas fa-arrow-right"></i></a>
+    </div>
+    {% if top_products %}
+    <ol class="db-rank">
+        {% for row in top_products %}
+        <li>
+            <span class="db-rank-no">{{ forloop.counter }}</span>
+            <span class="db-rank-name">
+                <strong>{{ row.product__product_name }}</strong>
+                <small>{{ row.quantity|qty }} {{ row.unit__short_name }} {% translate "sold" %}</small>
+            </span>
+            <span class="db-rank-bar" aria-hidden="true"><span style="width: {{ row.share }}%;"></span></span>
+            <span class="db-rank-value">₹{{ row.amount|floatformat:2|intcomma }}</span>
+        </li>
+        {% endfor %}
+    </ol>
+    {% else %}
+    <div class="db-empty">
+        <i class="fas fa-ranking-star"></i>
+        <strong>{% translate "No sales this month yet" %}</strong>
+    </div>
+    {% endif %}
+</section>
+
+{% if is_admin and not shop %}
+<!-- ============ Admin: shops at a glance ============ -->
+<section class="db-card" aria-labelledby="shopsTitle">
+    <div class="db-card-head">
+        <div><h2 id="shopsTitle">{% translate "Shops at a glance" %}</h2><p>{% translate "This month, per retailer shop" %}</p></div>
+        <a href="{% url 'retailer_list' %}" class="db-link">{% translate "All retailers" %} <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="db-table-wrap">
+        <table class="db-table db-shops">
+            <thead>
+                <tr>
+                    <th>{% translate "Shop" %}</th>
+                    <th class="num">{% translate "Sales" %}</th>
+                    <th class="num">{% translate "Purchases" %}</th>
+                    <th class="num">{% translate "To collect" %}</th>
+                    <th class="num">{% translate "To pay" %}</th>
+                    <th class="num">{% translate "Low stock" %}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in shop_rows %}
+                <tr>
+                    <td>
+                        <span class="db-strong">{{ row.retailer.shop_name }}</span>
+                        <small>{{ row.retailer.get_shop_type_display|tr }} · {{ row.retailer.owner_name }} · {{ row.retailer.city }}{% if not row.retailer.is_active %} · <span class="db-tag critical">{% translate "Inactive" %}</span>{% endif %}</small>
+                    </td>
+                    <td class="num">₹{{ row.sales_month|floatformat:2|intcomma }}</td>
+                    <td class="num">₹{{ row.purchases_month|floatformat:2|intcomma }}</td>
+                    <td class="num">₹{{ row.receivable|floatformat:2|intcomma }}</td>
+                    <td class="num">₹{{ row.payable|floatformat:2|intcomma }}</td>
+                    <td class="num">{% if row.low_stock %}<span class="db-tag warning">{{ row.low_stock }}</span>{% else %}0{% endif %}</td>
+                    <td class="num"><a href="?retailer={{ row.retailer.id }}" class="db-link">{% translate "Open" %} <i class="fas fa-arrow-right"></i></a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="db-table-empty">{% translate "No retailers yet." %} <a href="{% url 'retailer_register' %}">{% translate "Add one" %}</a></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+
+{% endif %}
 {% endblock %}
 
 {% block js %}
-
 <script src="{% static 'jss/dashboard.js' %}"></script>
+<script src="{% static 'jss/dashboard_home.js' %}"></script>
 {% endblock %}

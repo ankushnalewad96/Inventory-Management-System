@@ -1,0 +1,237 @@
+{% load i18n i18n_extras %}{% load static %}{% load qty %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% translate "Purchase Bill" %} {{ purchase.bill_number }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/print_doc.css' %}">
+</head>
+<body data-auto-download="{% if auto_download %}1{% endif %}" data-auto-print="{% if auto_print %}1{% endif %}">
+
+    <div class="toolbar">
+        <div class="group">
+            <a href="{% url 'purchase_detail' purchase.id %}" class="tool-btn"><i class="fas fa-arrow-left"></i> {% translate "Back to bill" %}</a>
+        </div>
+        <div class="group">
+            <button type="button" class="tool-btn" id="printBtn"><i class="fas fa-print"></i> {% translate "Print" %}</button>
+            <button type="button" class="tool-btn primary" id="downloadPdfBtn"><i class="fas fa-download"></i> {% translate "Download PDF" %}</button>
+        </div>
+    </div>
+
+    <div class="doc" id="docSheet" data-file-name="Purchase-{{ purchase.bill_number }}">
+        <div class="doc-header">
+            <div>
+                <div class="shop-name">{{ purchase.retailer.shop_name }}</div>
+                <div class="shop-meta">
+                    {{ purchase.retailer.address }}<br>
+                    {{ purchase.retailer.city }}, {{ purchase.retailer.state }} - {{ purchase.retailer.pincode }}<br>
+                    {% translate "Phone:" %} {{ purchase.retailer.mobile }}{% if purchase.retailer.email %} &nbsp;|&nbsp; {{ purchase.retailer.email }}{% endif %}
+                    {% if purchase.retailer.gst_number %}<br>GSTIN: <strong>{{ purchase.retailer.gst_number }}</strong>{% endif %}
+                </div>
+            </div>
+            <div class="doc-title">
+                <h1>{% translate "Purchase Bill" %}</h1>
+                <div class="meta">
+                    {% translate "Bill No:" %} <strong>{{ purchase.bill_number }}</strong><br>
+                    {% translate "Bill Date:" %} <strong>{{ purchase.bill_date|date:"d M Y" }}</strong><br>
+                    {% translate "Due Date:" %} <strong>{{ purchase.due_date|date:"d M Y"|default:"—" }}</strong>
+                </div>
+                <span class="status {{ purchase.payment_status|lower }}">{{ purchase.payment_status|tr }}</span>
+                {% if purchase.due_amount > 0 and purchase.due_date and purchase.due_date < today %}
+                    <span class="status overdue">{% translate "Overdue" %}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="parties">
+            <div>
+                <div class="party-label">{% translate "Supplier" %}</div>
+                <div class="party-name">{{ purchase.supplier.supplier_name }}</div>
+                <div class="party-meta">
+                    {% translate "Mobile:" %} {{ purchase.supplier.mobile }}
+                    {% if purchase.supplier.email %}<br>{{ purchase.supplier.email }}{% endif %}
+                    <br>{{ purchase.supplier.address }}, {{ purchase.supplier.city }}
+                    {% if purchase.supplier.gst_number %}<br>GSTIN: {{ purchase.supplier.gst_number }}{% endif %}
+                </div>
+            </div>
+            <div>
+                <div class="party-label">{% translate "Terms" %}</div>
+                <div class="party-meta">
+                    {% translate "Payment terms:" %} <strong>{{ purchase.payment_terms|default:"—" }}</strong><br>
+                    {% translate "State of supply:" %} <strong>{{ purchase.state_of_supply|default:"—" }}</strong><br>
+                    {% translate "Warehouse:" %} <strong>{{ purchase.warehouse|default:"—" }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table class="grid">
+                <thead>
+                    <tr>
+                        <th style="width:32px;">#</th>
+                        <th>{% translate "Item" %}</th>
+                        <th class="num">{% translate "Qty" %}</th>
+                        <th class="num">{% translate "Free" %}</th>
+                        <th class="num">{% translate "Rate" %}</th>
+                        <th class="num">MRP</th>
+                        <th class="num">GST</th>
+                        <th class="num">{% translate "Amount" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <div class="strong">{{ item.product.product_name }}</div>
+                            <div class="muted">{{ item.unit.short_name }}{% if item.product.hsn_code %} · {% translate "HSN" %} {{ item.product.hsn_code }}{% endif %}{% if item.batch_number %} · {% translate "Batch" %} {{ item.batch_number }}{% if item.expiry_date %} · {% translate "Exp" %} {{ item.expiry_date|date:"m/Y" }}{% endif %}{% endif %}</div>
+                        </td>
+                        <td class="num">{{ item.quantity|qty }} {{ item.unit.short_name }}{% if item.is_converted %}<div class="muted">= {{ item.base_quantity|qty }} {{ item.product.unit.short_name }}</div>{% endif %}</td>
+                        <td class="num">{{ item.free_quantity|qty }}</td>
+                        <td class="num">₹{{ item.purchase_price }}{% if item.is_converted %}<div class="muted">₹{{ item.base_unit_price }} / {{ item.product.unit.short_name }}</div>{% endif %}</td>
+                        <td class="num">₹{{ item.mrp }}</td>
+                        <td class="num">{{ item.gst|floatformat:"-2" }}%</td>
+                        <td class="num strong">₹{{ item.amount }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="empty">{% translate "No items on this bill." %}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bottom">
+            <div class="notes">
+                {% if purchase.remarks %}
+                    <h4>{% translate "Remarks" %}</h4>
+                    <p>{{ purchase.remarks }}</p>
+                {% endif %}
+                {% if purchase.due_amount <= 0 %}
+                    <span class="closed-stamp">{% translate "Fully paid" %}</span>
+                {% endif %}
+            </div>
+
+            <table class="totals">
+                <tr><td>{% translate "Subtotal" %}</td><td>₹{{ purchase.subtotal }}</td></tr>
+                <tr><td>{% translate "Discount" %}</td><td>- ₹{{ purchase.discount }}</td></tr>
+                {% if purchase.tax_type == "inter" %}
+                    <tr><td>IGST</td><td>+ ₹{{ purchase.igst }}</td></tr>
+                {% elif purchase.tax_type == "intra" %}
+                    <tr><td>CGST</td><td>+ ₹{{ purchase.cgst }}</td></tr>
+                    <tr><td>SGST</td><td>+ ₹{{ purchase.sgst }}</td></tr>
+                {% else %}
+                    <tr><td>GST</td><td>+ ₹{{ purchase.gst }}</td></tr>
+                {% endif %}
+                <tr><td>{% translate "Transport" %}</td><td>+ ₹{{ purchase.transport_charge }}</td></tr>
+                <tr><td>{% translate "Other charges" %}</td><td>+ ₹{{ purchase.other_charge }}</td></tr>
+                <tr class="grand"><td>{% translate "Grand Total" %}</td><td>₹{{ purchase.grand_total }}</td></tr>
+                <tr class="paid"><td>{% translate "Paid" %}</td><td>₹{{ purchase.paid_amount }}</td></tr>
+                {% if purchase.returned_amount > 0 %}
+                    <tr class="paid"><td>{% translate "Less: goods returned" %}</td><td>₹{{ purchase.returned_amount }}</td></tr>
+                {% endif %}
+                <tr class="due"><td>{% translate "Balance Due" %}</td><td>₹{{ purchase.due_amount }}</td></tr>
+            </table>
+        </div>
+
+        {% if purchase.tax_type and gst_summary %}
+        <div class="section-label">{% translate "GST summary" %} ({% if purchase.tax_type == "inter" %}{% translate "inter-state: IGST" %}{% else %}{% translate "intra-state: CGST + SGST" %}{% endif %})</div>
+        <div class="table-wrap"><table class="grid">
+            <thead>
+                <tr>
+                    <th>{% translate "GST rate" %}</th>
+                    <th class="num">{% translate "Taxable value" %}</th>
+                    {% if purchase.tax_type == "inter" %}
+                        <th class="num">IGST</th>
+                    {% else %}
+                        <th class="num">CGST</th>
+                        <th class="num">SGST</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in gst_summary %}
+                <tr>
+                    <td>{{ row.rate|floatformat:"-2" }}%</td>
+                    <td class="num">₹{{ row.taxable }}</td>
+                    {% if purchase.tax_type == "inter" %}
+                        <td class="num">₹{{ row.igst }}</td>
+                    {% else %}
+                        <td class="num">₹{{ row.cgst }}</td>
+                        <td class="num">₹{{ row.sgst }}</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table></div>
+        {% endif %}
+
+        {% if purchase_returns %}
+        <div class="section-label">{% translate "Goods returned (debit notes)" %}</div>
+        <div class="table-wrap"><table class="grid">
+            <thead>
+                <tr><th>{% translate "Debit note" %}</th><th>{% translate "Date" %}</th><th class="num">{% translate "Reduced due" %}</th><th class="num">{% translate "Refund from supplier" %}</th><th class="num">{% translate "Total" %}</th></tr>
+            </thead>
+            <tbody>
+                {% for note in purchase_returns %}
+                <tr>
+                    <td>{{ note.debit_note_number }}</td>
+                    <td>{{ note.return_date|date:"d M Y" }}</td>
+                    <td class="num">₹{{ note.applied_to_bill }}</td>
+                    <td class="num">₹{{ note.refund_amount }}</td>
+                    <td class="num">₹{{ note.total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table></div>
+        {% endif %}
+
+        <div class="section-label">{% translate "Payment history" %}</div>
+        <div class="table-wrap">
+            <table class="grid">
+                <thead>
+                    <tr>
+                        <th>{% translate "Date" %}</th>
+                        <th>{% translate "Mode" %}</th>
+                        <th>{% translate "Reference" %}</th>
+                        <th>{% translate "Remarks" %}</th>
+                        <th class="num">{% translate "Amount" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment.payment_date|date:"d M Y" }}</td>
+                        <td>{{ payment.payment_type|tr }}</td>
+                        <td>{{ payment.reference|default:"—" }}</td>
+                        <td>{{ payment.remarks|default:"—" }}</td>
+                        <td class="num credit strong">₹{{ payment.amount }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="empty">{% translate "No payment made yet." %}</td></tr>
+                    {% endfor %}
+                </tbody>
+                {% if payments %}
+                <tfoot>
+                    <tr>
+                        <td colspan="4">{% translate "Total paid" %}</td>
+                        <td class="num">₹{{ purchase.paid_amount }}</td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+
+        <div class="doc-footer">
+            <div>{% translate "Printed on" %} {{ today|date:"d M Y" }}.<br>{% translate "This is a computer-generated document." %}</div>
+            <div class="signature">
+                <div class="line"></div>
+                {% translate "For" %} {{ purchase.retailer.shop_name }}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="{% static 'jss/print_doc.js' %}"></script>
+</body>
+</html>

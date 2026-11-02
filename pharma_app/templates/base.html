@@ -1,207 +1,293 @@
-{% load static %}
+{% load i18n i18n_extras ui %}{% load static %}{% get_current_language as LANGUAGE_CODE %}
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="{{ LANGUAGE_CODE }}" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %} {% endblock %}</title>
+    {# Apply the saved theme before the page paints (no white flash in dark mode) #}
+    <script>
+        (function () {
+            try {
+                var theme = localStorage.getItem('theme');
+                if (theme) document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) {}
+        })();
+    </script>
+    {# gettext() for page scripts: pop-ups and form errors in the user's language #}
+    <script src="{% url 'javascript-catalog' %}"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/error_message.css' %}">
 
-    {% block css %} 
-        
+    {% block css %}
+
     {% endblock %}
-<!-- <base target="_blank"> -->
 </head>
 <body>
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
 
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <button class="collapse-btn" onclick="toggleSidebar()" title="Collapse sidebar">
-            <i class="fas fa-chevron-left"></i>
-        </button>
+    {# ============================== SIDEBAR ============================== #}
+    {% with path=request.path %}
+    <aside class="sidebar" id="sidebar" aria-label="{% translate "Main menu" %}">
 
         <div class="sidebar-header">
-            <div class="logo-icon">
-                <i class="fas fa-wave-square"></i>
-            </div>
-            <div class="logo-text">CashFlow <span>IMS</span></div>
+            <a href="{% url 'dashboard' %}" class="brand" title="{{ app_name }}">
+                <span class="logo-icon"><i class="fas fa-store"></i></span>
+                <span class="brand-text">
+                    <span class="logo-text">{{ app_name }}</span>
+                    <span class="brand-tagline">{% translate "Billing & Stock" %}</span>
+                </span>
+            </a>
+            <button type="button" class="sidebar-close" onclick="closeMobileSidebar()" aria-label="{% translate "Close" %}">
+                <i class="fas fa-xmark"></i>
+            </button>
         </div>
 
-        <div class="nav-section">
-            <div class="nav-section-title">Overview</div>
-            <a href="{% url 'dashboard' %}" class="nav-item {% if request.path == '/' %}active{% endif %}">
-                <i class="fas fa-home"></i>
-                <span>Home</span>
-            </a>
-            <a href="{% url 'add_new_supplier' %}" class="nav-item {% if request.path == '/add-supplier/' %}active{% endif %}">
-                <i class="fas fa-users"></i>
-                <span>Add Suppliers</span>
-            </a>
+        {# Who is using it: the shop (retailer) or the admin #}
+        <div class="shop-card">
             {% if request.user.is_superuser %}
-            <a href="{% url 'retailer_register' %}" class="nav-item {% if request.path == '/retailer-register/' %}active{% endif %}">
-                <i class="fas fa-users"></i>
-                <span>Add Retailers</span>
-            </a>
+                <span class="shop-card-avatar admin"><i class="fas fa-user-shield"></i></span>
+                <span class="shop-card-text">
+                    <span class="shop-card-name">{% translate "Super Admin" %}</span>
+                    <span class="shop-card-meta">{% translate "All shops" %}</span>
+                </span>
+            {% else %}
+                <span class="shop-card-avatar">{{ request.user.retailer.shop_name|initials }}</span>
+                <span class="shop-card-text">
+                    <span class="shop-card-name">{{ request.user.retailer.shop_name }}</span>
+                    {% if shop_type_label %}<span class="shop-card-meta">{{ shop_type_label|tr }}</span>{% endif %}
+                </span>
+            {% endif %}
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">{% translate "Overview" %}</div>
+                <a href="{% url 'dashboard' %}" data-label="{% translate "Dashboard" %}"
+                   class="nav-item {% if path == '/' %}active{% endif %}">
+                    <i class="fas fa-gauge-high"></i><span>{% translate "Dashboard" %}</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">{% translate "Stock & Buying" %}</div>
+                <a href="{% url 'product_list' %}" data-label="{% translate "Products" %}"
+                   class="nav-item {% if path == '/product-list/' or path == '/add-product/' or path == '/low-stock/' %}active{% endif %}">
+                    <i class="fas fa-boxes-stacked"></i><span>{% translate "Products" %}</span>
+                </a>
+                <a href="{% url 'purchase_product_list' %}" data-label="{% translate "Purchase" %}"
+                   class="nav-item {% if path == '/purchase-product-list/' or path == '/add-order/' or '/purchases-details/' in path %}{% if '/return/' not in path %}active{% endif %}{% endif %}">
+                    <i class="fas fa-cart-flatbed"></i><span>{% translate "Purchase" %}</span>
+                </a>
+                <a href="{% url 'supplier_list' %}" data-label="{% translate "Suppliers" %}"
+                   class="nav-item {% if '/suppliers/' in path or '/supplier-products/' in path or path == '/add-supplier/' %}active{% endif %}">
+                    <i class="fas fa-truck-field"></i><span>{% translate "Suppliers" %}</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">{% translate "Selling" %}</div>
+                <a href="{% url 'sales_list' %}" data-label="{% translate "Sales" %}"
+                   class="nav-item {% if '/sales/' in path or path == '/sale-create/' %}{% if '/return/' not in path %}active{% endif %}{% endif %}">
+                    <i class="fas fa-cash-register"></i><span>{% translate "Sales" %}</span>
+                </a>
+                <a href="{% url 'customer_list' %}" data-label="{% translate "Customers" %}"
+                   class="nav-item {% if '/customers/' in path %}active{% endif %}">
+                    <i class="fas fa-users"></i><span>{% translate "Customers" %}</span>
+                </a>
+                {% comment %}
+                    Feature menus: wrap every item in its feature switch (never a
+                    shop-type check). `features` comes from context_processors.
+                {% endcomment %}
+                {% if features.quotations %}
+                <a href="{% url 'quotation_list' %}" data-label="{% translate "Quotations" %}"
+                   class="nav-item {% if '/quotations/' in path %}active{% endif %}">
+                    <i class="fas fa-file-signature"></i><span>{% translate "Quotations" %}</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'returns_list' %}" data-label="{% translate "Returns" %}"
+                   class="nav-item {% if path == '/returns/' or '/return/' in path or '-note/' in path %}active{% endif %}">
+                    <i class="fas fa-rotate-left"></i><span>{% translate "Returns" %}</span>
+                </a>
+            </div>
+
+            {% if features.expiry_tracking or features.prescription_details %}
+            <div class="nav-section">
+                <div class="nav-section-title">{% translate "Medicines" %}</div>
+                {% if features.expiry_tracking %}
+                <a href="{% url 'near_expiry' %}" data-label="{% translate "Near Expiry" %}"
+                   class="nav-item {% if path == '/near-expiry/' %}active{% endif %}">
+                    <i class="fas fa-hourglass-half"></i><span>{% translate "Near Expiry" %}</span>
+                </a>
+                {% endif %}
+                {% if features.prescription_details %}
+                <a href="{% url 'h1_register' %}" data-label="{% translate "H1 Register" %}"
+                   class="nav-item {% if path == '/h1-register/' %}active{% endif %}">
+                    <i class="fas fa-file-prescription"></i><span>{% translate "H1 Register" %}</span>
+                </a>
+                {% endif %}
+            </div>
             {% endif %}
 
-            <a href="{% url 'product_list' %}" class="nav-item {% if request.path == '/product-list/' or request.path == '/add-product/' or request.path == '/low-stock/' %}active{% endif %}">
-                <i class="fas fa-cart-plus"></i>
-                <span>Products</span>
-            </a>
-            
-        </div>
-
-        <div class="nav-section">
-            <div class="nav-section-title">Transactions</div>
-            <a href="{% url 'purchase_product_list' %}" class="nav-item {% if request.path == '/purchase-product-list/' or request.path == '/add-order/' %}active{% endif %}">
-                <i class="fas fa-shopping-cart"></i>
-                <span>Purchase</span>
-                <!-- <span class="nav-badge">12</span> -->
-            </a>
-            
-            <a href="{% url 'sale_create' %}" class="nav-item {% if request.path == '/sale-create/' %}active{% endif %}">
-                <i class="fas fa-chart-line"></i>
-                <span>Sales</span>
-            </a>
-            <!-- <a href="#" class="nav-item">
-                <i class="fas fa-receipt"></i>
-                <span>Expenses</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-box"></i>
-                <span>Inventory</span>
-            </a> -->
-        </div>
-
-        <!-- <div class="nav-section">
-            <div class="nav-section-title">Insights</div>
-            <a href="#" class="nav-item">
-                <i class="fas fa-chart-bar"></i>
-                <span>Reports</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
-            </a>
-        </div> -->
-
-        <!-- <div class="sidebar-footer">
-            <div class="cash-pulse">
-                <div class="cash-pulse-header">
-                    <span class="cash-pulse-title">Cash flow pulse</span>
-                    <span class="cash-pulse-value">+8.2%</span>
-                </div>
-                <div class="pulse-chart">
-                    <div class="pulse-bar" style="height:40%"></div>
-                    <div class="pulse-bar" style="height:55%"></div>
-                    <div class="pulse-bar" style="height:45%"></div>
-                    <div class="pulse-bar" style="height:60%"></div>
-                    <div class="pulse-bar" style="height:50%"></div>
-                    <div class="pulse-bar" style="height:70%"></div>
-                    <div class="pulse-bar" style="height:65%"></div>
-                    <div class="pulse-bar" style="height:80%"></div>
-                    <div class="pulse-bar" style="height:75%"></div>
-                    <div class="pulse-bar" style="height:90%"></div>
-                </div>
+            {% if request.user.is_superuser %}
+            <div class="nav-section">
+                <div class="nav-section-title">{% translate "Administration" %}</div>
+                <a href="{% url 'retailer_list' %}" data-label="{% translate "Retailers" %}"
+                   class="nav-item {% if path == '/retailer-register/' or path == '/retailers/' %}active{% endif %}">
+                    <i class="fas fa-store"></i><span>{% translate "Retailers" %}</span>
+                </a>
+                <a href="{% url 'shop_type_services' %}" data-label="{% translate "Shop types" %}"
+                   class="nav-item {% if path == '/shop-types/' %}active{% endif %}">
+                    <i class="fas fa-toggle-on"></i><span>{% translate "Shop types" %}</span>
+                </a>
             </div>
-        </div> -->
-    </aside>
+            {% endif %}
+        </nav>
 
-    <!-- Main Content -->
+        <div class="sidebar-footer">
+            <button type="button" class="nav-item collapse-btn" onclick="toggleSidebar()"
+                    data-label="{% translate "Expand menu" %}" title="{% translate "Collapse sidebar" %}">
+                <i class="fas fa-angles-left"></i><span>{% translate "Collapse menu" %}</span>
+            </button>
+            <a href="{% url 'user_logout' %}" class="nav-item nav-logout" data-label="{% translate "Logout" %}">
+                <i class="fas fa-arrow-right-from-bracket"></i><span>{% translate "Logout" %}</span>
+            </a>
+        </div>
+    </aside>
+    {% endwith %}
+
+    {# ============================== MAIN ============================== #}
     <main class="main-content" id="mainContent">
-        <!-- Header -->
-        <div class="page-header">
-            <div style="display:flex;align-items:center;gap:8px;">
-                <button class="sidebar-toggle" onclick="openMobileSidebar()">
+
+        {# Top bar: page title on the left, shortcuts and the user on the right #}
+        <header class="topbar">
+            <div class="topbar-left">
+                <button type="button" class="sidebar-toggle" onclick="openMobileSidebar()" aria-label="{% translate "Open menu" %}">
                     <i class="fas fa-bars"></i>
                 </button>
-                <div class="page-title">
-                    {% block page_title %} 
-        
-                    {% endblock %}                  
-                    <!-- <h1>Home</h1>
-                    <p>A quick pulse on your cash position</p> -->
+                <div class="topbar-title">
+                    {% block page_title %}
+
+                    {% endblock %}
                 </div>
             </div>
-            {% if messages %}
-                <div class="messages-container">
-                {% for message in messages %}
-                    <!-- If tag is error, we also add 'danger' for CSS styling clarity -->
-                    <div class="alert alert-{{ message.tags }} {% if message.tags == 'error' %}danger{% endif %}">
-                    <div class="alert-icon">
-                        {% if message.tags == 'success' %}✓
-                        {% elif message.tags == 'error' or message.tags == 'danger' %}✕
-                        {% elif message.tags == 'warning' %}⚠
-                        {% else %}ℹ{% endif %}
-                    </div>
-                    <div class="alert-text">
-                        {{ message }}
-                    </div>
-                    <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
-                    </div>
-                {% endfor %}
-                </div>
-                {% endif %}
+
             <div class="header-actions">
-                <button class="header-icon-btn" onclick="toggleTheme()" title="Toggle theme">
+                {% if not request.user.is_superuser and request.path != '/sale-create/' %}
+                <a href="{% url 'sale_create' %}" class="topbar-cta hide-mobile">
+                    <i class="fas fa-plus"></i> {% translate "New sale" %}
+                </a>
+                {% endif %}
+
+                {# Language menu: saves the choice and reloads the same page #}
+                {% get_available_languages as LANGUAGES %}
+                <form action="{% url 'set_language' %}" method="post" class="language-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <label class="language-picker" title="{% translate "Language" %}">
+                        <i class="fas fa-language" aria-hidden="true"></i>
+                        <span class="sr-only">{% translate "Language" %}</span>
+                        <select name="language" onchange="this.form.submit()" aria-label="{% translate "Language" %}">
+                            {% get_language_info_list for LANGUAGES as language_list %}{% for language in language_list %}
+                                <option value="{{ language.code }}" {% if language.code == LANGUAGE_CODE %}selected{% endif %}>{{ language.name_local }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <noscript><button type="submit">{% translate "Change" %}</button></noscript>
+                </form>
+
+                <button type="button" class="header-icon-btn" onclick="toggleTheme()" title="{% translate "Toggle theme" %}" aria-label="{% translate "Toggle theme" %}">
                     <i class="fas fa-moon" id="themeIcon"></i>
                 </button>
-                <!-- <button class="header-icon-btn" style="position:relative;">
-                    <i class="fas fa-bell"></i>
-                    <span class="notification-badge">9</span>
-                </button> -->
-                <!-- USER PROFILE + DROPDOWN (see .user-dropdown-menu CSS above form-card) -->
-                <div class="user-profile" id="userProfile">
+
+                <div class="user-profile" id="userProfile" role="button" tabindex="0" aria-haspopup="true">
                     {% if request.user.is_superuser %}
-                    <div class="user-avatar">Admin</div>
-                    <div class="user-info">
-                        <div class="user-name">{{request.user}}</div>
-                    </div>
+                        <span class="user-avatar admin">{{ request.user.username|initials:1 }}</span>
+                        <span class="user-info">
+                            <span class="user-name">{{ request.user.username }}</span>
+                            <span class="user-role">{% translate "Super Admin" %}</span>
+                        </span>
                     {% else %}
-                    <div class="user-avatar">Retailer</div>
-                    <div class="user-info">
-                        <div class="user-name">{{request.user.retailer.shop_name}}</div>
-                    </div>
+                        <span class="user-avatar">{{ request.user.retailer.shop_name|initials }}</span>
+                        <span class="user-info">
+                            <span class="user-name">{{ request.user.retailer.shop_name }}</span>
+                            <span class="user-role">{% if shop_type_label %}{{ shop_type_label|tr }}{% else %}{{ request.user.username }}{% endif %}</span>
+                        </span>
                     {% endif %}
-                    
-                    <i class="fas fa-chevron-down" style="font-size:10px;color:var(--text-muted);"></i>
+                    <i class="fas fa-chevron-down user-chevron"></i>
 
                     <div class="user-dropdown-menu" id="userDropdownMenu">
-                        <a href="#"><i class="fas fa-user"></i> My Profile</a>
-                        <a href="#"><i class="fas fa-cog"></i> Account Settings</a>
-                        <a href="#"><i class="fas fa-question-circle"></i> Help & Support</a>
+                        <div class="dropdown-head">
+                            <span class="dropdown-name">{% if request.user.is_superuser %}{{ request.user.username }}{% else %}{{ request.user.retailer.owner_name|default:request.user.username }}{% endif %}</span>
+                            <span class="dropdown-meta">{{ request.user.email|default:request.user.username }}</span>
+                        </div>
+                        <a href="{% url 'dashboard' %}"><i class="fas fa-gauge-high"></i> {% translate "Dashboard" %}</a>
+                        {% if request.user.is_superuser %}
+                            <a href="{% url 'retailer_list' %}"><i class="fas fa-store"></i> {% translate "Retailers" %}</a>
+                            <a href="{% url 'shop_type_services' %}"><i class="fas fa-toggle-on"></i> {% translate "Shop types" %}</a>
+                            <a href="{% url 'admin:index' %}"><i class="fas fa-screwdriver-wrench"></i> {% translate "Admin panel" %}</a>
+                        {% else %}
+                            <a href="{% url 'sale_create' %}"><i class="fas fa-cash-register"></i> {% translate "New sale" %}</a>
+                            <a href="{% url 'add_new_order' %}"><i class="fas fa-cart-flatbed"></i> {% translate "New purchase" %}</a>
+                        {% endif %}
                         <div class="user-dropdown-divider"></div>
-                        <a href="{% url 'user_logout' %}" class="danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        <a href="{% url 'user_logout' %}" class="danger"><i class="fas fa-arrow-right-from-bracket"></i> {% translate "Logout" %}</a>
                     </div>
                 </div>
             </div>
+        </header>
+
+        {# Messages float as toasts so they never push the page around #}
+        {% if messages %}
+        <div class="messages-container" role="status" aria-live="polite">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} {% if message.tags == 'error' %}danger{% endif %}">
+                <div class="alert-icon">
+                    {% if message.tags == 'success' %}<i class="fas fa-circle-check"></i>
+                    {% elif message.tags == 'error' or message.tags == 'danger' %}<i class="fas fa-circle-xmark"></i>
+                    {% elif message.tags == 'warning' %}<i class="fas fa-triangle-exclamation"></i>
+                    {% else %}<i class="fas fa-circle-info"></i>{% endif %}
+                </div>
+                <div class="alert-text">{{ message }}</div>
+                <button type="button" class="alert-close" onclick="this.parentElement.remove()" aria-label="{% translate "Close" %}">&times;</button>
+            </div>
+            {% endfor %}
         </div>
+        {% endif %}
 
-
+        <div class="page-body">
         {% block body %}
 
         {% endblock %}
-
-        
+        </div>
     </main>
 
-    
     {% block js %}
-        
+
     {% endblock %}
     <script>
-        setTimeout(function() {
-            let alerts = document.querySelectorAll('.messages-container .alert');
-            alerts.forEach(function(alert) {
-            alert.style.transition = "transform 0.4s ease, opacity 0.4s ease";
-            alert.style.opacity = "0";
-            alert.style.transform = "translateX(100%)";
-            setTimeout(() => alert.remove(), 400);
+        // Messages disappear after 5 seconds.
+        setTimeout(function () {
+            document.querySelectorAll('.messages-container .alert').forEach(function (alert) {
+                alert.style.transition = 'transform 0.4s ease, opacity 0.4s ease';
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateX(100%)';
+                setTimeout(function () { alert.remove(); }, 400);
             });
-        }, 5000); // 5000ms = 5 seconds
+        }, 5000);
+
+        // Keyboard: Enter/Space opens the user menu; Escape closes the mobile menu.
+        (function () {
+            var profile = document.getElementById('userProfile');
+            if (profile) {
+                profile.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); profile.click(); }
+                });
+            }
+        })();
     </script>
 </body>
 </html>

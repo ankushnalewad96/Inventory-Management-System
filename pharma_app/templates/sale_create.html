@@ -1,21 +1,26 @@
 {% extends "base.html" %}
-{% load static %}
+{% load i18n i18n_extras %}
+{% load static %}{% load qty %}
 
-{% block title %}Create New Sale{% endblock %}
+{% block title %}{% translate "New Sale Invoice" %} - {{ app_name }}{% endblock %}
 {% block css %}
+<!-- Select2 CSS (our stylesheet comes after it to restyle the widget) -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'css/sale_create.css' %}">
 <link rel="stylesheet" href="{% static 'css/error_message.css' %}">
-<!-- Select2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 
 {% endblock %}
 
 {% block page_title %}
-    <h1>
-        <i class="fas fa-file-invoice-dollar"></i>
-        Create New Sale
-    </h1>
-    <p>Generate a new sales invoice for your customer</p>
+    <div class="page-title-row">
+        <a href="{% url 'sales_list' %}" class="page-back-btn" title="{% translate "Back to Sales" %}" aria-label="{% translate "Back to Sales" %}">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            <h1>{% translate "New Sale Invoice" %}</h1>
+            <p>{% translate "Create a sales invoice for your customer" %}</p>
+        </div>
+    </div>
 {% endblock %}
 
 
@@ -31,393 +36,541 @@
         "hsn_code": "{{ product.hsn_code|escapejs }}",
         "unit_name": "{{ product.unit.name|default:''|escapejs }}",
         "unit_id": "{{ product.unit.id|default:'' }}",
-        "stock": "{{ product.current_stock|default:0 }}",
+        "stock": "{{ product.current_stock|qty }}",
         "selling_price": "{{ product.selling_price|default:0 }}",
+        "wholesale_price": "{{ product.wholesale_price|default_if_none:'' }}",
+        "specification": "{{ product.specification|escapejs }}",
         "mrp": "{{ product.mrp|default:0 }}",
-        "gst": "{{ product.gst_percentage|default:0 }}",
+        "gst": "{{ product.gst|default:0 }}",
         "retailer": "{{ product.retailer_id|default:'' }}"
     }{% if not forloop.last %},{% endif %}
     {% endfor %}
 ]
 </script>
 
-<!-- Main Content Container -->
-<div class="sale-create-wrapper">
-    <!-- Sale Form -->
-    <form id="saleForm" method="post" action="{% url 'sale_create' %}" novalidate>
-        {% csrf_token %}
+<form id="saleForm" method="post" action="{% url 'sale_create' %}" novalidate>
+    {% csrf_token %}
 
-        <div class="sale-grid">
-            <div class="form-group" id="retailerField">
-                <label>
-                    Select Retailer <span class="required">*</span>
-                </label>
+    {% if not is_admin %}
+        {# Retailers always sell from their own shop. #}
+        <input type="hidden" name="retailer" value="{{ retailers.id }}">
+    {% endif %}
 
-                <select name="retailer" id="retailerSelect" class="form-control">
-                    <option value="">Select Retailer</option>
-                    {% if not request.user.is_superuser %}
-                        <option value="{{ retailers.id }}" selected>
-                            {{ retailers }}
-                        </option>
-                    {% else %}
-                        {% for retailer in retailers %}
-                            <option value="{{ retailer.id }}">
-                                {{ retailer }}
-                            </option>
-                        {% endfor %}
-                    {% endif %}
-                </select>
-            </div>
-            <!-- ========== SECTION A & B ========== -->
-            <div class="info-cards-row">
-                <!-- Section A: Customer Info -->
-                <div class="card card-customer">
-                    <div class="card-header">
-                        <div class="card-header-icon">
-                            <i class="fas fa-user-tie"></i>
-                        </div>
-                        <div class="card-header-text">
-                            <h3>Customer Information</h3>
-                            <span>Select or add a customer</span>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="customer-select-row">
-                            <div class="form-group form-group-lg">
-                                <label for="customer_select">Select Customer <span class="required">*</span></label>
-                                <div class="select-with-action">
-                                    <select id="customer_select" name="customer" class="form-control select2-customer" required>
-                                        <option value="">-- Search Customer --</option>
-                                        {% for customer in customers %}
-                                        <option value="{{ customer.id }}"
-                                                data-retailer="{{ customer.retailer.id|default:'--' }}"
-                                                data-mobile="{{ customer.mobile|default:'--' }}"
-                                                data-address="{{ customer.address|default:'NA' }}"
-                                                data-gst="{{ customer.gst_number|default:'0' }}"
-                                                data-credit-limit="{{ customer.credit_limit }}"
-                                                data-outstanding="{{ customer.opening_balance }}">
-                                            {{ customer.customer_name }} {% if customer.mobile %} - {{ customer.mobile }}{% endif %}
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                    <button type="button" class="btn btn-icon btn-primary" id="btnAddCustomer" title="Add New Customer">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="customer-details-grid" id="customerDetails">
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-phone"></i> Mobile</span>
-                                <span class="detail-value" id="custMobile">--</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Address</span>
-                                <span class="detail-value" id="custAddress">--</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-file-alt"></i> GST Number</span>
-                                <span class="detail-value" id="custGST">--</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-credit-card"></i> Credit Limit</span>
-                                <span class="detail-value" id="custCreditLimit">--</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-wallet"></i> Outstanding Balance</span>
-                                <span class="detail-value text-danger" id="custOutstanding">--</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Section B: Invoice Info -->
-                <div class="card card-invoice">
-                    <div class="card-header">
-                        <div class="card-header-icon">
-                            <i class="fas fa-receipt"></i>
-                        </div>
-                        <div class="card-header-text">
-                            <h3>Invoice Details</h3>
-                            <span>Invoice number and date</span>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="invoice-fields">
-                            <div class="form-group">
-                                <label for="invoice_number">Invoice Number</label>
-                                <div class="input-icon-wrapper">
-                                    <i class="fas fa-hashtag"></i>
-                                    <input type="text" id="invoice_number" name="invoice_number"
-                                           class="form-control" value="{{ next_invoice_number }}" readonly>
-                                </div>
-                                <small class="form-text">Auto-generated invoice number</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="invoice_date">Invoice Date <span class="required">*</span></label>
-                                <div class="input-icon-wrapper" onclick="var d=document.getElementById('invoice_date'); if(d.showPicker)d.showPicker(); else d.focus();">
-                                    <i class="fas fa-calendar" style="pointer-events:none;"></i>
-                                    <input type="date" id="invoice_date" name="invoice_date"
-                                           class="form-control" value="{{ today|date:'Y-m-d' }}" required
-                                           onclick="event.stopPropagation(); if(this.showPicker)this.showPicker();" readonly>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ========== SECTION C: Product Entry Table ========== -->
-            <div class="card card-products">
-                <div class="card-header">
-                    <div class="card-header-icon">
-                        <i class="fas fa-boxes"></i>
-                    </div>
-                    <div class="card-header-text">
-                        <h3>Product Items</h3>
-                        <span>Add products to the invoice</span>
-                    </div>
-                    <div class="card-header-action">
-                        <button type="button" class="btn btn-success btn-sm" id="btnAddRow">
-                            <i class="fas fa-plus"></i> Add Product
-                        </button>
-                    </div>
-                </div>
-                <div class="card-body card-body-table">
-                    <div class="table-responsive">
-                        <table class="table table-sale-items" id="saleItemsTable">
-                            <thead>
-                                <tr>
-                                    <th style="width: 28%;">Product <span class="required">*</span></th>
-                                    <th style="width: 8%;">Unit</th>
-                                    <th style="width: 10%;">Stock</th>
-                                    <th style="width: 10%;">Selling Price</th>
-                                    <th style="width: 8%;">MRP</th>
-                                    <th style="width: 7%;">GST %</th>
-                                    <th style="width: 9%;">Qty <span class="required">*</span></th>
-                                    <th style="width: 9%;">Discount</th>
-                                    <th style="width: 10%;">Amount</th>
-                                    <th style="width: 4%;"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="saleItemsBody">
-                                <!-- Dynamic rows will be added here -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Empty State -->
-                    <div class="empty-state" id="emptyState">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-shopping-cart"></i>
-                        </div>
-                        <h4>No Products Added</h4>
-                        <p>Click "Add Product" to start adding items to this invoice</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ========== SECTION D: Summary & Payment ========== -->
-            <div class="summary-payment-row">
-
-                <!-- Payment Section -->
-                <div class="card card-payment">
-                    <div class="card-header">
-                        <div class="card-header-icon">
-                            <i class="fas fa-money-bill-wave"></i>
-                        </div>
-                        <div class="card-header-text">
-                            <h3>Payment Details</h3>
-                            <span>Enter payment information</span>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="payment-grid">
-                            <div class="form-group">
-                                <label for="payment_type">Payment Type <span class="required">*</span></label>
-                                <select id="payment_type" name="payment_type" class="form-control" required>
-                                    <option value="">-- Select --</option>
-                                    <option value="Cash">Cash</option>
-                                    <option value="UPI">UPI</option>
-                                    <option value="Bank Transfer">Bank Transfer</option>
-                                    <option value="Cheque">Cheque</option>
-                                    <option value="Credit">Credit</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="paid_amount">Paid Amount <span class="required">*</span></label>
-                                <div class="input-prefix">
-                                    <span class="prefix">&#8377;</span>
-                                    <input type="number" id="paid_amount" name="paid_amount"
-                                           class="form-control" step="0.01" min="0" value="0.00" required>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="due_amount">Due Amount</label>
-                                <div class="input-prefix">
-                                    <span class="prefix">&#8377;</span>
-                                    <input type="number" id="due_amount" name="due_amount"
-                                           class="form-control" step="0.01" readonly value="0.00">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="payment_status">Payment Status</label>
-                                <div class="status-badge" id="paymentStatusBadge">
-                                    <span class="badge badge-unpaid">Unpaid</span>
-                                </div>
-                                <input type="hidden" id="payment_status" name="payment_status" value="Unpaid">
-                            </div>
-                        </div>
-                        <div class="form-group form-group-remarks">
-                            <label for="remarks">Remarks</label>
-                            <textarea id="remarks" name="remarks" class="form-control" rows="3"
-                                      placeholder="Enter any additional notes..."></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Summary Section -->
-                <div class="card card-summary">
-                    <div class="card-header">
-                        <div class="card-header-icon">
-                            <i class="fas fa-calculator"></i>
-                        </div>
-                        <div class="card-header-text">
-                            <h3>Bill Summary</h3>
-                            <span>Auto-calculated totals</span>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="summary-list">
-                            <div class="summary-item">
-                                <span class="summary-label">Subtotal</span>
-                                <span class="summary-value" id="summarySubtotal">&#8377; 0.00</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">Total Discount</span>
-                                <span class="summary-value text-success" id="summaryDiscount">- &#8377; 0.00</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">Total GST</span>
-                                <span class="summary-value" id="summaryGST">+ &#8377; 0.00</span>
-                            </div>
-                            <div class="summary-divider"></div>
-                            <div class="summary-item summary-grand">
-                                <span class="summary-label">Grand Total</span>
-                                <span class="summary-value" id="summaryGrandTotal">&#8377; 0.00</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ========== ACTION BUTTONS ========== -->
-            <div class="action-bar">
-                <div class="action-bar-left">
-                    <button type="button" class="btn btn-outline-secondary" id="btnCancel">
-                        <i class="fas fa-times"></i> Cancel
-                    </button>
-                </div>
-                <div class="action-bar-right">
-                    <button type="submit" class="btn btn-primary" id="btnSaveSale" name="action" value="save">
-                        <i class="fas fa-save"></i> Save Sale
-                    </button>
-                    <button type="submit" class="btn btn-success" id="btnSavePrint" name="action" value="save_print">
-                        <i class="fas fa-print"></i> Save &amp; Print
-                    </button>
-                </div>
-            </div>
-
+    {% if quotation_prefill %}
+        {# Converting a quotation: quoted prices are used for its products. #}
+        <input type="hidden" name="quotation" value="{{ quotation_prefill.id }}">
+        <div class="quotation-banner">
+            <i class="fas fa-file-signature"></i>
+            <span>{% blocktranslate with number=quotation_prefill.number %}Converting quotation <strong>{{ number }}</strong> to a sale. Quoted prices are kept; check quantities and stock, then save.{% endblocktranslate %}</span>
+            <a href="{% url 'sale_create' %}" class="quotation-banner-cancel">{% translate "Cancel" %}</a>
         </div>
-    </form>
-</div>
+    {% endif %}
+
+    <!-- Progress: ticks off as each part of the invoice is filled -->
+    <ol class="sale-steps" id="saleSteps" aria-label="{% translate "Invoice progress" %}">
+        <li data-step="customer">
+            <span class="step-dot"><span class="step-num">1</span><i class="fas fa-check"></i></span>
+            <span class="step-text"><strong>{% translate "Customer" %}</strong><small>{% translate "Who is buying" %}</small></span>
+        </li>
+        <li data-step="items">
+            <span class="step-dot"><span class="step-num">2</span><i class="fas fa-check"></i></span>
+            <span class="step-text"><strong>{% translate "Items" %}</strong><small>{% translate "What is sold" %}</small></span>
+        </li>
+        <li data-step="payment">
+            <span class="step-dot"><span class="step-num">3</span><i class="fas fa-check"></i></span>
+            <span class="step-text"><strong>{% translate "Payment" %}</strong><small>{% translate "How it is paid" %}</small></span>
+        </li>
+    </ol>
+
+    <div class="sale-layout">
+
+        <!-- ================= MAIN COLUMN ================= -->
+        <div class="sale-main">
+
+            <!-- Sale details: retailer, customer, invoice -->
+            <section class="sale-card">
+                <header class="sale-card-header">
+                    <span class="sale-card-icon tone-blue"><i class="fas fa-user-tie"></i></span>
+                    <div class="sale-card-heading">
+                        <h3>{% translate "Sale Details" %}</h3>
+                        <p>{% translate "Customer and invoice information" %}</p>
+                    </div>
+                </header>
+
+                <div class="sale-card-body">
+                    <div class="sale-fields details{% if is_admin %} admin{% endif %}">
+                        {% if is_admin %}
+                        <div class="form-group field-retailer">
+                            <label for="retailerSelect">{% translate "Retailer" %} <span class="required">*</span></label>
+                            <select name="retailer" id="retailerSelect" class="form-control">
+                                <option value="">{% translate "Select retailer" %}</option>
+                                {% for retailer in retailers %}
+                                    <option value="{{ retailer.id }}">{{ retailer.shop_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% endif %}
+
+                        <div class="form-group field-customer">
+                            <label for="customer_select">{% translate "Customer" %} <span class="required">*</span></label>
+                            <div class="select-with-action">
+                                <select id="customer_select" name="customer" class="form-control select2-customer" required>
+                                    <option value="">{% translate "Search customer by name or mobile" %}</option>
+                                    {% for customer in customers %}
+                                    <option value="{{ customer.id }}"
+                                            data-retailer="{{ customer.retailer_id }}"
+                                            data-mobile="{{ customer.mobile|default:'' }}"
+                                            data-address="{{ customer.address|default:'' }}"
+                                            data-credit-limit="{{ customer.credit_limit }}"
+                                            data-outstanding="{{ customer.outstanding|floatformat:'2' }}"
+                                            data-price-level="{{ customer.price_level }}"
+                                            data-summary-url="{% url 'customer_summary' customer.id %}">
+                                        {{ customer.customer_name }}{% if customer.mobile %} - {{ customer.mobile }}{% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <button type="button" class="btn-icon-square" id="btnAddCustomer" title="{% translate "Add new customer" %}" aria-label="{% translate "Add new customer" %}">
+                                    <i class="fas fa-user-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="invoice_number">{% translate "Invoice Number" %}</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-hashtag"></i>
+                                <input type="text" id="invoice_number" name="invoice_number" class="form-control"
+                                       value="{{ next_invoice_number }}" placeholder="{% translate "Generated on save" %}" readonly tabindex="-1">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="invoice_date">{% translate "Invoice Date" %}</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fas fa-calendar-day"></i>
+                                <input type="date" id="invoice_date" name="invoice_date" class="form-control"
+                                       value="{{ today|date:'Y-m-d' }}" readonly tabindex="-1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected customer -->
+                    <div class="customer-strip is-empty" id="customerDetails">
+                        <div class="customer-empty">
+                            <i class="fas fa-id-card"></i>
+                            <span>{% translate "Select a customer to see their mobile, credit limit and outstanding balance." %}</span>
+                        </div>
+                        <div class="customer-stat">
+                            <span class="customer-stat-label"><i class="fas fa-phone"></i> {% translate "Mobile" %}</span>
+                            <span class="customer-stat-value" id="custMobile">--</span>
+                        </div>
+                        <div class="customer-stat">
+                            <span class="customer-stat-label"><i class="fas fa-credit-card"></i> {% translate "Credit Limit" %}</span>
+                            <span class="customer-stat-value" id="custCreditLimit">--</span>
+                        </div>
+                        <div class="customer-stat">
+                            <span class="customer-stat-label"><i class="fas fa-wallet"></i> {% translate "Outstanding" %}</span>
+                            <span class="customer-stat-value text-danger" id="custOutstanding">--</span>
+                        </div>
+                        <div class="customer-stat wide">
+                            <span class="customer-stat-label"><i class="fas fa-map-marker-alt"></i> {% translate "Address" %}</span>
+                            <span class="customer-stat-value" id="custAddress">--</span>
+                        </div>
+                        <div class="credit-meter wide" id="creditMeter" hidden>
+                            <div class="credit-meter-head">
+                                <span>{% translate "Credit used" %}</span>
+                                <span id="creditMeterText">₹ 0.00 / ₹ 0.00</span>
+                            </div>
+                            <div class="credit-meter-track"><span id="creditMeterFill"></span></div>
+                        </div>
+                    </div>
+
+                    <!-- Customer account: old balance + recent purchases -->
+                    <div class="customer-history" id="customerHistory" hidden>
+                        <div class="ch-head">
+                            <div class="ch-due" id="chDueBox">
+                                <span class="ch-due-label" id="chDueLabel">{% translate "Previous balance due" %}</span>
+                                <strong id="chDue">&#8377; 0.00</strong>
+                            </div>
+                            <div class="ch-actions">
+                                <button type="button" class="btn btn-soft" id="chPayBtn">
+                                    <i class="fas fa-hand-holding-dollar"></i> {% translate "Receive old due" %}
+                                </button>
+                                <a class="btn btn-ghost" id="chAccountLink" href="#" target="_blank" rel="noopener">
+                                    <i class="fas fa-book-open"></i> {% translate "Full history" %}
+                                </a>
+                            </div>
+                        </div>
+                        <div class="ch-sub-title">{% translate "Recent purchases" %}</div>
+                        <div class="ch-table-wrap">
+                            <table class="ch-table">
+                                <thead>
+                                    <tr>
+                                        <th>{% translate "Date" %}</th>
+                                        <th>{% translate "Invoice" %}</th>
+                                        <th class="num">{% translate "Total" %}</th>
+                                        <th class="num">{% translate "Paid" %}</th>
+                                        <th class="num">{% translate "Left" %}</th>
+                                        <th>{% translate "Status" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="chRows"></tbody>
+                            </table>
+                        </div>
+                        <p class="ch-empty" id="chEmpty" hidden><i class="fas fa-seedling"></i> {% translate "No earlier purchases. This is the customer's first bill." %}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Items -->
+            <section class="sale-card">
+                <header class="sale-card-header">
+                    <span class="sale-card-icon tone-green"><i class="fas fa-boxes-stacked"></i></span>
+                    <div class="sale-card-heading">
+                        <h3>{% translate "Items" %} <span class="count-chip" id="itemsCount">0</span></h3>
+                        <p>{% translate "Products sold on this invoice" %}</p>
+                    </div>
+                    <button type="button" class="btn btn-soft" id="btnAddRow">
+                        <i class="fas fa-plus"></i> {% translate "Add item" %}
+                    </button>
+                </header>
+
+                <div class="table-responsive">
+                    <table class="table-sale-items" id="saleItemsTable">
+                        <thead>
+                            <tr>
+                                <th class="col-index">#</th>
+                                <th class="col-product">{% translate "Product" %} <span class="required">*</span></th>
+                                <th class="col-stock">{% translate "Stock / Unit" %}</th>
+                                <th class="col-num">{% translate "Price" %}</th>
+                                <th class="col-num">MRP</th>
+                                <th class="col-num">GST %</th>
+                                <th class="col-num">{% translate "Qty" %} <span class="required">*</span></th>
+                                <th class="col-num">{% translate "Discount" %}</th>
+                                <th class="col-amount">{% translate "Amount" %}</th>
+                                <th class="col-action"><span class="sr-only">{% translate "Remove" %}</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="saleItemsBody">
+                            <!-- Rows are added by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-state-icon"><i class="fas fa-cart-shopping"></i></div>
+                    <h4>{% translate "No items yet" %}</h4>
+                    <p id="emptyStateText">
+                        {% if is_admin %}{% translate "Select a retailer, then add products to this invoice." %}{% else %}{% translate 'Click "Add item" to add products to this invoice.' %}{% endif %}
+                    </p>
+                </div>
+            </section>
+
+            <!-- Payment -->
+            <section class="sale-card">
+                <header class="sale-card-header">
+                    <span class="sale-card-icon tone-amber"><i class="fas fa-money-bill-wave"></i></span>
+                    <div class="sale-card-heading">
+                        <h3>{% translate "Payment" %}</h3>
+                        <p>{% translate "How the customer is paying" %}</p>
+                    </div>
+                </header>
+
+                <div class="sale-card-body">
+                    <div class="sale-fields two">
+                        <div class="form-group field-full" id="paymentTypeGroup">
+                            <span class="field-label" id="paymentTypeLabel">{% translate "Payment Type" %} <span class="required">*</span></span>
+                            <div class="pay-options" role="radiogroup" aria-labelledby="paymentTypeLabel">
+                                <label class="pay-option">
+                                    <input type="radio" name="payment_type" value="Cash" required>
+                                    <span><i class="fas fa-money-bill-wave"></i> {% translate "Cash" %}</span>
+                                </label>
+                                <label class="pay-option">
+                                    <input type="radio" name="payment_type" value="UPI">
+                                    <span><i class="fas fa-mobile-screen-button"></i> UPI</span>
+                                </label>
+                                <label class="pay-option">
+                                    <input type="radio" name="payment_type" value="Bank Transfer">
+                                    <span><i class="fas fa-building-columns"></i> {% translate "Bank Transfer" %}</span>
+                                </label>
+                                <label class="pay-option">
+                                    <input type="radio" name="payment_type" value="Cheque">
+                                    <span><i class="fas fa-money-check"></i> {% translate "Cheque" %}</span>
+                                </label>
+                                <label class="pay-option">
+                                    <input type="radio" name="payment_type" value="Credit">
+                                    <span><i class="fas fa-hand-holding-dollar"></i> {% translate "Credit" %}</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label for="paid_amount">{% translate "Paid Amount" %} <span class="required">*</span></label>
+                                <button type="button" class="link-btn" id="btnPayFull">
+                                    <i class="fas fa-bolt"></i> {% translate "Pay full amount" %}
+                                </button>
+                            </div>
+                            <div class="input-prefix">
+                                <span class="prefix">&#8377;</span>
+                                <input type="number" id="paid_amount" name="paid_amount" class="form-control"
+                                       step="0.01" min="0" value="0.00" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="due_amount">{% translate "Balance Due" %}</label>
+                            <div class="input-prefix">
+                                <span class="prefix">&#8377;</span>
+                                <input type="number" id="due_amount" name="due_amount" class="form-control"
+                                       step="0.01" readonly tabindex="-1" value="0.00">
+                            </div>
+                        </div>
+                        <!-- Prescription (features.prescription_details). Patient and
+                             doctor are required when the bill has a Schedule H/H1/X drug. -->
+                        <div class="form-group rx-field" hidden>
+                            <label for="patient_name">{% translate "Patient Name" %} <span class="required rx-required" hidden>*</span></label>
+                            <input type="text" id="patient_name" name="patient_name" class="form-control" maxlength="150"
+                                   placeholder="{% translate "Patient's name" %}">
+                        </div>
+                        <div class="form-group rx-field" hidden>
+                            <label for="doctor_name">{% translate "Doctor Name" %} <span class="required rx-required" hidden>*</span></label>
+                            <input type="text" id="doctor_name" name="doctor_name" class="form-control" maxlength="150"
+                                   placeholder="{% translate "Prescribing doctor" %}">
+                        </div>
+                        <div class="form-group field-full rx-field" hidden>
+                            <label for="prescription_note">{% translate "Prescription Note" %}</label>
+                            <textarea id="prescription_note" name="prescription_note" class="form-control" rows="2"
+                                      placeholder="{% translate "Prescription no., date or notes (optional)" %}"></textarea>
+                            <small class="rx-hint" id="rxHint" hidden><i class="fas fa-file-prescription"></i> {% translate "This bill has a prescription drug (Schedule H/H1/X): patient and doctor are required." %}</small>
+                        </div>
+                        <div class="form-group field-full">
+                            <label for="remarks">{% translate "Remarks" %}</label>
+                            <textarea id="remarks" name="remarks" class="form-control" rows="2"
+                                      placeholder="{% translate "Notes for this invoice (optional)" %}"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= SUMMARY SIDEBAR ================= -->
+        <aside class="sale-aside">
+            <section class="sale-card summary-card">
+                <header class="sale-card-header">
+                    <span class="sale-card-icon tone-indigo"><i class="fas fa-receipt"></i></span>
+                    <div class="sale-card-heading">
+                        <h3>{% translate "Bill Summary" %}</h3>
+                        <p>{% translate "Auto-calculated" %}</p>
+                    </div>
+                    <div class="status-badge" id="paymentStatusBadge">
+                        <span class="badge badge-unpaid">{% translate "Unpaid" %}</span>
+                    </div>
+                    <input type="hidden" id="payment_status" name="payment_status" value="Unpaid">
+                </header>
+
+                <div class="sale-card-body">
+                    <div class="summary-list">
+                        <div class="summary-item">
+                            <span>{% translate "Subtotal" %}</span>
+                            <span id="summarySubtotal">&#8377; 0.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>{% translate "Discount" %}</span>
+                            <span class="text-success" id="summaryDiscount">- &#8377; 0.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>GST</span>
+                            <span id="summaryGST">+ &#8377; 0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="grand-total-box">
+                        <div class="grand-total-text">
+                            <span>{% translate "Grand Total" %}</span>
+                            <small id="summaryItemsLine">0 · 0</small>
+                        </div>
+                        <strong id="summaryGrandTotal">&#8377; 0.00</strong>
+                    </div>
+
+                    <div class="summary-list compact">
+                        <div class="summary-item">
+                            <span>{% translate "Paid" %}</span>
+                            <span class="text-success" id="summaryPaid">&#8377; 0.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>{% translate "Balance due" %}</span>
+                            <span class="text-danger" id="summaryDue">&#8377; 0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-actions">
+                    <button type="submit" class="btn btn-primary btn-block" id="btnSaveSale" name="action" value="save">
+                        <i class="fas fa-check"></i> {% translate "Save Sale" %}
+                    </button>
+                    <button type="submit" class="btn btn-success btn-block" id="btnSavePrint" name="action" value="save_print">
+                        <i class="fas fa-print"></i> {% translate "Save & Print" %}
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-block" id="btnCancel">
+                        {% translate "Cancel" %}
+                    </button>
+                    <p class="shortcut-hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> {% translate "to save" %}</p>
+                </div>
+            </section>
+        </aside>
+    </div>
+</form>
 
 <!-- ========== ADD CUSTOMER MODAL ========== -->
-<div class="modal-overlay" id="customerModal"
-     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:20px;">
-    <div class="modal-dialog" style="background:var(--card-bg,#fff); border-radius:16px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-        <div class="modal-header" style="display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid var(--border,#e2e8f0);">
-            <h3 style="font-size:16px; font-weight:600; color:var(--text-dark,#1e293b); display:flex; align-items:center; gap:8px;">
-                <i class="fas fa-user-plus" style="color:var(--primary,#3b82f6);"></i> Add New Customer
+<div class="sale-modal-overlay" id="customerModal" role="dialog" aria-modal="true" aria-labelledby="customerModalTitle">
+    <div class="sale-modal">
+        <div class="sale-modal-header">
+            <h3 id="customerModalTitle">
+                <span class="sale-card-icon tone-blue"><i class="fas fa-user-plus"></i></span>
+                {% translate "Add New Customer" %}
             </h3>
-            <button type="button" class="modal-close" id="closeCustomerModal"
-                    style="width:32px; height:32px; border:none; background:var(--table-header-bg,#f8fafc); color:var(--text-muted,#64748b); border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+            <button type="button" class="sale-modal-close" id="closeCustomerModal" aria-label="{% translate "Close" %}">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <div class="modal-body" style="padding:24px;">
+        <div class="sale-modal-body">
             <form id="customerForm" method="POST" action="{% url 'create_customer_ajax' %}">
                 {% csrf_token %}
-                <div class="modal-form-grid" style="display:grid; grid-template-columns:repeat(2,1fr); gap:16px;">
-                    <div class="form-group" style="grid-column:1 / -1;">
-                        <label>Customer Name <span class="required">*</span></label>
-                        <input type="text" name="customer_name" class="form-control" required>
+                <div class="sale-fields two">
+                    <div class="form-group field-full">
+                        <label for="customerName">{% translate "Customer Name" %} <span class="required">*</span></label>
+                        <input type="text" id="customerName" name="customer_name" class="form-control" required>
                     </div>
-                    <div class="form-group" id="retailerField">
-                        <label>
-                            Select Retailer <span class="required">*</span>
-                        </label>
-
-                        <select name="retailer" id="retailerSelect" class="form-control">
-                            <option value="">Select Retailer</option>
-                            {% if not request.user.is_superuser %}
-                                <option value="{{ retailers.id }}">
-                                    {{ retailers }}
-                                </option>
-                            {% else %}
-                                {% for retailer in retailers %}
-                                    <option value="{{ retailer.id }}">
-                                        {{ retailer }}
-                                    </option>
-                                {% endfor %}
-                            {% endif %}
+                    {% if is_admin %}
+                    <div class="form-group field-full">
+                        <label for="customerRetailerSelect">{% translate "Retailer" %} <span class="required">*</span></label>
+                        <select name="retailer" id="customerRetailerSelect" class="form-control">
+                            <option value="">{% translate "Select retailer" %}</option>
+                            {% for retailer in retailers %}
+                                <option value="{{ retailer.id }}">{{ retailer.shop_name }}</option>
+                            {% endfor %}
                         </select>
                     </div>
-                    
+                    {% else %}
+                    <input type="hidden" name="retailer" value="{{ retailers.id }}">
+                    {% endif %}
                     <div class="form-group">
-                        <label>Mobile Number <span class="required">*</span></label>
-                        <input type="tel" name="mobile" class="form-control" maxlength="15" pattern="[0-9]*">
+                        <label for="customerMobile">{% translate "Mobile Number" %} <span class="required">*</span></label>
+                        <input type="tel" id="customerMobile" name="mobile" class="form-control" maxlength="15" pattern="[0-9]*">
                     </div>
                     <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" name="email" class="form-control">
+                        <label for="customerEmail">{% translate "Email" %}</label>
+                        <input type="email" id="customerEmail" name="email" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label>GST Number</label>
-                        <input type="text" name="gst_number" class="form-control" maxlength="20">
+                        <label for="customerCredit">{% translate "Credit Limit" %}</label>
+                        <input type="number" id="customerCredit" name="credit_limit" class="form-control" step="0.01" min="0" value="0.00">
                     </div>
-                    <div class="form-group" style="grid-column:1 / -1;">
-                        <label>Address</label>
-                        <textarea name="address" class="form-control" rows="2"></textarea>
+                    <!-- State: another state than the shop's = IGST on the bill -->
+                    <div class="form-group">
+                        <label for="customerState">{% translate "State" %} <span class="optional-note">{% translate "(for GST)" %}</span></label>
+                        <select id="customerState" name="state" class="form-control">
+                            <option value="">{% translate "Same as shop" %}</option>
+                            {% for value, label in state_choices %}
+                                <option value="{{ value }}">{{ label|tr }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <!-- Price level (features.price_levels) -->
+                    <div class="form-group price-level-field" hidden>
+                        <label for="customerPriceLevel">{% translate "Price Level" %}</label>
+                        <select id="customerPriceLevel" name="price_level" class="form-control" disabled>
+                            <option value="retail">{% translate "Retail" %}</option>
+                            <option value="wholesale">{% translate "Wholesale" %}</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label>Opening Balance</label>
-                        <input type="number" name="opening_balance" class="form-control" step="0.01" min="0" value="0.00">
+                        <label for="customerOpening">{% translate "Opening Balance" %}</label>
+                        <input type="number" id="customerOpening" name="opening_balance" class="form-control" step="0.01" min="0" value="0.00">
                     </div>
-                    <div class="form-group">
-                        <label>Credit Limit</label>
-                        <input type="number" name="credit_limit" class="form-control" step="0.01" min="0" value="0.00">
+                    <div class="form-group field-full">
+                        <label for="customerAddress">{% translate "Address" %}</label>
+                        <textarea id="customerAddress" name="address" class="form-control" rows="2"></textarea>
                     </div>
                 </div>
             </form>
         </div>
-        <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:10px; padding:16px 24px; border-top:1px solid var(--border,#e2e8f0); background:var(--table-header-bg,#f8fafc); border-radius:0 0 16px 16px;">
-            <button type="button" class="btn btn-outline-secondary" id="cancelCustomerModal">Cancel</button>
-            <button
-                type="submit"
-                class="btn btn-primary"
-                id="saveCustomerModal"
-                form="customerForm"
-            >
-                <i class="fas fa-save"></i> Save Customer
+        <div class="sale-modal-footer">
+            <button type="button" class="btn btn-ghost" id="cancelCustomerModal">{% translate "Cancel" %}</button>
+            <button type="submit" class="btn btn-primary" id="saveCustomerModal" form="customerForm">
+                <i class="fas fa-save"></i> {% translate "Save Customer" %}
             </button>
         </div>
     </div>
 </div>
 
+<!-- ========== RECEIVE OLD DUE (UDHARI) MODAL ========== -->
+<div class="sale-modal-overlay" id="duePaymentModal" role="dialog" aria-modal="true" aria-labelledby="duePaymentTitle">
+    <div class="sale-modal">
+        <div class="sale-modal-header">
+            <h3 id="duePaymentTitle">
+                <span class="sale-card-icon tone-green"><i class="fas fa-hand-holding-dollar"></i></span>
+                {% translate "Receive Old Due" %}
+            </h3>
+            <button type="button" class="sale-modal-close" data-close-due aria-label="{% translate "Close" %}">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="sale-modal-body">
+            <form id="duePaymentForm" method="POST" action="">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="sale_create">
+                <div class="due-summary">
+                    <span id="dueCustomerName">{% translate "Customer" %}</span>
+                    <strong id="dueCustomerBalance">₹ 0.00</strong>
+                </div>
+                <div class="sale-fields two">
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label for="dueAmount">{% translate "Amount received" %} <span class="required">*</span></label>
+                            <button type="button" class="link-btn" id="dueFullBtn"><i class="fas fa-bolt"></i> {% translate "Full due" %}</button>
+                        </div>
+                        <div class="input-prefix">
+                            <span class="prefix">&#8377;</span>
+                            <input type="number" id="dueAmount" name="amount" class="form-control" step="0.01" min="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="duePaymentType">{% translate "Payment type" %} <span class="required">*</span></label>
+                        <select id="duePaymentType" name="payment_type" class="form-control" required>
+                            <option value="Cash">{% translate "Cash" %}</option>
+                            <option value="UPI">UPI</option>
+                            <option value="Bank Transfer">{% translate "Bank Transfer" %}</option>
+                            <option value="Cheque">{% translate "Cheque" %}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="duePaymentDate">{% translate "Payment date" %}</label>
+                        <input type="date" id="duePaymentDate" name="payment_date" class="form-control" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="dueReference">{% translate "Reference" %}</label>
+                        <input type="text" id="dueReference" name="reference" class="form-control" placeholder="{% translate "UPI / cheque no. (optional)" %}" maxlength="100">
+                    </div>
+                </div>
+                <p class="due-note"><i class="fas fa-circle-info"></i> {% translate "The amount clears the oldest unpaid bills first. Items already added to this sale will need to be added again after saving." %}</p>
+            </form>
+        </div>
+        <div class="sale-modal-footer">
+            <button type="button" class="btn btn-ghost" data-close-due>{% translate "Cancel" %}</button>
+            <button type="submit" class="btn btn-success" form="duePaymentForm">
+                <i class="fas fa-check"></i> {% translate "Save payment" %}
+            </button>
+        </div>
+    </div>
+</div>
+{% url 'customer_summary' 0 as customer_summary_url %}
+{{ customer_summary_url|json_script:"customerSummaryUrl" }}
+
+{{ shop_rules|json_script:"saleShopRules" }}
+{{ pharmacy_data|json_script:"salePharmacyData" }}
+{{ quotation_prefill|json_script:"quotationPrefill" }}
 <!-- Toast Notification Container -->
-<div class="toast-container" id="toastContainer" style="position:fixed; top:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:10px;"></div>
+<div class="sale-toast-container" id="toastContainer"></div>
 
 {% endblock %}
 
@@ -523,7 +676,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // The main "Select Retailer" dropdown lives in #saleForm; the Add
     // Customer modal has its own, separate "retailer" select, so we
     // scope this lookup to #saleForm to avoid picking the wrong one.
-    var mainRetailerSelect = document.querySelector('#saleForm select[name="retailer"]');
+    // Admin: a <select>; retailer: a hidden input with their own shop.
+    var mainRetailerSelect = document.querySelector('#saleForm [name="retailer"]');
     var currentRetailerId = mainRetailerSelect ? (mainRetailerSelect.value || '') : '';
 
     function getFilteredProducts() {
@@ -544,7 +698,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var btnAddRow = document.getElementById('btnAddRow');
     var saleForm = document.getElementById('saleForm');
     var paidAmountInput = document.getElementById('paid_amount');
-    var paymentTypeSelect = document.getElementById('payment_type');
+    var paymentTypeGroup = document.getElementById('paymentTypeGroup');
+    var btnPayFull = document.getElementById('btnPayFull');
     var toastContainer = document.getElementById('toastContainer');
     var customerModal = document.getElementById('customerModal');
     var btnAddCustomer = document.getElementById('btnAddCustomer');
@@ -555,6 +710,129 @@ document.addEventListener('DOMContentLoaded', function() {
     var btnCancel = document.getElementById('btnCancel');
     var btnSaveSale = document.getElementById('btnSaveSale');
     var btnSavePrint = document.getElementById('btnSavePrint');
+
+    // ===== Payment type (pill buttons) =====
+    function selectedPaymentType() {
+        var checked = saleForm ? saleForm.querySelector('input[name="payment_type"]:checked') : null;
+        return checked ? checked.value : '';
+    }
+
+    // ===== Progress steps: Customer -> Items -> Payment =====
+    function updateSteps() {
+        var steps = document.getElementById('saleSteps');
+        if (!steps) return;
+
+        var hasProduct = false;
+        if (saleItemsBody) {
+            var selects = saleItemsBody.querySelectorAll('.product-select');
+            for (var i = 0; i < selects.length; i++) {
+                if (selects[i].value) { hasProduct = true; break; }
+            }
+        }
+
+        var done = {
+            customer: !!(customerSelect && customerSelect.value),
+            items: hasProduct,
+            payment: !!selectedPaymentType()
+        };
+
+        var items = steps.querySelectorAll('li[data-step]');
+        for (var j = 0; j < items.length; j++) {
+            items[j].classList.toggle('done', !!done[items[j].getAttribute('data-step')]);
+        }
+    }
+
+    // ===== Loose quantities (2.5 kg) only for shops with decimal_quantity =====
+    // (the server checks this again for the shop the sale is for)
+    var saleShopRules = JSON.parse((document.getElementById('saleShopRules') || {}).textContent || '{}');
+
+    function saleAllowsFractions() {
+        var rules = saleShopRules[String(currentRetailerId || '')];
+        return rules ? !!rules.decimal_quantity : false;
+    }
+
+    function qtyStep() {
+        return saleAllowsFractions() ? '0.001' : '1';
+    }
+
+    // ===== Price levels (shops with features.price_levels) =====
+    // Wholesale customers pay the product's wholesale price when it has
+    // one. The server picks the same price again; this is only display.
+    function selectedPriceLevel() {
+        var select = document.getElementById('customer_select');
+        var option = select && select.options[select.selectedIndex];
+        return option ? (option.getAttribute('data-price-level') || 'retail') : 'retail';
+    }
+
+    function priceForCustomer(dataset) {
+        if (saleShopFlag('price_levels') && selectedPriceLevel() === 'wholesale' && dataset.wholesalePrice) {
+            return dataset.wholesalePrice;
+        }
+        return dataset.sellingPrice || '0.00';
+    }
+
+    function repriceAllRows() {
+        document.querySelectorAll('#saleItemsBody tr').forEach(function (row) {
+            var select = row.querySelector('.product-select');
+            var option = select && select.options[select.selectedIndex];
+            var priceInput = row.querySelector('.selling-price-input');
+            if (!option || !option.value || !priceInput) return;
+            priceInput.value = priceForCustomer(option.dataset);
+            calculateRow(row);
+        });
+        calculateTotals();
+    }
+
+    // ===== Pharmacy: batches, sellable stock, prescription drugs =====
+    // Only products of shops with batch tracking / prescription details
+    // are in here; every other product works exactly as before.
+    var pharmacyData = JSON.parse((document.getElementById('salePharmacyData') || {}).textContent || '{}');
+
+    function saleShopFlag(name) {
+        var rules = saleShopRules[String(currentRetailerId || '')];
+        return rules ? !!rules[name] : false;
+    }
+
+    // Batch dropdown: "Auto" = earliest expiry first (FEFO); the server
+    // also splits a line across batches when one batch is not enough.
+    function fillBatchSelect(row, productId) {
+        var select = row.querySelector('.batch-select');
+        if (!select) return;
+        var info = pharmacyData[String(productId || '')];
+        var on = !!(info && info.batch_tracking);
+
+        select.innerHTML = '<option value="">Auto (earliest expiry)</option>';
+        if (on) {
+            info.batches.forEach(function (batch) {
+                var option = document.createElement('option');
+                option.value = batch.id;
+                option.textContent = batch.batch_number + gettext(' · Exp ') + batch.expiry + ' · ' + batch.quantity;
+                select.appendChild(option);
+            });
+        }
+        select.hidden = !on;
+        select.disabled = !on;
+    }
+
+    // Show patient/doctor fields for prescription shops; required when a
+    // row has a Schedule H/H1/X drug (server checks this again).
+    function updatePrescriptionFields() {
+        var shopOn = saleShopFlag('prescription_details');
+        var needed = billNeedsPrescription();
+        document.querySelectorAll('.rx-field').forEach(function (el) { el.hidden = !shopOn; });
+        document.querySelectorAll('.rx-required').forEach(function (el) { el.hidden = !needed; });
+        var hint = document.getElementById('rxHint');
+        if (hint) hint.hidden = !needed;
+    }
+
+    function billNeedsPrescription() {
+        var needed = false;
+        document.querySelectorAll('#saleItemsBody .product-select').forEach(function (select) {
+            var info = pharmacyData[String(select.value || '')];
+            if (info && info.rx) needed = true;
+        });
+        return needed;
+    }
 
     // ===== Escape HTML helper =====
     function escapeHtml(text) {
@@ -589,7 +867,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Initialize Select2
         jQuery(customerSelect).select2({
-            placeholder: '-- Search Customer --',
+            placeholder: gettext('Search customer by name or mobile'),
             allowClear: true,
             width: '100%',
             matcher: function (params, data) {
@@ -625,7 +903,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             var selectedOption = this.options[this.selectedIndex];
 
-            console.log('Selected Customer:', selectedOption);
 
             // If no customer is selected
             if (!selectedOption || !selectedOption.value) {
@@ -637,14 +914,14 @@ document.addEventListener('DOMContentLoaded', function() {
             var customerData = {
                 mobile: selectedOption.getAttribute('data-mobile') || '',
                 address: selectedOption.getAttribute('data-address') || '',
-                gst: selectedOption.getAttribute('data-gst') || '',
                 creditLimit: selectedOption.getAttribute('data-credit-limit') || '',
                 outstanding: selectedOption.getAttribute('data-outstanding') || ''
             };
 
-            console.log('Customer Details:', customerData);
 
             updateCustomerDetails(customerData);
+            loadCustomerHistory(selectedOption);
+            repriceAllRows();
         });
     }
 
@@ -654,7 +931,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var elMobile = document.getElementById('custMobile');
         var elAddress = document.getElementById('custAddress');
-        var elGST = document.getElementById('custGST');
         var elCredit = document.getElementById('custCreditLimit');
         var elOutstanding = document.getElementById('custOutstanding');
 
@@ -668,12 +944,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Address
         if (elAddress) {
             elAddress.textContent = data.address || '--';
-        }
-
-
-        // GST
-        if (elGST) {
-            elGST.textContent = data.gst || '--';
         }
 
 
@@ -705,19 +975,158 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Show customer details
         if (customerDetails) {
-            customerDetails.style.opacity = '1';
-            customerDetails.style.display = '';
+            customerDetails.classList.remove('is-empty');
         }
+
+        updateCreditMeter(parseFloat(data.creditLimit), parseFloat(data.outstanding));
+        updateSteps();
+    }
+
+    // ===== Credit used = outstanding / credit limit =====
+    function updateCreditMeter(creditLimit, outstanding) {
+        var meter = document.getElementById('creditMeter');
+        var fill = document.getElementById('creditMeterFill');
+        var text = document.getElementById('creditMeterText');
+        if (!meter || !fill || !text) return;
+
+        // Only meaningful when the customer has a credit limit.
+        if (isNaN(creditLimit) || creditLimit <= 0) {
+            meter.hidden = true;
+            return;
+        }
+
+        outstanding = isNaN(outstanding) ? 0 : Math.max(0, outstanding);
+        var percent = Math.min(100, outstanding / creditLimit * 100);
+
+        meter.hidden = false;
+        fill.style.width = percent + '%';
+        meter.classList.toggle('warn', percent >= 75 && percent < 100);
+        meter.classList.toggle('over', percent >= 100);
+        text.textContent = '₹ ' + outstanding.toFixed(2) + gettext(' of ₹ ') + creditLimit.toFixed(2) +
+            ' (' + Math.round(percent) + '%)';
     }
     
 
     // ===== Clear Customer Details =====
 
+    // ===== Customer account: old balance + recent purchases =====
+    var customerSummaryUrl = JSON.parse(document.getElementById('customerSummaryUrl').textContent);
+    var customerHistory = document.getElementById('customerHistory');
+    var duePaymentModal = document.getElementById('duePaymentModal');
+    var duePaymentForm = document.getElementById('duePaymentForm');
+    var currentDue = 0;
+    var historyRequest = 0;
+
+    function money(value) {
+        return '₹ ' + (parseFloat(value) || 0).toFixed(2);
+    }
+
+    function formatShortDate(iso) {
+        if (!iso) return '—';
+        var parts = iso.split('-').map(Number);
+        return new Date(parts[0], parts[1] - 1, parts[2]).toLocaleDateString('en-IN', {
+            day: '2-digit', month: 'short', year: 'numeric'
+        });
+    }
+
+    function hideCustomerHistory() {
+        historyRequest++;
+        currentDue = 0;
+        if (customerHistory) customerHistory.hidden = true;
+    }
+
+    function loadCustomerHistory(option) {
+        var url = option ? option.getAttribute('data-summary-url') : '';
+        if (!customerHistory || !url) {
+            hideCustomerHistory();
+            return;
+        }
+
+        var requestId = ++historyRequest;
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (response) { return response.json(); })
+            .then(function (data) {
+                // Ignore late answers for a customer that is no longer selected.
+                if (requestId !== historyRequest || !data.success) return;
+
+                currentDue = parseFloat(data.balance) || 0;
+
+                var dueBox = document.getElementById('chDueBox');
+                document.getElementById('chDue').textContent = money(Math.abs(currentDue));
+                document.getElementById('chDueLabel').textContent =
+                    currentDue > 0 ? gettext('Previous balance due') : (currentDue < 0 ? gettext('Advance with shop') : gettext('No old balance'));
+                dueBox.classList.toggle('has-due', currentDue > 0);
+                document.getElementById('chPayBtn').hidden = currentDue <= 0;
+                document.getElementById('chAccountLink').href = data.account_url;
+
+                var rows = document.getElementById('chRows');
+                rows.innerHTML = '';
+
+                data.recent.forEach(function (sale) {
+                    var tr = document.createElement('tr');
+                    tr.innerHTML =
+                        '<td>' + formatShortDate(sale.date) + '</td>' +
+                        '<td><a href="' + sale.url + '" target="_blank" rel="noopener">' + escapeHtml(sale.invoice) + '</a></td>' +
+                        '<td class="num">' + money(sale.total) + '</td>' +
+                        '<td class="num paid">' + money(sale.paid) + '</td>' +
+                        '<td class="num' + (parseFloat(sale.due) > 0 ? ' due' : '') + '">' + money(sale.due) + '</td>' +
+                        '<td><span class="badge badge-' + sale.status.toLowerCase() + '">' + escapeHtml(sale.status) + '</span></td>';
+                    rows.appendChild(tr);
+                });
+
+                document.getElementById('chEmpty').hidden = data.recent.length > 0;
+                rows.closest('.ch-table-wrap').hidden = data.recent.length === 0;
+
+                // Due popup
+                duePaymentForm.action = data.account_url.replace(/\/$/, '/receive-payment/');
+                document.getElementById('dueCustomerName').textContent = data.customer;
+                document.getElementById('dueCustomerBalance').textContent = money(currentDue) + ' due';
+                document.getElementById('dueAmount').max = currentDue.toFixed(2);
+
+                customerHistory.hidden = false;
+            })
+            .catch(function () {
+                if (requestId === historyRequest) hideCustomerHistory();
+            });
+    }
+
+    function openDueModal() {
+        if (currentDue <= 0) return;
+        document.getElementById('dueAmount').value = '';
+        duePaymentModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        setTimeout(function () { document.getElementById('dueAmount').focus(); }, 50);
+    }
+
+    function closeDueModal() {
+        duePaymentModal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('chPayBtn').addEventListener('click', openDueModal);
+    document.getElementById('dueFullBtn').addEventListener('click', function () {
+        document.getElementById('dueAmount').value = currentDue.toFixed(2);
+    });
+    duePaymentModal.querySelectorAll('[data-close-due]').forEach(function (button) {
+        button.addEventListener('click', closeDueModal);
+    });
+    duePaymentModal.addEventListener('click', function (e) {
+        if (e.target === duePaymentModal) closeDueModal();
+    });
+    duePaymentForm.addEventListener('submit', function (e) {
+        var amount = parseFloat(document.getElementById('dueAmount').value) || 0;
+        if (amount <= 0 || amount > currentDue + 0.001) {
+            e.preventDefault();
+            showToastMessage(interpolate(gettext('Enter an amount between ₹ 0.01 and %s.'), [money(currentDue)]), 'error');
+        }
+    });
+
     function clearCustomerDetails() {
+        hideCustomerHistory();
 
         var elMobile = document.getElementById('custMobile');
         var elAddress = document.getElementById('custAddress');
-        var elGST = document.getElementById('custGST');
         var elCredit = document.getElementById('custCreditLimit');
         var elOutstanding = document.getElementById('custOutstanding');
 
@@ -730,10 +1139,6 @@ document.addEventListener('DOMContentLoaded', function() {
             elAddress.textContent = '--';
         }
 
-        if (elGST) {
-            elGST.textContent = '--';
-        }
-
         if (elCredit) {
             elCredit.textContent = '--';
         }
@@ -744,8 +1149,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
         if (customerDetails) {
-            customerDetails.style.opacity = '1';
+            customerDetails.classList.add('is-empty');
         }
+
+        updateCreditMeter(NaN, NaN);
+        updateSteps();
     }
 
 
@@ -753,17 +1161,18 @@ document.addEventListener('DOMContentLoaded', function() {
     function initProductSelect2(element) {
         if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.select2) {
             jQuery(element).select2({
-                placeholder: 'Search product...',
+                placeholder: gettext('Search product'),
                 allowClear: true,
-                width: '100%',
-                dropdownParent: jQuery(element).closest('td')
+                width: '100%'
+                // Dropdown attaches to <body> so the scrolling table can't clip it.
             });
         }
     }
 
     // ===== Add Product Row =====
-    function addProductRow() {
-        if (!saleItemsBody) return;
+    function addProductRow(options) {
+        if (!saleItemsBody) return null;
+        var silent = !!(options && options.silent);
 
         rowCounter++;
         var rowId = 'row_' + rowCounter;
@@ -773,12 +1182,20 @@ document.addEventListener('DOMContentLoaded', function() {
         var rowProducts = getFilteredProducts();
         for (var i = 0; i < rowProducts.length; i++) {
             var p = rowProducts[i];
-            var displayText = p.name + ' | ' + (p.barcode || p.code);
+            // Pharmacy: sellable stock (unexpired batches) and salt, so a
+            // search for the salt finds the product too.
+            var rx = pharmacyData[String(p.id)];
+            var stock = rx ? rx.stock : p.stock;
+            var displayText = p.name + (rx && rx.salt ? '  ·  ' + rx.salt : '') +
+                (saleShopFlag('product_specification') && p.specification ? '  ·  ' + p.specification : '') +
+                (rx && rx.rx ? gettext('  ·  Sch. ') + rx.schedule : '') +
+                gettext('  ·  Stock: ') + (parseFloat(stock) || 0);
             optionsHtml += '<option value="' + escapeHtml(p.id) + '"' +
                 ' data-unit="' + escapeHtml(p.unit_name || '') + '"' +
                 ' data-unit-id="' + escapeHtml(p.unit_id || '') + '"' +
-                ' data-stock="' + escapeHtml(p.stock || 0) + '"' +
+                ' data-stock="' + escapeHtml(stock || 0) + '"' +
                 ' data-selling-price="' + escapeHtml(p.selling_price || 0) + '"' +
+                ' data-wholesale-price="' + escapeHtml(p.wholesale_price || '') + '"' +
                 ' data-mrp="' + escapeHtml(p.mrp || 0) + '"' +
                 ' data-gst="' + escapeHtml(p.gst || 0) + '">' +
                 escapeHtml(displayText) + '</option>';
@@ -790,20 +1207,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Use string concatenation instead of template literals to avoid Django/JS conflicts
         tr.innerHTML =
+            '<td class="row-index"></td>' +
             '<td>' +
                 '<select class="form-control product-select" name="items[' + rowCounter + '][product]" required>' +
                     optionsHtml +
                 '</select>' +
                 '<input type="hidden" name="items[' + rowCounter + '][unit]" class="unit-id-input">' +
+                '<select class="form-control batch-select" name="items[' + rowCounter + '][batch]" aria-label="Batch" hidden disabled></select>' +
             '</td>' +
             '<td>' +
-                '<input type="text" class="form-control unit-display" readonly tabindex="-1">' +
-            '</td>' +
-            '<td>' +
-                '<span class="stock-badge stock-ok">' +
-                    '<i class="fas fa-cubes"></i> ' +
-                    '<span class="stock-value">0</span>' +
-                '</span>' +
+                '<div class="stock-cell">' +
+                    '<span class="stock-badge stock-ok">' +
+                        '<i class="fas fa-cubes"></i> ' +
+                        '<span class="stock-value">0</span>' +
+                    '</span>' +
+                    '<input type="text" class="unit-display" readonly tabindex="-1" aria-label="Unit">' +
+                '</div>' +
             '</td>' +
             '<td>' +
                 '<input type="number" class="form-control selling-price-input" name="items[' + rowCounter + '][selling_price]"' +
@@ -819,7 +1238,7 @@ document.addEventListener('DOMContentLoaded', function() {
             '</td>' +
             '<td>' +
                 '<input type="number" class="form-control qty-input" name="items[' + rowCounter + '][quantity]"' +
-                       ' step="0.01" min="0.01" value="1" required>' +
+                       ' step="' + qtyStep() + '" min="' + qtyStep() + '" value="1" required>' +
             '</td>' +
             '<td>' +
                 '<input type="number" class="form-control discount-input" name="items[' + rowCounter + '][discount]"' +
@@ -844,14 +1263,18 @@ document.addEventListener('DOMContentLoaded', function() {
         // Bind events
         bindRowEvents(tr);
 
-        // Focus the product select
-        setTimeout(function() {
-            if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.select2 && productSelect) {
-                jQuery(productSelect).select2('open');
-            } else if (productSelect) {
-                productSelect.focus();
-            }
-        }, 100);
+        // Focus the product select (not when rows are filled by code)
+        if (!silent) {
+            setTimeout(function() {
+                if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.select2 && productSelect) {
+                    jQuery(productSelect).select2('open');
+                } else if (productSelect) {
+                    productSelect.focus();
+                }
+            }, 100);
+        }
+
+        return tr;
     }
 
     function bindRowEvents(row) {
@@ -919,7 +1342,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 emptyState.style.display = 'block';
             }
             calculateTotals();
+            updatePrescriptionFields();
         });
+
+        // Chosen batch: the stock shown is that batch's quantity (the
+        // server still takes any remainder from the next batches).
+        var batchSelect = row.querySelector('.batch-select');
+        if (batchSelect) {
+            batchSelect.addEventListener('change', function () {
+                showBatchStock(row);
+                validateStock(row);
+            });
+        }
+    }
+
+    function showBatchStock(row) {
+        var productSelect = row.querySelector('.product-select');
+        var stockValue = row.querySelector('.stock-value');
+        var info = pharmacyData[String(productSelect ? productSelect.value : '')];
+        if (!info || !stockValue) return;
+        stockValue.textContent = info.stock || '0';
     }
 
     function populateProductData(row, data) {
@@ -934,7 +1376,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (unitDisplay) unitDisplay.value = data.unit || '';
         if (unitIdInput) unitIdInput.value = data.unitId || '';
         if (stockValue) stockValue.textContent = data.stock || '0';
-        if (sellingPriceInput) sellingPriceInput.value = data.sellingPrice || '0.00';
+        if (sellingPriceInput) sellingPriceInput.value = priceForCustomer(data);
         if (mrpInput) mrpInput.value = data.mrp || '0.00';
         if (gstInput) gstInput.value = data.gst || '0.00';
 
@@ -949,6 +1391,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 stockBadge.classList.add('stock-ok');
             }
         }
+
+        var productSelect = row.querySelector('.product-select');
+        fillBatchSelect(row, productSelect ? productSelect.value : '');
+        updatePrescriptionFields();
     }
 
     function clearProductData(row) {
@@ -970,6 +1416,9 @@ document.addEventListener('DOMContentLoaded', function() {
             stockBadge.classList.remove('stock-ok', 'stock-low', 'stock-error-badge');
             stockBadge.classList.add('stock-ok');
         }
+
+        fillBatchSelect(row, '');
+        updatePrescriptionFields();
     }
 
     // ===== Stock Validation =====
@@ -985,7 +1434,7 @@ document.addEventListener('DOMContentLoaded', function() {
             row.classList.add('stock-error');
             qtyInput.style.borderColor = '#ef4444';
             if (showToast) {
-                showToastMessage('Insufficient stock! Available: ' + stockValue, 'error');
+                showToastMessage(gettext('Insufficient stock! Available: ') + stockValue, 'error');
             }
             return false;
         } else {
@@ -1026,6 +1475,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var totalDiscount = 0;
         var totalGST = 0;
         var grandTotal = 0;
+        var totalQty = 0;
 
         var rows = saleItemsBody.querySelectorAll('tr');
         for (var i = 0; i < rows.length; i++) {
@@ -1040,6 +1490,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var gstAmount = taxableAmount * (gstPercent / 100);
             var finalAmount = taxableAmount + gstAmount;
 
+            totalQty += qty;
             subtotal += grossAmount;
             totalDiscount += discount;
             totalGST += gstAmount;
@@ -1056,7 +1507,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (elGST) elGST.textContent = '+ \u20B9 ' + totalGST.toFixed(2);
         if (elGrand) elGrand.textContent = '\u20B9 ' + grandTotal.toFixed(2);
 
+        var elItemsCount = document.getElementById('itemsCount');
+        if (elItemsCount) elItemsCount.textContent = rows.length;
+
+        var elItemsLine = document.getElementById('summaryItemsLine');
+        if (elItemsLine) {
+            var qtyText = Number.isInteger(totalQty) ? String(totalQty) : totalQty.toFixed(2);
+            elItemsLine.textContent = rows.length + (rows.length === 1 ? ' item' : ' items') + ' · ' + qtyText + ' qty';
+        }
+
         updatePaymentCalculations(grandTotal);
+        updateSteps();
     }
 
     // ===== Payment Calculations =====
@@ -1067,24 +1528,29 @@ document.addEventListener('DOMContentLoaded', function() {
         var dueInput = document.getElementById('due_amount');
         if (dueInput) dueInput.value = due.toFixed(2);
 
+        var elPaid = document.getElementById('summaryPaid');
+        var elDue = document.getElementById('summaryDue');
+        if (elPaid) elPaid.textContent = '\u20B9 ' + paid.toFixed(2);
+        if (elDue) elDue.textContent = '\u20B9 ' + due.toFixed(2);
+
         var statusBadge = document.getElementById('paymentStatusBadge');
         var statusInput = document.getElementById('payment_status');
 
         var statusClass = 'badge-unpaid';
-        var statusText = 'Unpaid';
+        var statusText = gettext('Unpaid');
         var statusValue = 'Unpaid';
 
         if (grandTotal <= 0) {
             statusClass = 'badge-unpaid';
-            statusText = 'Unpaid';
+            statusText = gettext('Unpaid');
             statusValue = 'Unpaid';
         } else if (paid >= grandTotal) {
             statusClass = 'badge-paid';
-            statusText = 'Paid';
+            statusText = gettext('Paid');
             statusValue = 'Paid';
         } else if (paid > 0) {
             statusClass = 'badge-partial';
-            statusText = 'Partial';
+            statusText = gettext('Partial');
             statusValue = 'Partial';
         }
 
@@ -1101,6 +1567,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ===== Payment type pills =====
+    if (paymentTypeGroup) {
+        paymentTypeGroup.addEventListener('change', function () {
+            paymentTypeGroup.classList.remove('has-error');
+            updateSteps();
+        });
+    }
+
+    // ===== "Pay full amount": paid = grand total =====
+    if (btnPayFull && paidAmountInput) {
+        btnPayFull.addEventListener('click', function () {
+            var grandTotal = parseFloat(document.getElementById('summaryGrandTotal').textContent.replace('₹ ', '')) || 0;
+            paidAmountInput.value = grandTotal.toFixed(2);
+            updatePaymentCalculations(grandTotal);
+            paidAmountInput.focus();
+        });
+    }
+
     // ===== Form Validation =====
     if (saleForm) {
         saleForm.addEventListener('submit', function(e) {
@@ -1110,7 +1594,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Validate customer
             if (customerSelect && !customerSelect.value) {
                 isValid = false;
-                errors.push('Please select a customer');
+                errors.push(gettext('Please select a customer'));
                 var fg = customerSelect.closest('.form-group');
                 if (fg) fg.classList.add('has-error');
             }
@@ -1119,16 +1603,15 @@ document.addEventListener('DOMContentLoaded', function() {
             var invoiceDate = document.getElementById('invoice_date');
             if (invoiceDate && !invoiceDate.value) {
                 isValid = false;
-                errors.push('Please select an invoice date');
+                errors.push(gettext('Please select an invoice date'));
             }
 
             // Validate items
             var rows = saleItemsBody ? saleItemsBody.querySelectorAll('tr') : [];
             
-            console.log("Validate items :::::::::::::::::               ",rows)
             if (rows.length === 0) {
                 isValid = false;
-                errors.push('Please add at least one product');
+                errors.push(gettext('Please add at least one product'));
             }
 
             for (var idx = 0; idx < rows.length; idx++) {
@@ -1142,19 +1625,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (productSelect && !productSelect.value) {
                     isValid = false;
-                    errors.push('Row ' + (idx + 1) + ': Please select a product');
+                    errors.push(interpolate(gettext('Row %s: Please select a product'), [idx + 1]));
                     productSelect.style.borderColor = '#ef4444';
                 }
 
-                if (qty <= 0) {
+                if (qty <= 0 || (!saleAllowsFractions() && !Number.isInteger(qty))) {
                     isValid = false;
-                    errors.push('Row ' + (idx + 1) + ': Quantity must be greater than 0');
+                    errors.push((saleAllowsFractions() ? interpolate(gettext('Row %s: Quantity must be greater than 0'), [idx + 1]) : interpolate(gettext('Row %s: Quantity must be greater than 0 and a whole number for this shop'), [idx + 1])));
                     if (qtyInput) qtyInput.style.borderColor = '#ef4444';
                 }
 
                 if (qty > stockValue) {
                     isValid = false;
-                    errors.push('Row ' + (idx + 1) + ': Insufficient stock! Available: ' + stockValue);
+                    errors.push(interpolate(gettext('Row %s: Insufficient stock! Available: '), [idx + 1]) + stockValue);
                     row.classList.add('stock-error');
                     if (qtyInput) qtyInput.style.borderColor = '#ef4444';
                 }
@@ -1162,7 +1645,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 var sellingPrice = sellingPriceInput ? (parseFloat(sellingPriceInput.value) || 0) : 0;
                 if (sellingPrice < 0) {
                     isValid = false;
-                    errors.push('Row ' + (idx + 1) + ': Selling price cannot be negative');
+                    errors.push(interpolate(gettext('Row %s: Selling price cannot be negative'), [idx + 1]));
                 }
 
                 var discountInput = row.querySelector('.discount-input');
@@ -1170,14 +1653,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 var grossAmount = qty * sellingPrice;
                 if (discount > grossAmount) {
                     isValid = false;
-                    errors.push('Row ' + (idx + 1) + ': Discount cannot exceed gross amount');
+                    errors.push(interpolate(gettext('Row %s: Discount cannot exceed gross amount'), [idx + 1]));
                 }
             }
 
             // Validate payment type
-            if (paymentTypeSelect && !paymentTypeSelect.value) {
+            if (!selectedPaymentType()) {
                 isValid = false;
-                errors.push('Please select a payment type');
+                errors.push(gettext('Please select a payment type'));
+                if (paymentTypeGroup) paymentTypeGroup.classList.add('has-error');
             }
 
             // Validate paid amount
@@ -1186,11 +1670,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (paidAmount < 0) {
                 isValid = false;
-                errors.push('Paid amount cannot be negative');
+                errors.push(gettext('Paid amount cannot be negative'));
             }
             if (paidAmount > grandTotal) {
                 isValid = false;
-                errors.push('Paid amount cannot exceed grand total');
+                errors.push(gettext('Paid amount cannot exceed grand total'));
+            }
+
+            // Prescription drugs (Schedule H/H1/X) need patient + doctor
+            if (saleShopFlag('prescription_details') && billNeedsPrescription()) {
+                var patientInput = document.getElementById('patient_name');
+                var doctorInput = document.getElementById('doctor_name');
+                if (!patientInput.value.trim() || !doctorInput.value.trim()) {
+                    isValid = false;
+                    errors.push(gettext('Patient name and doctor name are required for prescription drugs'));
+                }
             }
 
             if (!isValid) {
@@ -1250,6 +1744,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== Customer Modal =====
     function openCustomerModal() {
+        // Admin: default the new customer's retailer to the one on the sale.
+        var modalRetailer = document.getElementById('customerRetailerSelect');
+        if (modalRetailer && currentRetailerId) {
+            modalRetailer.value = currentRetailerId;
+        }
+
         if (customerModal) {
             customerModal.style.display = 'flex';
             customerModal.classList.add('active');
@@ -1307,7 +1807,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!customerName || !customerName.value.trim()) {
 
                 showToastMessage(
-                    'Customer name is required',
+                    gettext('Customer name is required'),
                     'error'
                 );
 
@@ -1332,7 +1832,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!/^\d{10,15}$/.test(cleanMobile)) {
 
                     showToastMessage(
-                        'Please enter a valid mobile number',
+                        gettext('Please enter a valid mobile number'),
                         'error'
                     );
 
@@ -1356,7 +1856,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
 
                     showToastMessage(
-                        'Please enter a valid email address',
+                        gettext('Please enter a valid email address'),
                         'error'
                     );
 
@@ -1447,7 +1947,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     showToastMessage(
                         data.message ||
-                        'Customer added successfully!',
+                        gettext('Customer added successfully!'),
                         'success'
                     );
 
@@ -1456,41 +1956,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Add New Customer To Customer Dropdown
                     // ------------------------------------------
 
-                    var customerSelect =
-                        document.getElementById('customerSelect');
-
-
                     if (customerSelect && data.customer) {
+                        var c = data.customer;
+                        var option = document.createElement('option');
 
-                        var option =
-                            document.createElement('option');
-
-                        option.value =
-                            data.customer.id;
-
-                        option.textContent =
-                            data.customer.name +
-                            (
-                                data.customer.mobile
-                                    ? ' - ' + data.customer.mobile
-                                    : ''
-                            );
-
+                        option.value = c.id;
+                        option.textContent = c.name + (c.mobile ? ' - ' + c.mobile : '');
+                        option.setAttribute('data-retailer', c.retailer_id || currentRetailerId);
+                        option.setAttribute('data-mobile', c.mobile || '');
+                        option.setAttribute('data-address', c.address || '');
+                        option.setAttribute('data-credit-limit', c.credit_limit || '0');
+                        option.setAttribute('data-outstanding', c.opening_balance || '0');
+                        option.setAttribute('data-price-level', c.price_level || 'retail');
+                        option.setAttribute('data-summary-url', customerSummaryUrl.replace(/\/0\/summary\/$/, '/' + c.id + '/summary/'));
 
                         customerSelect.appendChild(option);
 
-                        customerSelect.value =
-                            data.customer.id;
-
-
-                        customerSelect.dispatchEvent(
-                            new Event(
-                                'change',
-                                {
-                                    bubbles: true
-                                }
-                            )
-                        );
+                        if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.select2) {
+                            jQuery(customerSelect).val(String(c.id)).trigger('change');
+                        } else {
+                            customerSelect.value = c.id;
+                            customerSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
                     }
 
 
@@ -1518,7 +2005,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     showToastMessage(
                         data.message ||
-                        'Customer already exists.',
+                        gettext('Customer already exists.'),
                         'error'
                     );
 
@@ -1533,7 +2020,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     showToastMessage(
                         data.message ||
-                        'Unable to create customer.',
+                        gettext('Unable to create customer.'),
                         'error'
                     );
 
@@ -1554,7 +2041,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 );
 
                 showToastMessage(
-                    'Unable to connect to the server. Please try again.',
+                    gettext('Unable to connect to the server. Please try again.'),
                     'error'
                 );
 
@@ -1580,8 +2067,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== Cancel Button =====
     if (btnCancel) {
         btnCancel.addEventListener('click', function() {
-            if (confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
-                window.location.href = "#";
+            if (confirm(gettext('Are you sure you want to cancel? All unsaved changes will be lost.'))) {
+                window.location.href = "{% url 'sales_list' %}";
             }
         });
     }
@@ -1601,6 +2088,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== Add Row Button =====
     if (btnAddRow) {
         btnAddRow.addEventListener('click', function() {
+            if (!currentRetailerId) {
+                showToastMessage(gettext('Please select a retailer first.'), 'warning');
+                if (mainRetailerSelect && mainRetailerSelect.focus) mainRetailerSelect.focus();
+                return;
+            }
             addProductRow();
         });
     }
@@ -1634,13 +2126,78 @@ document.addEventListener('DOMContentLoaded', function() {
                 addProductRow();
             }
             calculateTotals();
+            updatePrescriptionFields();
+            updatePriceLevelField();
+        });
+    }
+    updatePrescriptionFields();
+    updatePriceLevelField();
+
+    // Price level on the Add Customer form: only for price-level shops
+    // (disabled = not sent; the server ignores it for other shops anyway).
+    function updatePriceLevelField() {
+        var on = saleShopFlag('price_levels');
+        document.querySelectorAll('.price-level-field').forEach(function (group) {
+            group.hidden = !on;
+            group.querySelectorAll('select').forEach(function (select) { select.disabled = !on; });
         });
     }
 
+    // ===== Convert a quotation: fill shop, customer and rows =====
+    // Quoted price is shown; the server uses the quotation's own price.
+    (function fillFromQuotation() {
+        var prefill = JSON.parse((document.getElementById('quotationPrefill') || {}).textContent || 'null');
+        if (!prefill) return;
+
+        if (mainRetailerSelect && mainRetailerSelect.tagName === 'SELECT') {
+            mainRetailerSelect.value = String(prefill.retailer_id);
+            mainRetailerSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        currentRetailerId = String(prefill.retailer_id);
+
+        if (customerSelect) {
+            if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.select2) {
+                jQuery(customerSelect).val(String(prefill.customer_id)).trigger('change');
+            } else {
+                customerSelect.value = String(prefill.customer_id);
+                customerSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+
+        if (saleItemsBody) saleItemsBody.innerHTML = '';
+        rowCounter = 0;
+
+        prefill.items.forEach(function (item) {
+            var row = addProductRow({ silent: true });
+            if (!row) return;
+            var select = row.querySelector('.product-select');
+            select.value = String(item.product_id);
+            if (typeof jQuery !== 'undefined' && jQuery.fn && jQuery.fn.select2) {
+                jQuery(select).trigger('change.select2');
+            }
+            var option = select.options[select.selectedIndex];
+            if (!option || !option.value) return;          // product no longer active
+            populateProductData(row, option.dataset);
+            row.querySelector('.selling-price-input').value = item.selling_price;
+            row.querySelector('.qty-input').value = item.quantity;
+            row.querySelector('.discount-input').value = item.discount;
+            validateStock(row);
+            calculateRow(row);
+        });
+
+        if (emptyState) emptyState.style.display = saleItemsBody && saleItemsBody.children.length ? 'none' : 'block';
+        calculateTotals();
+        updatePrescriptionFields();
+        updatePriceLevelField();
+    })();
+
     // ===== Initialize: Add first row automatically =====
-    if (saleItemsBody && saleItemsBody.children.length === 0) {
+    // (an admin first has to choose the retailer whose products are sold)
+    if (saleItemsBody && saleItemsBody.children.length === 0 && currentRetailerId) {
         addProductRow();
     }
+
+    updateSteps();
 });
 
 window.addEventListener('resize', () => {

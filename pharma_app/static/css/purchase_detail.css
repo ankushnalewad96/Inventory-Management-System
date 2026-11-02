@@ -218,7 +218,7 @@
     justify-content: space-between;
     padding: 18px 24px;
     border-bottom: 1px solid var(--border);
-    background: linear-gradient(to right, var(--table-header-bg), #ffffff);
+    background: linear-gradient(to right, var(--table-header-bg), var(--card-bg));
 }
 
 .section-title {
@@ -514,4 +514,13 @@
         border: 1px solid #ddd;
         break-inside: avoid;
     }
+}
+
+/* Purchase line bought in a bigger unit: "= 200 pc in stock", "₹5.00 / pc" */
+.conversion-meta {
+    display: block;
+    margin-top: 2px;
+    font-family: inherit;
+    font-weight: 500;
+    color: var(--info);
 }

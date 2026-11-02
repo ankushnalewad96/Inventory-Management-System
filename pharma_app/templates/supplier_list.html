@@ -1,0 +1,607 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% translate "Suppliers" %} - {{ app_name }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/add_order.css' %}">
+<link rel="stylesheet" href="{% static 'css/list_pages.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <h1>{% translate "Suppliers" %}</h1>
+    {% if is_admin %}
+        <p>{% translate "Suppliers of all retailer shops" %}</p>
+    {% else %}
+        <p>{% blocktranslate with shop=request.user.retailer.shop_name %}Suppliers of {{ shop }}{% endblocktranslate %}</p>
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+
+<!-- Quick Actions (phones only; on larger screens the button sits in the section header) -->
+<div class="quick-actions only-mobile">
+    <a href="{% url 'add_new_supplier' %}" class="action-btn primary">
+        <i class="fas fa-plus"></i>
+        {% translate "Add supplier" %}
+    </a>
+</div>
+
+<div class="purchases-section">
+    <div class="section-header with-count">
+        <div>
+            <h2>{% translate "Supplier list" %}</h2>
+            <p>{% blocktranslate count counter=page_obj.paginator.count %}{{ counter }} supplier found{% plural %}{{ counter }} suppliers found{% endblocktranslate %}</p>
+        </div>
+        <div class="section-actions">
+            {% if search or selected_retailer or status %}
+                <span class="active-filter-note"><i class="fas fa-filter"></i> {% translate "Filters applied" %}</span>
+            {% endif %}
+            <a href="{% url 'supplier_product_list' %}" class="action-btn hide-mobile">
+                <i class="fas fa-boxes-stacked"></i>
+                {% translate "Supplier products" %}
+            </a>
+            <a href="{% url 'add_new_supplier' %}" class="action-btn primary hide-mobile">
+                <i class="fas fa-plus"></i>
+                {% translate "Add supplier" %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="GET" class="filters-bar">
+        <div class="filter-group filter-text">
+            <i class="fas fa-search"></i>
+            <input
+                type="text"
+                name="search"
+                class="filter-input"
+                placeholder="{% translate "Search supplier name..." %}"
+                value="{{ search }}"
+                aria-label="{% translate "Supplier name" %}"
+            >
+        </div>
+
+        {% if is_admin %}
+        <div class="filter-group">
+            <label for="filterRetailer">{% translate "Retailer" %}</label>
+            <select name="retailer" id="filterRetailer" class="filter-select">
+                <option value="">{% translate "All Retailers" %}</option>
+                {% for retailer in retailers %}
+                    <option value="{{ retailer.id }}" {% if selected_retailer == retailer.id|stringformat:"s" %}selected{% endif %}>
+                        {{ retailer.shop_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <div class="filter-group">
+            <label for="filterStatus">{% translate "Status" %}</label>
+            <select name="status" id="filterStatus" class="filter-select">
+                <option value="">{% translate "All Status" %}</option>
+                <option value="active" {% if status == "active" %}selected{% endif %}>{% translate "Active" %}</option>
+                <option value="inactive" {% if status == "inactive" %}selected{% endif %}>{% translate "Inactive" %}</option>
+            </select>
+        </div>
+
+        <div class="export-btns">
+            <button type="submit" class="export-btn primary">
+                <i class="fas fa-filter"></i>
+                {% translate "Filter" %}
+            </button>
+            <a href="{% url 'supplier_list' %}" class="export-btn">
+                <i class="fas fa-times"></i>
+                {% translate "Clear" %}
+            </a>
+        </div>
+    </form>
+
+    <!-- Table -->
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{% translate "Supplier" %}</th>
+                    {% if is_admin %}<th>{% translate "Retailer Shop" %}</th>{% endif %}
+                    <th>{% translate "Contact" %}</th>
+                    <th>{% translate "City / GSTIN" %}</th>
+                    <th class="text-right">{% translate "Credit Limit" %}</th>
+                    <th class="text-center">{% translate "Purchases" %}</th>
+                    <th>{% translate "Status" %}</th>
+                    <th class="text-center">{% translate "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for supplier in suppliers %}
+                <tr data-supplier-id="{{ supplier.id }}">
+                    <td>
+                        <div class="supplier-cell">
+                            <span class="supplier-avatar" style="background: {% cycle '#3b82f6' '#10b981' '#f59e0b' '#6366f1' '#ef4444' '#0ea5e9' %};">
+                                {{ supplier.supplier_name|slice:":2"|upper }}
+                            </span>
+                            <div class="cell-stack">
+                                <span class="primary-text">{{ supplier.supplier_name }}</span>
+                                <span class="secondary-text">{{ supplier.contact_person|default:"No contact person" }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    {% if is_admin %}
+                    <td><span class="shop-tag"><i class="fas fa-store"></i>{{ supplier.retailer.shop_name }}</span></td>
+                    {% endif %}
+                    <td>
+                        <div class="cell-stack">
+                            <span class="primary-text"><i class="fas fa-phone muted" style="font-size:10px;"></i> {{ supplier.mobile }}</span>
+                            <span class="secondary-text">{{ supplier.email|default:"No email" }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="cell-stack">
+                            <span class="primary-text">{{ supplier.city }}</span>
+                            <span class="secondary-text">{{ supplier.gst_number|default:"No GSTIN" }}</span>
+                        </div>
+                    </td>
+                    <td class="text-right">
+                        <div class="cell-stack">
+                            <span class="primary-text">₹{{ supplier.credit_limit|floatformat:2 }}</span>
+                            <span class="secondary-text">{% blocktranslate count counter=supplier.credit_days %}{{ counter }} day{% plural %}{{ counter }} days{% endblocktranslate %}</span>
+                        </div>
+                    </td>
+                    <td class="text-center"><span class="count-pill">{{ supplier.purchase_count }}</span></td>
+                    <td>
+                        {% if supplier.is_active %}
+                            <span class="status-pill active"><span class="dot"></span>{% translate "Active" %}</span>
+                        {% else %}
+                            <span class="status-pill inactive"><span class="dot"></span>{% translate "Inactive" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-btns" style="justify-content:center;">
+                            <button type="button" class="action-icon-btn js-view" data-id="{{ supplier.id }}" title="{% translate "View supplier" %}" aria-label="{% translate "View supplier" %}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <a href="{% url 'supplier_account' supplier.id %}" class="action-icon-btn success" title="{% translate "Account & payment history" %}" aria-label="{% translate "Account and payment history" %}">
+                                <i class="fas fa-scale-balanced"></i>
+                            </a>
+                            <a href="{% url 'supplier_product_list' %}?supplier={{ supplier.id }}" class="action-icon-btn" title="{% translate "Products bought from this supplier" %}" aria-label="{% translate "Products bought from this supplier" %}">
+                                <i class="fas fa-boxes-stacked"></i>
+                            </a>
+                            <button type="button" class="action-icon-btn edit js-edit" data-id="{{ supplier.id }}" title="{% translate "Edit supplier" %}" aria-label="{% translate "Edit supplier" %}">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <button type="button" class="action-icon-btn danger js-delete" data-id="{{ supplier.id }}" title="{% translate "Delete supplier" %}" aria-label="{% translate "Delete supplier" %}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if is_admin %}8{% else %}7{% endif %}" class="empty-state">
+                        <i class="fas fa-truck"></i>
+                        {% if search or selected_retailer or status %}
+                            <div class="empty-title">{% translate "No suppliers match your filters" %}</div>
+                            <a href="{% url 'supplier_list' %}">{% translate "Clear filters" %}</a>
+                        {% else %}
+                            <div class="empty-title">{% translate "No suppliers yet" %}</div>
+                            <a href="{% url 'add_new_supplier' %}">{% translate "Add your first supplier" %}</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Footer / Pagination -->
+    <div class="table-footer">
+        <div class="showing-text">
+            {% if page_obj.paginator.count %}
+                {% blocktranslate with start=page_obj.start_index end=page_obj.end_index total=page_obj.paginator.count %}Showing {{ start }} - {{ end }} of {{ total }} suppliers{% endblocktranslate %}
+            {% else %}
+                {% translate "No suppliers to show" %}
+            {% endif %}
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn" title="{% translate "Previous" %}"><i class="fas fa-chevron-left"></i></a>
+            {% else %}
+                <button class="page-btn" disabled><i class="fas fa-chevron-left"></i></button>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                    <button class="page-btn active">{{ num }}</button>
+                {% else %}
+                    <a href="?page={{ num }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn" title="{% translate "Next" %}"><i class="fas fa-chevron-right"></i></a>
+            {% else %}
+                <button class="page-btn" disabled><i class="fas fa-chevron-right"></i></button>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+<!-- ==================== VIEW SUPPLIER MODAL ==================== -->
+<div class="modal-overlay-po" id="viewSupplierModal">
+    <div class="modal-dialog-po">
+        <div class="modal-header-po">
+            <h3><span class="modal-header-icon supplier"><i class="fas fa-truck"></i></span> <span id="viewSupplierTitle">{% translate "Supplier Details" %}</span></h3>
+            <button type="button" class="modal-close-po" data-modal="viewSupplierModal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body-po">
+            <div class="detail-grid" id="viewSupplierBody"></div>
+        </div>
+        <div class="modal-footer-po">
+            <button type="button" class="btn-modal btn-modal-outline" data-modal="viewSupplierModal">{% translate "Close" %}</button>
+            <button type="button" class="btn-modal btn-modal-primary" id="viewToEditBtn"><i class="fas fa-pen"></i> {% translate "Edit" %}</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ==================== EDIT SUPPLIER MODAL ==================== -->
+<div class="modal-overlay-po" id="editSupplierModal">
+    <div class="modal-dialog-po">
+        <div class="modal-header-po">
+            <h3><span class="modal-header-icon supplier"><i class="fas fa-pen"></i></span> {% translate "Edit Supplier" %}</h3>
+            <button type="button" class="modal-close-po" data-modal="editSupplierModal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body-po">
+            <form id="editSupplierForm" novalidate>
+                {% csrf_token %}
+                <div class="modal-section-title supplier-color"><i class="fas fa-building"></i> {% translate "Basic Details" %}</div>
+                <div class="modal-form-grid">
+                    {% if is_admin %}
+                    <div class="form-group form-group-full">
+                        <label>{% translate "Retailer Shop" %}</label>
+                        <input type="text" class="form-control" id="editRetailerName" readonly tabindex="-1">
+                    </div>
+                    {% endif %}
+                    <div class="form-group">
+                        <label>{% translate "Supplier Name" %} <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="supplier_name" maxlength="200" required>
+                    </div>
+                    <div class="form-group">
+                        <label>{% translate "Contact Person" %}</label>
+                        <input type="text" class="form-control" name="contact_person" maxlength="150">
+                    </div>
+                    <div class="form-group">
+                        <label>{% translate "Mobile" %} <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="mobile" maxlength="15" required>
+                    </div>
+                    <div class="form-group">
+                        <label>{% translate "Alternate Mobile" %}</label>
+                        <input type="text" class="form-control" name="alternate_mobile" maxlength="15">
+                    </div>
+                    <div class="form-group">
+                        <label>{% translate "Email Address" %}</label>
+                        <input type="email" class="form-control" name="email">
+                    </div>
+                    <div class="form-group">
+                        <label>{% translate "GST Number" %}</label>
+                        <input type="text" class="form-control" name="gst_number" maxlength="20">
+                    </div>
+                    <div class="form-group">
+                        <label>{% translate "PAN Number" %}</label>
+                        <input type="text" class="form-control" name="pan_number" maxlength="20">
+                    </div>
+                </div>
+
+                <div class="modal-section-title supplier-color"><i class="fas fa-map-marker-alt"></i> {% translate "Address & Financials" %}</div>
+                <div class="modal-form-grid">
+                    <div class="form-group">
+                        <label>{% translate "City" %} <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="city" maxlength="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label>{% translate "State" %} <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="state" maxlength="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label>{% translate "Pincode" %} <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="pincode" maxlength="10" required>
+                    </div>
+                    <div class="form-group">
+                        <label>{% translate "Opening Balance" %}</label>
+                        <input type="number" class="form-control" name="opening_balance" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>{% translate "Credit Limit" %}</label>
+                        <input type="number" class="form-control" name="credit_limit" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>{% translate "Credit Days" %}</label>
+                        <input type="number" class="form-control" name="credit_days" step="1" min="0">
+                    </div>
+                    <div class="form-group form-group-full">
+                        <label>{% translate "Address" %} <span class="required">*</span></label>
+                        <textarea class="form-control" name="address" rows="2" required></textarea>
+                    </div>
+                    <div class="form-group form-group-full">
+                        <label>{% translate "Notes" %}</label>
+                        <textarea class="form-control" name="notes" rows="2"></textarea>
+                    </div>
+                    <div class="form-group form-group-full">
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500;">
+                            <input type="checkbox" name="is_active"> {% translate "Is Active" %}
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer-po">
+            <button type="button" class="btn-modal btn-modal-outline" data-modal="editSupplierModal">{% translate "Cancel" %}</button>
+            <button type="button" class="btn-modal btn-modal-primary" id="saveSupplierChangesBtn"><i class="fas fa-save"></i> {% translate "Save Changes" %}</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ==================== DELETE CONFIRM MODAL ==================== -->
+<div class="modal-overlay-po" id="deleteSupplierModal">
+    <div class="modal-dialog-po confirm-dialog">
+        <div class="modal-body-po">
+            <div class="confirm-body">
+                <div class="confirm-icon"><i class="fas fa-trash-alt"></i></div>
+                <h4>{% translate "Delete supplier?" %}</h4>
+                <p>
+                    <strong id="deleteSupplierName"></strong> {% translate "will be permanently deleted. Suppliers that already have purchase bills cannot be deleted — mark them inactive instead." %}
+                </p>
+            </div>
+        </div>
+        <div class="modal-footer-po">
+            <button type="button" class="btn-modal btn-modal-outline" data-modal="deleteSupplierModal">{% translate "Cancel" %}</button>
+            <button type="button" class="btn-modal btn-modal-danger" id="confirmDeleteSupplierBtn"><i class="fas fa-trash-alt"></i> {% translate "Delete" %}</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container-po" id="ajaxToastContainer"></div>
+
+{{ supplier_data|json_script:"supplierData" }}
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'jss/dashboard.js' %}"></script>
+<script>
+(function () {
+    'use strict';
+
+    var suppliers = JSON.parse(document.getElementById('supplierData').textContent);
+    var isAdmin = {{ is_admin|yesno:"true,false" }};
+    var updateUrlTemplate = "{% url 'supplier_update' 0 %}";
+    var deleteUrlTemplate = "{% url 'supplier_delete' 0 %}";
+    var csrfToken = document.querySelector('#editSupplierForm [name=csrfmiddlewaretoken]').value;
+
+    var activeSupplierId = null;
+
+    function urlFor(template, id) {
+        return template.replace(/\/0\//, '/' + id + '/');
+    }
+
+    function escapeHtml(value) {
+        return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    /* ---------------- Toast ---------------- */
+    function showToast(message, type) {
+        type = type || 'error';
+        var icons = { error: 'fa-exclamation-circle', success: 'fa-check-circle', warning: 'fa-exclamation-triangle' };
+        var toast = document.createElement('div');
+        toast.className = 'ajax-toast-po ' + type;
+        toast.innerHTML = '<i class="fas ' + (icons[type] || icons.error) + '"></i><span>' + escapeHtml(message) + '</span>';
+        document.getElementById('ajaxToastContainer').appendChild(toast);
+        setTimeout(function () {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(40px)';
+            setTimeout(function () { toast.remove(); }, 300);
+        }, 4000);
+    }
+
+    /* ---------------- Modals ---------------- */
+    function openModal(id) {
+        document.getElementById(id).classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+        if (!document.querySelector('.modal-overlay-po.active')) {
+            document.body.style.overflow = '';
+        }
+    }
+
+    document.querySelectorAll('[data-modal]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            closeModal(button.getAttribute('data-modal'));
+        });
+    });
+
+    document.querySelectorAll('.modal-overlay-po').forEach(function (overlay) {
+        overlay.addEventListener('click', function (event) {
+            if (event.target === overlay) {
+                closeModal(overlay.id);
+            }
+        });
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay-po.active').forEach(function (overlay) {
+                closeModal(overlay.id);
+            });
+        }
+    });
+
+    /* ---------------- View ---------------- */
+    function detail(label, value, full) {
+        var shown = (value === '' || value == null) ? '<span class="muted">—</span>' : escapeHtml(value);
+        return '<div class="detail-item' + (full ? ' full' : '') + '">' +
+            '<span class="label">' + label + '</span><span class="value">' + shown + '</span></div>';
+    }
+
+    function openView(id) {
+        var s = suppliers[id];
+        if (!s) { return; }
+        activeSupplierId = id;
+
+        document.getElementById('viewSupplierTitle').textContent = s.supplier_name;
+
+        var status = s.is_active
+            ? '<span class="status-pill active"><span class="dot"></span>Active</span>'
+            : '<span class="status-pill inactive"><span class="dot"></span>Inactive</span>';
+
+        document.getElementById('viewSupplierBody').innerHTML =
+            (isAdmin ? detail(gettext('Retailer Shop'), s.retailer, true) : '') +
+            detail(gettext('Supplier Name'), s.supplier_name) +
+            detail(gettext('Contact Person'), s.contact_person) +
+            detail(gettext('Mobile'), s.mobile) +
+            detail(gettext('Alternate Mobile'), s.alternate_mobile) +
+            detail(gettext('Email'), s.email) +
+            detail(gettext('GST Number'), s.gst_number) +
+            detail(gettext('PAN Number'), s.pan_number) +
+            detail(gettext('City / State'), s.city + ', ' + s.state) +
+            detail(gettext('Pincode'), s.pincode) +
+            detail(gettext('Opening Balance'), '₹' + s.opening_balance) +
+            detail(gettext('Credit Limit'), '₹' + s.credit_limit) +
+            detail(gettext('Credit Days'), s.credit_days) +
+            '<div class="detail-item"><span class="label">Status</span><span class="value">' + status + '</span></div>' +
+            detail(gettext('Address'), s.address, true) +
+            detail(gettext('Notes'), s.notes, true);
+
+        openModal('viewSupplierModal');
+    }
+
+    /* ---------------- Edit ---------------- */
+    var editForm = document.getElementById('editSupplierForm');
+
+    function openEdit(id) {
+        var s = suppliers[id];
+        if (!s) { return; }
+        activeSupplierId = id;
+
+        Object.keys(s).forEach(function (field) {
+            var input = editForm.elements[field];
+            if (!input || field === 'id') { return; }
+            if (input.type === 'checkbox') {
+                input.checked = !!s[field];
+            } else {
+                input.value = s[field];
+            }
+            input.style.borderColor = '';
+        });
+
+        var retailerName = document.getElementById('editRetailerName');
+        if (retailerName) { retailerName.value = s.retailer; }
+
+        openModal('editSupplierModal');
+        editForm.elements.supplier_name.focus();
+    }
+
+    document.getElementById('viewToEditBtn').addEventListener('click', function () {
+        closeModal('viewSupplierModal');
+        openEdit(activeSupplierId);
+    });
+
+    document.getElementById('saveSupplierChangesBtn').addEventListener('click', function () {
+        var button = this;
+        var missing = false;
+
+        ['supplier_name', 'mobile', 'city', 'state', 'pincode', 'address'].forEach(function (field) {
+            var input = editForm.elements[field];
+            var empty = !input.value.trim();
+            input.style.borderColor = empty ? '#ef4444' : '';
+            missing = missing || empty;
+        });
+
+        if (missing) {
+            showToast(gettext('Please fill all required fields.'), 'error');
+            return;
+        }
+
+        if (!/^\d{10,15}$/.test(editForm.elements.mobile.value.replace(/\D/g, ''))) {
+            editForm.elements.mobile.style.borderColor = '#ef4444';
+            showToast(gettext('Please enter a valid mobile number.'), 'error');
+            return;
+        }
+
+        button.disabled = true;
+
+        fetch(urlFor(updateUrlTemplate, activeSupplierId), {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+            body: new FormData(editForm)
+        })
+            .then(function (response) { return response.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    closeModal('editSupplierModal');
+                    showToast(data.message, 'success');
+                    setTimeout(function () { window.location.reload(); }, 700);
+                } else {
+                    showToast(data.message || gettext('Unable to update supplier.'), 'error');
+                }
+            })
+            .catch(function () { showToast(gettext('Network error while updating supplier.'), 'error'); })
+            .finally(function () { button.disabled = false; });
+    });
+
+    /* ---------------- Delete ---------------- */
+    function openDelete(id) {
+        var s = suppliers[id];
+        if (!s) { return; }
+        activeSupplierId = id;
+        document.getElementById('deleteSupplierName').textContent = s.supplier_name;
+        openModal('deleteSupplierModal');
+    }
+
+    document.getElementById('confirmDeleteSupplierBtn').addEventListener('click', function () {
+        var button = this;
+        button.disabled = true;
+
+        fetch(urlFor(deleteUrlTemplate, activeSupplierId), {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(function (response) { return response.json(); })
+            .then(function (data) {
+                closeModal('deleteSupplierModal');
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    var row = document.querySelector('tr[data-supplier-id="' + activeSupplierId + '"]');
+                    if (row) { row.style.opacity = '0.3'; }
+                    setTimeout(function () { window.location.reload(); }, 700);
+                } else {
+                    showToast(data.message || gettext('Unable to delete supplier.'), 'warning');
+                }
+            })
+            .catch(function () { showToast(gettext('Network error while deleting supplier.'), 'error'); })
+            .finally(function () { button.disabled = false; });
+    });
+
+    /* ---------------- Row actions ---------------- */
+    document.querySelector('.data-table tbody').addEventListener('click', function (event) {
+        var button = event.target.closest('button[data-id]');
+        if (!button) { return; }
+
+        var id = button.getAttribute('data-id');
+
+        if (button.classList.contains('js-view')) { openView(id); }
+        else if (button.classList.contains('js-edit')) { openEdit(id); }
+        else if (button.classList.contains('js-delete')) { openDelete(id); }
+    });
+})();
+</script>
+{% endblock %}

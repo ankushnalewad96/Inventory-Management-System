@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% load static %}
-{% block title %}Add Supplier - My Django Site{% endblock %}
+{% block title %}{% translate "Add Supplier" %} - {{ app_name }}{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/add_order.css' %}">
@@ -8,26 +9,21 @@
 {% endblock %}
 
 {% block page_title %}
-    <h1>Add Supplier</h1>
-    <!-- <p>A quick pulse on your cash position</p> -->
+    <h1>{% translate "Add Supplier" %}</h1>
 {% endblock %}
 
 {% block body %}
 <!-- Form Card -->
 <div class="form-card">
     <div class="form-header">
-        <h2>Supplier Information</h2>
+        <h2><i class="fas fa-truck"></i>{% translate "Supplier Information" %}</h2>
+        <div class="form-header-actions">
+            <a href="{% url 'supplier_list' %}" class="btn btn-outline btn-sm" style="text-decoration:none;">
+                <i class="fas fa-arrow-left"></i> {% translate "Back to Suppliers" %}
+            </a>
+        </div>
     </div>
 
-    <!-- {% if messages %}
-        <div class="messages-container">
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %} -->
 
     <!-- Note: Changed action name to a more generic one if applicable, keep your exact url name if needed -->
     <form method="POST" action="{% url 'add_new_supplier' %}" id="purchaseForm" enctype="multipart/form-data">
@@ -40,9 +36,9 @@
                 <!-- Retailer Selection -->
                 {% if request.user.is_superuser %}
                 <div class="form-group">
-                  <label for="retailer">Retailer Name <span class="required">*</span></label>
+                  <label for="retailer">{% translate "Retailer Name" %} <span class="required">*</span></label>
                   <select class="form-control" name="retailer" id="retailer" required>
-                      <option value="" disabled selected>Select a Retailer</option>
+                      <option value="" disabled selected>{% translate "Select a Retailer" %}</option>
                       {% for retailer in retailers %}
                           <option value="{{ retailer.id }}">{{ retailer.shop_name }}</option>
                       {% endfor %}
@@ -52,98 +48,98 @@
 
                 <!-- Supplier Name -->
                 <div class="form-group">
-                    <label for="supplierName">Supplier Name <span class="required">*</span></label>
-                    <input type="text" class="form-control" name="supplier_name" id="supplierName" placeholder="Enter supplier name" required>
+                    <label for="supplierName">{% translate "Supplier Name" %} <span class="required">*</span></label>
+                    <input type="text" class="form-control" name="supplier_name" id="supplierName" placeholder="{% translate "Enter supplier name" %}" required>
                 </div>
 
                 <!-- Contact Person (Optional) -->
                 <div class="form-group">
-                    <label for="contactPerson">Contact Person</label>
-                    <input type="text" class="form-control" name="contact_person" id="contactPerson" placeholder="Enter contact person name">
+                    <label for="contactPerson">{% translate "Contact Person" %}</label>
+                    <input type="text" class="form-control" name="contact_person" id="contactPerson" placeholder="{% translate "Enter contact person name" %}">
                 </div>
 
                 <!-- Mobile -->
                 <div class="form-group">
-                    <label for="mobile">Mobile <span class="required">*</span></label>
-                    <input type="text" class="form-control" name="mobile" id="mobile" placeholder="Enter mobile number" required>
+                    <label for="mobile">{% translate "Mobile" %} <span class="required">*</span></label>
+                    <input type="text" class="form-control" name="mobile" id="mobile" placeholder="{% translate "Enter mobile number" %}" required>
                 </div>
 
                 <!-- Alternate Mobile (Optional) -->
                 <div class="form-group">
-                    <label for="alternateMobile">Alternate Mobile</label>
-                    <input type="text" class="form-control" name="alternate_mobile" id="alternateMobile" placeholder="Enter alternate mobile number">
+                    <label for="alternateMobile">{% translate "Alternate Mobile" %}</label>
+                    <input type="text" class="form-control" name="alternate_mobile" id="alternateMobile" placeholder="{% translate "Enter alternate mobile number" %}">
                 </div>
 
                 <!-- Email (Optional) -->
                 <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" class="form-control" name="email" id="email" placeholder="Enter email address">
+                    <label for="email">{% translate "Email Address" %}</label>
+                    <input type="email" class="form-control" name="email" id="email" placeholder="{% translate "Enter email address" %}">
                 </div>
 
                 <!-- GST Number (Optional) -->
                 <div class="form-group">
-                    <label for="gstNumber">GST Number</label>
-                    <input type="text" class="form-control" name="gst_number" id="gstNumber" placeholder="Enter GSTIN">
+                    <label for="gstNumber">{% translate "GST Number" %}</label>
+                    <input type="text" class="form-control" name="gst_number" id="gstNumber" placeholder="{% translate "Enter GSTIN" %}">
                 </div>
 
                 <!-- PAN Number (Optional) -->
                 <div class="form-group">
-                    <label for="panNumber">PAN Number</label>
-                    <input type="text" class="form-control" name="pan_number" id="panNumber" placeholder="Enter PAN card number">
+                    <label for="panNumber">{% translate "PAN Number" %}</label>
+                    <input type="text" class="form-control" name="pan_number" id="panNumber" placeholder="{% translate "Enter PAN card number" %}">
                 </div>
 
                 <!-- City -->
                 <div class="form-group">
-                    <label for="city">City <span class="required">*</span></label>
-                    <input type="text" class="form-control" name="city" id="city" placeholder="Enter city" required>
+                    <label for="city">{% translate "City" %} <span class="required">*</span></label>
+                    <input type="text" class="form-control" name="city" id="city" placeholder="{% translate "Enter city" %}" required>
                 </div>
 
                 <!-- State -->
                 <div class="form-group">
-                    <label for="state">State <span class="required">*</span></label>
-                    <input type="text" class="form-control" name="state" id="state" placeholder="Enter state" required>
+                    <label for="state">{% translate "State" %} <span class="required">*</span></label>
+                    <input type="text" class="form-control" name="state" id="state" placeholder="{% translate "Enter state" %}" required>
                 </div>
 
                 <!-- Pincode -->
                 <div class="form-group">
-                    <label for="pincode">Pincode <span class="required">*</span></label>
-                    <input type="text" class="form-control" name="pincode" id="pincode" placeholder="Enter pincode" required>
+                    <label for="pincode">{% translate "Pincode" %} <span class="required">*</span></label>
+                    <input type="text" class="form-control" name="pincode" id="pincode" placeholder="{% translate "Enter pincode" %}" required>
                 </div>
 
                 <!-- Opening Balance -->
                 <div class="form-group">
-                    <label for="openingBalance">Opening Balance</label>
+                    <label for="openingBalance">{% translate "Opening Balance" %}</label>
                     <input type="number" step="0.01" class="form-control" name="opening_balance" id="openingBalance" value="0.00">
                 </div>
 
                 <!-- Credit Limit -->
                 <div class="form-group">
-                    <label for="creditLimit">Credit Limit</label>
+                    <label for="creditLimit">{% translate "Credit Limit" %}</label>
                     <input type="number" step="0.01" class="form-control" name="credit_limit" id="creditLimit" value="0.00">
                 </div>
 
                 <!-- Credit Days -->
                 <div class="form-group">
-                    <label for="creditDays">Credit Days</label>
+                    <label for="creditDays">{% translate "Credit Days" %}</label>
                     <input type="number" class="form-control" name="credit_days" id="creditDays" value="0">
                 </div>
 
                 <!-- Full Width Address Field -->
                 <div class="form-group col-full">
-                    <label for="address">Address <span class="required">*</span></label>
-                    <textarea class="form-control" name="address" id="address" rows="3" placeholder="Enter complete address" required></textarea>
+                    <label for="address">{% translate "Address" %} <span class="required">*</span></label>
+                    <textarea class="form-control" name="address" id="address" rows="3" placeholder="{% translate "Enter complete address" %}" required></textarea>
                 </div>
 
                 <!-- Full Width Notes Field (Optional) -->
                 <div class="form-group col-full">
-                    <label for="notes">Notes</label>
-                    <textarea class="form-control" name="notes" id="notes" rows="3" placeholder="Add any special instructions or remarks"></textarea>
+                    <label for="notes">{% translate "Notes" %}</label>
+                    <textarea class="form-control" name="notes" id="notes" rows="3" placeholder="{% translate "Add any special instructions or remarks" %}"></textarea>
                 </div>
 
                 <!-- Status Checkbox -->
                 <div class="form-group checkbox-group">
                     <label for="isActive">
-                        <input type="checkbox" name="is_active" id="isActive" checked> Is Active
+                        <input type="checkbox" name="is_active" id="isActive" checked> {% translate "Is Active" %}
                     </label>
                 </div>
             </div>
@@ -152,7 +148,7 @@
         <!-- Form Footer -->
         <div class="form-footer">
             <button type="submit" class="btn btn-primary" id="submitBtn">
-                <i class="fas fa-check"></i> Save Supplier
+                <i class="fas fa-check"></i> {% translate "Save Supplier" %}
             </button>
         </div>
     </form>

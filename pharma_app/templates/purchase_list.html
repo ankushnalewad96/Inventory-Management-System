@@ -1,115 +1,52 @@
 
 {% extends "base.html" %}
+{% load i18n i18n_extras %}
 {% load static %}
-{% block title %}Home Page - My Django Site{% endblock %}
+{% block title %}{% translate "Purchases" %} - {{ app_name }}{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/list_pages.css' %}">
 <link rel="stylesheet" href="{% static 'css/error_message.css' %}">
 {% endblock %}
 
 {% block page_title %}
-    <h1>Purchase List</h1>
-    <!-- <p>A quick pulse on your cash position</p> -->
+    <h1>{% translate "Purchase List" %}</h1>
 {% endblock %}
 
 {% block body %}
 <!-- Summary Cards -->
-<!-- <div class="summary-cards">
-    <div class="summary-card">
-        <div class="card-top">
-            <div class="card-icon-wrap paid">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="card-menu"><i class="fas fa-ellipsis-v"></i></div>
-        </div>
-        <div class="card-label">Paid</div>
-        <div class="card-value">₹5,42,100</div>
-        <div class="card-trend up">
-            <i class="fas fa-arrow-up" style="font-size:10px;"></i>
-            <span>12.5% vs last month</span>
-        </div>
-    </div>
 
-    <div class="summary-card">
-        <div class="card-top">
-            <div class="card-icon-wrap unpaid">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="card-menu"><i class="fas fa-ellipsis-v"></i></div>
-        </div>
-        <div class="card-label">Unpaid</div>
-        <div class="card-value">₹2,14,900</div>
-        <div class="card-trend down">
-            <i class="fas fa-arrow-down" style="font-size:10px;"></i>
-            <span>3.1% vs last month</span>
-        </div>
-    </div>
-
-    <div class="summary-card">
-        <div class="card-top">
-            <div class="card-icon-wrap overdue">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <div class="card-menu"><i class="fas fa-ellipsis-v"></i></div>
-        </div>
-        <div class="card-label">Overdue</div>
-        <div class="card-value">₹84,750</div>
-        <div class="card-trend down">
-            <i class="fas fa-arrow-down" style="font-size:10px;"></i>
-            <span>1.8% vs last month</span>
-        </div>
-    </div>
-
-    <div class="summary-card">
-        <div class="card-top">
-            <div class="card-icon-wrap total">
-                <i class="fas fa-wallet"></i>
-            </div>
-            <div class="card-menu"><i class="fas fa-ellipsis-v"></i></div>
-        </div>
-        <div class="card-label">Total</div>
-        <div class="card-value">₹8,41,750</div>
-        <div class="card-trend up">
-            <i class="fas fa-arrow-up" style="font-size:10px;"></i>
-            <span>6.4% vs last month</span>
-        </div>
-    </div>
-</div> -->
-
-<!-- Quick Actions -->
-<div class="quick-actions">
-    <a href="{% url 'add_new_order' %}"><button class="action-btn primary">
+<!-- Quick Actions (phones only; on larger screens the button sits in the section header) -->
+<div class="quick-actions only-mobile">
+    <a href="{% url 'add_new_order' %}" class="action-btn primary">
         <i class="fas fa-plus"></i>
-        New purchase order
-    </button></a>
+        {% translate "New purchase order" %}
+    </a>
     <button class="action-btn">
         <i class="fas fa-file-upload"></i>
-        Upload bills
+        {% translate "Upload bills" %}
     </button>
-    <!-- <a href="{% url 'add_new_supplier' %}"><button class="action-btn">
-        <i class="fas fa-user-plus"></i>
-        Add supplier
-    </button></a>
-
-    {% if request.user.is_superuser %}
-    <a href="{% url 'retailer_register' %}"><button class="action-btn">
-        <i class="fas fa-user-plus"></i>
-        Add retailer
-    </button></a>
-    {% endif %} -->
 </div>
 
 <!-- Recent Purchases -->
 <div class="purchases-section">
-    <div class="section-header">
-        <h2>Recent purchases</h2>
-        <p>42 orders this month</p>
+    <div class="section-header with-count">
+        <div>
+            <h2>{% translate "Recent purchases" %}</h2>
+            <p>{% blocktranslate count counter=page_obj.paginator.count %}{{ counter }} order found{% plural %}{{ counter }} orders found{% endblocktranslate %}</p>
+        </div>
+        <div class="section-actions">
+            <a href="{% url 'add_new_order' %}" class="action-btn primary hide-mobile">
+                <i class="fas fa-plus"></i>
+                {% translate "New purchase order" %}
+            </a>
+        </div>
     </div>
 
     <form method="GET" class="filters-bar">
         <div class="filter-group">
-            <label>From</label>
+            <label>{% translate "From" %}</label>
             <input
                 type="date"
                 name="from_date"
@@ -119,7 +56,7 @@
         </div>
 
         <div class="filter-group">
-            <label>To</label>
+            <label>{% translate "To" %}</label>
             <input
                 type="date"
                 name="to_date"
@@ -129,35 +66,35 @@
         </div>
 
         <div class="filter-group">
-            <label>Status</label>
+            <label>{% translate "Status" %}</label>
             <select name="status" class="filter-select">
 
-                <option value="">All Status</option>
+                <option value="">{% translate "All Status" %}</option>
 
                 <option value="Paid"
                     {% if request.GET.status == "Paid" %}selected{% endif %}>
-                    Paid
+                    {% translate "Paid" %}
                 </option>
 
                 <option value="Partial"
                     {% if request.GET.status == "Partial" %}selected{% endif %}>
-                    Partial
+                    {% translate "Partial" %}
                 </option>
 
                 <option value="Unpaid"
                     {% if request.GET.status == "Unpaid" %}selected{% endif %}>
-                    Unpaid
+                    {% translate "Unpaid" %}
                 </option>
 
             </select>
         </div>
 
         <div class="filter-group">
-            <label>Supplier</label>
+            <label>{% translate "Supplier" %}</label>
 
             <select name="supplier" class="filter-select">
 
-                <option value="">All Suppliers</option>
+                <option value="">{% translate "All Suppliers" %}</option>
 
                 {% for supplier in supplier_list %}
                     <option
@@ -177,12 +114,12 @@
 
             <button type="submit" class="export-btn">
                 <i class="fas fa-filter"></i>
-                Filter
+                {% translate "Filter" %}
             </button>
 
             <a href="{% url 'purchase_product_list' %}" class="export-btn">
                 <i class="fas fa-times"></i>
-                Clear
+                {% translate "Clear" %}
             </a>
         </div>
 
@@ -192,32 +129,42 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Order No.</th>
-                    <th>Supplier</th>
-                    <th>Date</th>
-                    <th>Payment Type</th>
-                    <th>Amount</th>
-                    <th>Balance</th>
-                    <th>Due Date</th>
-                    <th>Status</th>
-                    <th>Action</th>
+                    <th>{% translate "Order No." %}</th>
+                    {% if is_admin %}<th>{% translate "Retailer Shop" %}</th>{% endif %}
+                    <th>{% translate "Supplier" %}</th>
+                    <th>{% translate "Date" %}</th>
+                    <th>{% translate "Payment Type" %}</th>
+                    <th>{% translate "Amount" %}</th>
+                    <th>{% translate "Paid" %}</th>
+                    <th>{% translate "Balance" %}</th>
+                    <th>{% translate "Due Date" %}</th>
+                    <th>{% translate "Status" %}</th>
+                    <th>{% translate "Action" %}</th>
                 </tr>
             </thead>
+            <tbody>
                 {% for purchase in purchases %}
                     <tr>
-                        <td><strong>{{ purchase.bill_number }}</strong></td>
+                        <td><a href="{% url 'purchase_detail' purchase.id %}" class="order-no" style="text-decoration:none;"><strong>{{ purchase.bill_number }}</strong></a></td>
+                        {% if is_admin %}
+                        <td><span class="shop-tag"><i class="fas fa-store"></i>{{ purchase.retailer.shop_name }}</span></td>
+                        {% endif %}
                         <td>
                             <div class="supplier-cell">
-                                <span>{{ purchase.supplier }}</span>
+                                <a href="{% url 'supplier_account' purchase.supplier_id %}" style="color:inherit;text-decoration:none;" title="{% translate "Supplier account" %}">{{ purchase.supplier }}</a>
                             </div>
                         </td>
                         <td>{{ purchase.bill_date|date:"d M Y" }}</td>
-                        <td>{{ purchase.get_payment_type_display }}</td>
+                        <td>{{ purchase.get_payment_type_display|tr|default:"—" }}</td>
                         <td><strong>₹{{ purchase.grand_total|floatformat:2 }}</strong></td>
-                        <td>₹{{ purchase.due_amount|floatformat:2 }}</td>
+                        <td class="amount-paid">₹{{ purchase.paid_amount|floatformat:2 }}</td>
+                        <td class="{% if purchase.due_amount > 0 %}amount-due{% endif %}">₹{{ purchase.due_amount|floatformat:2 }}</td>
                         <td>
                             {% if purchase.due_date %}
                                 {{ purchase.due_date|date:"d M Y" }}
+                                {% if purchase.due_amount > 0 and purchase.due_date < today %}
+                                    <span class="status-pill unpaid" style="margin-left:4px;padding:2px 8px;font-size:10px;">{% translate "Overdue" %}</span>
+                                {% endif %}
                             {% else %}
                                 N/A
                             {% endif %}
@@ -226,36 +173,39 @@
                             {% if purchase.payment_status == "Paid" %}
                                 <span class="status-text paid">
                                     <span class="status-dot"></span>
-                                    Paid
+                                    {% translate "Paid" %}
                                 </span>
                             {% elif purchase.payment_status == "Partial" %}
                                 <span class="status-text partial">
                                     <span class="status-dot"></span>
-                                    Partial
+                                    {% translate "Partial" %}
                                 </span>
                             {% else %}
                                 <span class="status-text unpaid">
                                     <span class="status-dot"></span>
-                                    Unpaid
+                                    {% translate "Unpaid" %}
                                 </span>
                             {% endif %}
                         </td>
                         <td>
                             <div class="action-btns">
-                                <a href="{% url 'purchase_detail' purchase.id %}" class="action-icon-btn" title="View Details">
+                                <a href="{% url 'purchase_detail' purchase.id %}" class="action-icon-btn" title="{% translate "View details & payments" %}" aria-label="{% translate "View details" %}">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <!-- <a href="#" class="action-icon-btn" title="Print" target="_blank">
+                                <a href="{% url 'purchase_invoice' purchase.id %}?print=1" class="action-icon-btn" title="{% translate "Print bill" %}" aria-label="{% translate "Print bill" %}" target="_blank" rel="noopener">
                                     <i class="fas fa-print"></i>
-                                </a> -->
+                                </a>
+                                <a href="{% url 'purchase_invoice' purchase.id %}?download=1" class="action-icon-btn success" title="{% translate "Download bill (PDF)" %}" aria-label="{% translate "Download bill" %}" target="_blank" rel="noopener">
+                                    <i class="fas fa-download"></i>
+                                </a>
                             </div>
                         </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="9" style="text-align:center;padding:40px;color:#999;">
+                        <td colspan="{% if is_admin %}11{% else %}10{% endif %}" style="text-align:center;padding:40px;color:#999;">
                             <i class="fas fa-inbox" style="font-size:48px;display:block;margin-bottom:10px;color:#ddd;"></i>
-                            No purchase orders found
+                            {% translate "No purchase orders found" %}
                         </td>
                     </tr>
                 {% endfor %}
@@ -270,13 +220,7 @@
 
         <!-- Showing text -->
         <div class="showing-text">
-            Showing
-            {{ page_obj.start_index }}
-            -
-            {{ page_obj.end_index }}
-            of
-            {{ page_obj.paginator.count }}
-            orders
+            {% blocktranslate with start=page_obj.start_index end=page_obj.end_index total=page_obj.paginator.count %}Showing {{ start }} - {{ end }} of {{ total }} orders{% endblocktranslate %}
         </div>
 
         <!-- Pagination -->
@@ -287,7 +231,7 @@
                 <a
                     href="?page={{ page_obj.previous_page_number }}{% if request.GET.from_date %}&from_date={{ request.GET.from_date }}{% endif %}{% if request.GET.to_date %}&to_date={{ request.GET.to_date }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.supplier %}&supplier={{ request.GET.supplier }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
                     class="page-btn"
-                    title="Previous"
+                    title="{% translate "Previous" %}"
                 >
                     <i class="fas fa-chevron-left"></i>
                 </a>
@@ -329,7 +273,7 @@
                 <a
                     href="?page={{ page_obj.next_page_number }}{% if request.GET.from_date %}&from_date={{ request.GET.from_date }}{% endif %}{% if request.GET.to_date %}&to_date={{ request.GET.to_date }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.supplier %}&supplier={{ request.GET.supplier }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
                     class="page-btn"
-                    title="Next"
+                    title="{% translate "Next" %}"
                 >
                     <i class="fas fa-chevron-right"></i>
                 </a>

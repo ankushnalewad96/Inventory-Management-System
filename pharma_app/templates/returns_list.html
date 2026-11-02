@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static humanize %}
+{% block title %}{% translate "Returns" %} - {{ app_name }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/list_pages.css' %}">
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/quotation.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <h1>{% translate "Returns" %}</h1>
+    <p>{% translate "Credit notes for goods customers returned, debit notes for goods sent back to suppliers" %}</p>
+{% endblock %}
+
+{% block body %}
+
+<div class="qt-actions qt-actions-top">
+    <a href="{% url 'returns_list' %}" class="export-btn {% if kind == 'sale' %}primary{% endif %}"><i class="fas fa-user"></i> {% translate "Sales returns (credit notes)" %}</a>
+    <a href="{% url 'returns_list' %}?type=purchase" class="export-btn {% if kind == 'purchase' %}primary{% endif %}"><i class="fas fa-truck"></i> {% translate "Purchase returns (debit notes)" %}</a>
+</div>
+
+<div class="purchases-section">
+    <div class="section-header with-count">
+        <div>
+            <h2>{% if kind == "sale" %}{% translate "Credit notes" %}{% else %}{% translate "Debit notes" %}{% endif %}</h2>
+            <p>{% blocktranslate count counter=page_obj.paginator.count %}{{ counter }} note{% plural %}{{ counter }} notes{% endblocktranslate %} · {% if kind == "sale" %}{% translate "start a return from the sale's page" %}{% else %}{% translate "start a return from the purchase bill's page" %}{% endif %}</p>
+        </div>
+    </div>
+
+    <form method="GET" class="filters-bar">
+        {% if kind == "purchase" %}<input type="hidden" name="type" value="purchase">{% endif %}
+        <div class="filter-group filter-text">
+            <i class="fas fa-search"></i>
+            <input type="text" name="search" class="filter-input" value="{{ search }}"
+                   placeholder="{% if kind == 'sale' %}Note no., invoice no. or customer...{% else %}Note no., bill no. or supplier...{% endif %}" aria-label="{% translate "Search returns" %}">
+        </div>
+        <div class="export-btns">
+            <button type="submit" class="export-btn primary"><i class="fas fa-filter"></i> {% translate "Filter" %}</button>
+            <a href="{% url 'returns_list' %}{% if kind == 'purchase' %}?type=purchase{% endif %}" class="export-btn"><i class="fas fa-times"></i> {% translate "Clear" %}</a>
+        </div>
+    </form>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{% translate "Note" %}</th>
+                    {% if is_admin %}<th>{% translate "Retailer Shop" %}</th>{% endif %}
+                    <th>{% if kind == "sale" %}{% translate "Customer" %}{% else %}{% translate "Supplier" %}{% endif %}</th>
+                    <th>{% if kind == "sale" %}{% translate "Invoice" %}{% else %}{% translate "Bill" %}{% endif %}</th>
+                    <th class="text-right">{% translate "Total" %}</th>
+                    <th class="text-right">{% if kind == "sale" %}{% translate "Refunded" %}{% else %}{% translate "Refund due" %}{% endif %}</th>
+                    <th class="text-center">{% translate "Print" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for note in notes %}
+                <tr>
+                    <td>
+                        <div class="cell-stack">
+                            <span class="primary-text">{% if kind == "sale" %}{{ note.credit_note_number }}{% else %}{{ note.debit_note_number }}{% endif %}</span>
+                            <span class="secondary-text">{{ note.return_date|date:"d M Y" }}</span>
+                        </div>
+                    </td>
+                    {% if is_admin %}<td><span class="shop-tag"><i class="fas fa-store"></i>{{ note.retailer.shop_name }}</span></td>{% endif %}
+                    <td>{% if kind == "sale" %}{{ note.customer.customer_name }}{% else %}{{ note.supplier.supplier_name }}{% endif %}</td>
+                    <td>
+                        {% if kind == "sale" %}
+                            <a href="{% url 'sale_detail' note.sale_id %}">{{ note.sale.invoice_number }}</a>
+                        {% else %}
+                            <a href="{% url 'purchase_detail' note.purchase_id %}">{{ note.purchase.bill_number }}</a>
+                        {% endif %}
+                    </td>
+                    <td class="text-right">₹{{ note.total|floatformat:2|intcomma }}</td>
+                    <td class="text-right">{% if note.refund_amount > 0 %}₹{{ note.refund_amount|floatformat:2|intcomma }}{% else %}<span class="muted">—</span>{% endif %}</td>
+                    <td>
+                        <div class="action-btns" style="justify-content:center;">
+                            <a href="{% if kind == 'sale' %}{% url 'credit_note' note.id %}{% else %}{% url 'debit_note' note.id %}{% endif %}" class="action-icon-btn" title="{% translate "Open / print" %}" aria-label="{% translate "Open note" %}">
+                                <i class="fas fa-print"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if is_admin %}7{% else %}6{% endif %}" class="empty-state">
+                        <i class="fas fa-rotate-left"></i>
+                        <div class="empty-title">{% if kind == "sale" %}{% translate "No credit notes yet" %}{% else %}{% translate "No debit notes yet" %}{% endif %}</div>
+                        {% if kind == "sale" %}
+                            <a href="{% url 'sales_list' %}">{% translate "Open a sale to return items" %}</a>
+                        {% else %}
+                            <a href="{% url 'purchase_product_list' %}">{% translate "Open a purchase bill to return items" %}</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="table-footer">
+        <div class="showing-text">{% blocktranslate with start=page_obj.start_index end=page_obj.end_index total=page_obj.paginator.count %}Showing {{ start }} - {{ end }} of {{ total }}{% endblocktranslate %}</div>
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+            <button class="page-btn active">{{ page_obj.number }}</button>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn"><i class="fas fa-chevron-right"></i></a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'jss/dashboard.js' %}"></script>
+{% endblock %}

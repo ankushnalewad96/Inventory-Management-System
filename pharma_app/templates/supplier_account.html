@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% load i18n i18n_extras %}
+{% load static humanize %}
+{% block title %}{{ supplier.supplier_name }} - {% translate "Supplier Account" %} - {{ app_name }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/list_pages.css' %}">
+<link rel="stylesheet" href="{% static 'css/purchase_detail.css' %}">
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <div class="page-title-row">
+        <a href="{% url 'supplier_list' %}" class="page-back-btn" title="{% translate "Back to Suppliers" %}" aria-label="{% translate "Back to Suppliers" %}">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            <h1>{{ supplier.supplier_name }}</h1>
+            <div class="title-meta">
+                <span class="chip"><i class="fas fa-truck"></i> {% translate "Supplier account" %}</span>
+                {% if is_admin %}<span class="chip"><i class="fas fa-store"></i> {{ supplier.retailer.shop_name }}</span>{% endif %}
+                {% if not supplier.is_active %}<span class="status-pill inactive"><span class="dot"></span>{% translate "Inactive" %}</span>{% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+
+<div class="page-actions">
+    <a href="{% url 'add_new_order' %}" class="action-btn primary"><i class="fas fa-plus"></i> {% translate "New purchase order" %}</a>
+    <a href="{% url 'supplier_statement' supplier.id %}" target="_blank" rel="noopener" class="action-btn"><i class="fas fa-print"></i> {% translate "Print statement" %}</a>
+    <a href="{% url 'supplier_statement' supplier.id %}?download=1" target="_blank" rel="noopener" class="action-btn"><i class="fas fa-download"></i> {% translate "Download PDF" %}</a>
+</div>
+
+<!-- Totals -->
+<div class="summary-cards compact">
+    <div class="summary-card">
+        <div class="card-top"><div class="card-icon-wrap total"><i class="fas fa-file-invoice"></i></div></div>
+        <div class="card-label">{% translate "Total billed" %}</div>
+        <div class="card-value">₹{{ account.billed|floatformat:2|intcomma }}</div>
+        <div class="card-trend"><span>{% blocktranslate count counter=account.bills %}{{ counter }} bill{% plural %}{{ counter }} bills{% endblocktranslate %}</span></div>
+    </div>
+    <div class="summary-card">
+        <div class="card-top"><div class="card-icon-wrap paid"><i class="fas fa-check-circle"></i></div></div>
+        <div class="card-label">{% translate "Paid" %}</div>
+        <div class="card-value">₹{{ account.paid|floatformat:2|intcomma }}</div>
+        <div class="card-trend">
+            <span>{% if account.last_payment %}{% blocktranslate with amount=account.last_payment.amount date=account.last_payment.payment_date|date:"d M Y" %}Last ₹{{ amount }} on {{ date }}{% endblocktranslate %}{% else %}{% translate "No payments yet" %}{% endif %}</span>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="card-top"><div class="card-icon-wrap unpaid"><i class="fas fa-clock"></i></div></div>
+        <div class="card-label">{% translate "Balance payable" %}</div>
+        <div class="card-value">₹{{ account.due|floatformat:2|intcomma }}</div>
+        <div class="card-trend"><span>{% blocktranslate count counter=account.open_bills|length %}{{ counter }} unpaid bill{% plural %}{{ counter }} unpaid bills{% endblocktranslate %}{% if account.returned > 0 %} · ₹{{ account.returned|floatformat:2|intcomma }} {% translate "less for returns" %}{% endif %}</span></div>
+    </div>
+    <div class="summary-card">
+        <div class="card-top"><div class="card-icon-wrap overdue"><i class="fas fa-triangle-exclamation"></i></div></div>
+        <div class="card-label">{% translate "Overdue" %}</div>
+        <div class="card-value">₹{{ account.overdue|floatformat:2|intcomma }}</div>
+        <div class="card-trend {% if account.overdue_bills %}down{% endif %}"><span>{% blocktranslate count counter=account.overdue_bills|length %}{{ counter }} bill past due date{% plural %}{{ counter }} bills past due date{% endblocktranslate %}</span></div>
+    </div>
+</div>
+
+<div class="account-layout">
+    <div>
+        <!-- Bills -->
+        <div class="items-section">
+            <div class="section-header-bar">
+                <span class="section-title"><i class="fas fa-file-lines" style="color: var(--primary);"></i> {% translate "Purchase Bills" %}</span>
+                <span class="item-count">{{ bills|length }}</span>
+            </div>
+            <div class="table-wrap">
+                <table class="data-table compact">
+                    <thead>
+                        <tr>
+                            <th>{% translate "Bill No." %}</th>
+                            <th>{% translate "Bill date" %}</th>
+                            <th>{% translate "Due date" %}</th>
+                            <th class="numeric">{% translate "Total" %}</th>
+                            <th class="numeric">{% translate "Paid" %}</th>
+                            <th class="numeric">{% translate "Due" %}</th>
+                            <th>{% translate "Status" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bill in bills %}
+                        <tr>
+                            <td><a href="{% url 'purchase_detail' bill.id %}" class="order-no" style="text-decoration:none;">{{ bill.bill_number }}</a></td>
+                            <td>{{ bill.bill_date|date:"d M Y" }}</td>
+                            <td>
+                                {{ bill.due_date|date:"d M Y"|default:"—" }}
+                                {% if bill.due_amount > 0 and bill.due_date and bill.due_date < account.today %}<span class="overdue-tag">{% translate "Overdue" %}</span>{% endif %}
+                            </td>
+                            <td class="numeric">₹{{ bill.grand_total }}</td>
+                            <td class="numeric money-in">₹{{ bill.paid_amount }}</td>
+                            <td class="numeric {% if bill.due_amount > 0 %}money-due{% else %}money-zero{% endif %}">₹{{ bill.due_amount }}</td>
+                            <td><span class="status-pill {{ bill.payment_status|lower }}"><span class="dot"></span>{{ bill.payment_status|tr }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7" class="table-empty"><i class="fas fa-inbox"></i>{% translate "No purchases from this supplier yet." %}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Statement -->
+        <div class="items-section">
+            <div class="section-header-bar">
+                <span class="section-title"><i class="fas fa-book" style="color: var(--info);"></i> {% translate "Account Statement" %}</span>
+                <span class="item-count">{% blocktranslate count counter=statement|length %}{{ counter }} entry{% plural %}{{ counter }} entries{% endblocktranslate %}</span>
+            </div>
+            <div class="table-wrap">
+                <table class="data-table compact">
+                    <thead>
+                        <tr>
+                            <th>{% translate "Date" %}</th>
+                            <th>{% translate "Particulars" %}</th>
+                            <th class="numeric">{% translate "Bill amount" %}</th>
+                            <th class="numeric">{% translate "Paid" %}</th>
+                            <th class="numeric">{% translate "Payable" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in statement %}
+                        <tr>
+                            <td>{{ row.date|date:"d M Y" }}</td>
+                            <td>
+                                <a href="{% url 'purchase_detail' row.purchase_id %}" class="row-kind {{ row.kind }}" style="text-decoration:none;">
+                                    <i class="fas {% if row.kind == 'bill' %}fa-file-invoice{% elif row.kind == 'debit_note' %}fa-rotate-left{% elif row.kind == 'refund' %}fa-arrow-down{% else %}fa-arrow-up-from-bracket{% endif %}"></i>
+                                    {{ row.particulars }}
+                                </a>
+                                {% if row.kind == "payment" and row.reference %}<span class="row-sub">{% translate "Ref:" %} {{ row.reference }}</span>{% endif %}
+                            </td>
+                            <td class="numeric">{% if row.debit %}₹{{ row.debit }}{% else %}<span class="money-zero">—</span>{% endif %}</td>
+                            <td class="numeric money-in">{% if row.credit %}₹{{ row.credit }}{% else %}<span class="money-zero">—</span>{% endif %}</td>
+                            <td class="numeric {% if row.balance > 0 %}money-due{% endif %}">₹{{ row.balance }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="table-empty"><i class="fas fa-book-open"></i>{% translate "No transactions yet." %}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <aside>
+        <div class="side-card">
+            <h3><i class="fas fa-address-card" style="color: var(--info);"></i> {% translate "Supplier details" %}</h3>
+            <div class="info-row"><span class="info-label">{% translate "Contact" %}</span><span class="info-value">{{ supplier.contact_person|default:"—" }}</span></div>
+            <div class="info-row"><span class="info-label">{% translate "Mobile" %}</span><span class="info-value">{{ supplier.mobile }}</span></div>
+            <div class="info-row"><span class="info-label">{% translate "Email" %}</span><span class="info-value">{{ supplier.email|default:"—" }}</span></div>
+            <div class="info-row"><span class="info-label">{% translate "GSTIN" %}</span><span class="info-value">{{ supplier.gst_number|default:"—" }}</span></div>
+            <div class="info-row"><span class="info-label">{% translate "City" %}</span><span class="info-value">{{ supplier.city }}, {{ supplier.state }}</span></div>
+            <div class="info-row"><span class="info-label">{% translate "Credit days" %}</span><span class="info-value">{{ supplier.credit_days }}</span></div>
+        </div>
+
+        <div class="side-card">
+            <h3><i class="fas fa-hourglass-half" style="color: var(--warning);"></i> {% translate "Unpaid bills" %}</h3>
+            {% for bill in account.open_bills %}
+                <div class="info-row">
+                    <span class="info-label">
+                        <a href="{% url 'purchase_detail' bill.id %}" style="color: var(--primary); font-weight: 600; text-decoration: none;">{{ bill.bill_number }}</a>
+                        <span class="row-sub">{% translate "Due" %} {{ bill.due_date|date:"d M Y"|default:"—" }}{% if bill.due_date and bill.due_date < account.today %} · {% translate "overdue" %}{% endif %}</span>
+                    </span>
+                    <span class="info-value danger">₹{{ bill.due_amount }}</span>
+                </div>
+            {% empty %}
+                <p style="font-size: 13px; color: var(--success);"><i class="fas fa-circle-check"></i> {% translate "Nothing is due to this supplier." %}</p>
+            {% endfor %}
+        </div>
+    </aside>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'jss/dashboard.js' %}"></script>
+{% endblock %}

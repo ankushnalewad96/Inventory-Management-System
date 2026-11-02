@@ -1,0 +1,98 @@
+{% load i18n i18n_extras %}{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - {{ party_name }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/print_doc.css' %}">
+</head>
+<body data-auto-download="{% if auto_download %}1{% endif %}">
+
+    <div class="toolbar">
+        <div class="group">
+            <a href="{{ back_url }}" class="tool-btn"><i class="fas fa-arrow-left"></i> {% translate "Back to account" %}</a>
+        </div>
+        <div class="group">
+            <button type="button" class="tool-btn" id="printBtn"><i class="fas fa-print"></i> {% translate "Print" %}</button>
+            <button type="button" class="tool-btn primary" id="downloadPdfBtn"><i class="fas fa-download"></i> {% translate "Download PDF" %}</button>
+        </div>
+    </div>
+
+    <div class="doc" id="docSheet" data-file-name="{{ file_name }}">
+        <div class="doc-header">
+            <div>
+                <div class="shop-name">{{ shop.shop_name }}</div>
+                <div class="shop-meta">
+                    {{ shop.address }}<br>
+                    {{ shop.city }}, {{ shop.state }} - {{ shop.pincode }}<br>
+                    {% translate "Phone:" %} {{ shop.mobile }}{% if shop.email %} &nbsp;|&nbsp; {{ shop.email }}{% endif %}
+                    {% if shop.gst_number %}<br>GSTIN: <strong>{{ shop.gst_number }}</strong>{% endif %}
+                </div>
+            </div>
+            <div class="doc-title">
+                <h1>{{ title }}</h1>
+                <div class="meta">{% translate "Date:" %} <strong>{{ today|date:"d M Y" }}</strong></div>
+            </div>
+        </div>
+
+        <div class="parties">
+            <div>
+                <div class="party-label">{{ party_label }}</div>
+                <div class="party-name">{{ party_name }}</div>
+                <div class="party-meta">
+                    {% for line in party_lines %}{% if line %}{{ line }}<br>{% endif %}{% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-strip">
+            {% for label, value in summary %}
+            <div><span>{{ label|tr }}</span><strong>₹{{ value }}</strong></div>
+            {% endfor %}
+        </div>
+
+        <div class="section-label">{% translate "Account history" %}</div>
+        <div class="table-wrap">
+            <table class="grid">
+                <thead>
+                    <tr>
+                        <th>{% translate "Date" %}</th>
+                        <th>{% translate "Particulars" %}</th>
+                        <th class="num">{{ debit_label }}</th>
+                        <th class="num">{{ credit_label }}</th>
+                        <th class="num">{{ balance_label }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        <td>{{ row.date|date:"d M Y"|default:"—" }}</td>
+                        <td>
+                            {{ row.particulars }}
+                            {% if row.reference and row.kind == "payment" %}<div class="muted">{% translate "Ref:" %} {{ row.reference }}</div>{% endif %}
+                        </td>
+                        <td class="num debit">{% if row.debit %}₹{{ row.debit }}{% else %}—{% endif %}</td>
+                        <td class="num credit">{% if row.credit %}₹{{ row.credit }}{% else %}—{% endif %}</td>
+                        <td class="num strong">₹{{ row.balance }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="empty">{% translate "No transactions yet." %}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="doc-footer">
+            <div>{% translate "This is a computer-generated statement." %}</div>
+            <div class="signature">
+                <div class="line"></div>
+                {% translate "For" %} {{ shop.shop_name }}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="{% static 'jss/print_doc.js' %}"></script>
+</body>
+</html>

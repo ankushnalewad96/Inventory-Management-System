@@ -1,6 +1,7 @@
 {% extends "base.html" %}
-{% load static %}
-{% block title %}Add Order Page - My Django Site{% endblock %}
+{% load i18n i18n_extras %}
+{% load static %}{% load qty %}
+{% block title %}{% translate "New Purchase Order" %} - {{ app_name }}{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/add_order.css' %}">
@@ -8,19 +9,29 @@
 {% endblock %}
 
 {% block page_title %}
-    <h1>Add Order</h1>
-    <!-- <p>A quick pulse on your cash position</p> -->
+    <div class="page-title-row">
+        <a href="{% url 'purchase_product_list' %}" class="page-back-btn" title="{% translate "Back to Purchases" %}" aria-label="{% translate "Back to Purchases" %}">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            <h1>{% translate "New Purchase Order" %}</h1>
+            <p>{% translate "Record a purchase bill from your supplier" %}</p>
+        </div>
+    </div>
 {% endblock %}
 
 {% block body %}
 <div class="form-card">
     <div class="form-header">
-        <h2><i class="fas fa-file-invoice"></i>Purchase Order Details</h2>
-        <div class="form-header-actions">
-            <button class="btn btn-outline btn-sm" onclick="window.print()">
-                <i class="fas fa-print"></i> Print
+        <h2><i class="fas fa-file-invoice"></i>{% translate "Purchase Order Details" %}</h2>
+        <div>
+            <button type="button" class="upload-bill-btn" id="uploadBillBtn">
+                <i class="fas fa-cloud-upload-alt"></i> {% translate "Upload Bill" %}
             </button>
+            <span id="billFileName" style="margin-left:8px;font-size:13px;color:var(--text-muted);"></span>
+            <input type="file" id="billFileInput" name="bill_file" style="display:none;" accept="image/*,.pdf">
         </div>
+        
     </div>
 
     <form method="POST" action="{% url 'add_new_order' %}" id="purchaseForm" enctype="multipart/form-data">
@@ -28,121 +39,164 @@
 
         <div class="form-body">
             <!-- Top Form Fields -->
-            <div class="form-grid">
+            <div class="form-grid po-grid">
                 {% if request.user.is_superuser %}
                 <div class="form-group">
-                    <label>Retailer Name <span class="required">*</span></label>
+                    <label>{% translate "Retailer Name" %} <span class="required">*</span></label>
                     <div class="field-with-action">
                         <div class="supplier-search" style="flex:1;">
                             <i class="fas fa-search"></i>
                             <select class="form-control" id="retailerSelect" name="retailer" required>
-                                <option value="">Select Retailer</option>
+                                <option value="">{% translate "Select Retailer" %}</option>
                                 {% for retailer in retailer_list %}
                                     <option value="{{ retailer.id }}">{{ retailer.shop_name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <button type="button" class="btn-action-add retailer-btn" id="btnOpenRetailerModal" title="Add New Retailer">
+                        <button type="button" class="btn-action-add retailer-btn" id="btnOpenRetailerModal" title="{% translate "Add New Retailer" %}">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
                 </div>
                 {% endif %}
-                <div class="form-group {% if not request.user.is_superuser %}full-width{% endif %}">
-                    <label>Search by Supplier Name <span class="required">*</span></label>
+                <div class="form-group {% if not request.user.is_superuser %}span-2{% endif %}">
+                    <label>{% translate "Supplier" %} <span class="required">*</span></label>
                     <div class="field-with-action">
                         <div class="supplier-search" style="flex:1;">
                             <i class="fas fa-search"></i>
                             <select class="form-control" id="supplierSelect" name="supplier" required>
-                                <option value="">Select Supplier</option>
+                                <option value="">{% translate "Select Supplier" %}</option>
                                 {% for supplier in supplier_list %}
-                                    <option value="{{ supplier.id }}" data-retailer="{{ supplier.retailer_id }}">{{ supplier.supplier_name }}</option>
+                                    <option value="{{ supplier.id }}" data-retailer="{{ supplier.retailer_id }}" data-summary-url="{% url 'supplier_summary' supplier.id %}">{{ supplier.supplier_name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <button type="button" class="btn-action-add" id="btnOpenSupplierModal" title="Add New Supplier">
+                        <button type="button" class="btn-action-add" id="btnOpenSupplierModal" title="{% translate "Add New Supplier" %}">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
+                    <small class="supplier-product-hint" id="supplierProductHint" hidden></small>
                 </div>
 
                 
 
                 <div class="form-group">
-                    <label>Bill Number <span class="required">*</span></label>
-                    <input type="text" class="form-control" name="bill_number" id="billNumber" placeholder="Enter bill number" value="BILL-2026-001" required>
+                    <label>{% translate "Bill Number" %} <span class="required">*</span></label>
+                    <input type="text" class="form-control" name="bill_number" id="billNumber" placeholder="{% translate "Bill number printed on the supplier's bill" %}" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Bill Date <span class="required">*</span></label>
+                    <label>{% translate "Bill Date" %} <span class="required">*</span></label>
                     <div class="form-control-icon">
-                        <input type="date" class="form-control" name="bill_date" id="billDate" value="2026-07-27" required>
+                        <input type="date" class="form-control" name="bill_date" id="billDate" value="{{ today|date:'Y-m-d' }}" required>
                         <i class="fas fa-calendar-alt" style="pointer-events:none;"></i>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Time</label>
+                    <label>{% translate "Time" %}</label>
                     <div class="form-control-icon">
-                        <input type="time" class="form-control" name="bill_time" id="billTime" value="18:35">
+                        <input type="time" class="form-control" name="bill_time" id="billTime" value="{{ now_time }}">
                         <i class="fas fa-clock" style="pointer-events:none;"></i>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Payment Terms</label>
+                    <label>{% translate "Payment Terms" %}</label>
                     <select class="form-control" name="payment_terms" id="paymentTerms">
-                        <option value="">Select Terms</option>
-                        <option value="net15" selected>Net 15</option>
-                        <option value="net30">Net 30</option>
-                        <option value="net45">Net 45</option>
-                        <option value="net60">Net 60</option>
-                        <option value="immediate">Immediate</option>
-                        <option value="cod">Cash on Delivery</option>
+                        <option value="">{% translate "Select Terms" %}</option>
+                        <option value="net15" selected>{% translate "Net 15" %}</option>
+                        <option value="net30">{% translate "Net 30" %}</option>
+                        <option value="net45">{% translate "Net 45" %}</option>
+                        <option value="net60">{% translate "Net 60" %}</option>
+                        <option value="immediate">{% translate "Immediate" %}</option>
+                        <option value="cod">{% translate "Cash on Delivery" %}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Due Date</label>
+                    <label>{% translate "Due Date" %} <span class="field-hint">{% translate "(auto from payment terms)" %}</span></label>
                     <div class="form-control-icon">
-                        <input type="date" class="form-control" name="due_date" id="dueDate" value="2026-08-11">
-                        <i class="fas fa-calendar-alt" style="pointer-events:none;"></i>
+                        <!-- Read-only: the server recalculates it from bill date + payment terms. -->
+                        <input type="date" class="form-control" name="due_date" id="dueDate" readonly tabindex="-1" aria-readonly="true">
+                        <i class="fas fa-lock" style="pointer-events:none;"></i>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>State of Supply</label>
+                    <label>{% translate "State of Supply" %}</label>
                     <select class="form-control" name="state_of_supply" id="stateOfSupply">
-                        <option value="">Select State</option>
-                        <option value="maharashtra" selected>Maharashtra</option>
-                        <option value="gujarat">Gujarat</option>
-                        <option value="karnataka">Karnataka</option>
-                        <option value="uttarpradesh">Uttar Pradesh</option>
-                        <option value="tamilnadu">Tamil Nadu</option>
-                        <option value="delhi">Delhi</option>
-                        <option value="rajasthan">Rajasthan</option>
-                        <option value="telangana">Telangana</option>
-                        <option value="westbengal">West Bengal</option>
+                        <option value="">{% translate "Select State" %}</option>
+                        <option value="maharashtra" selected>{% translate "Maharashtra" %}</option>
+                        <option value="gujarat">{% translate "Gujarat" %}</option>
+                        <option value="karnataka">{% translate "Karnataka" %}</option>
+                        <option value="uttarpradesh">{% translate "Uttar Pradesh" %}</option>
+                        <option value="tamilnadu">{% translate "Tamil Nadu" %}</option>
+                        <option value="delhi">{% translate "Delhi" %}</option>
+                        <option value="rajasthan">{% translate "Rajasthan" %}</option>
+                        <option value="telangana">{% translate "Telangana" %}</option>
+                        <option value="westbengal">{% translate "West Bengal" %}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Warehouse / Godown</label>
+                    <label>{% translate "Warehouse / Godown" %}</label>
                     <select class="form-control" name="warehouse" id="warehouse">
-                        <option value="">Select Warehouse</option>
-                        <option value="main" selected>Main Godown</option>
-                        <option value="secondary">Secondary Warehouse</option>
-                        <option value="retail">Retail Store</option>
+                        <option value="">{% translate "Select Warehouse" %}</option>
+                        <option value="main" selected>{% translate "Main Godown" %}</option>
+                        <option value="secondary">{% translate "Secondary Warehouse" %}</option>
+                        <option value="retail">{% translate "Retail Store" %}</option>
                     </select>
                 </div>
+            </div>
+
+            <!-- Supplier account: what is still owed to the chosen supplier -->
+            <div class="supplier-account" id="supplierAccount" hidden>
+                <div class="sa-head">
+                    <span class="sa-icon"><i class="fas fa-scale-balanced"></i></span>
+                    <div class="sa-title">
+                        <strong>{% translate "Account with" %} <span id="saName">{% translate "supplier" %}</span></strong>
+                        <span id="saMeta">{% translate "Payment history" %}</span>
+                    </div>
+                    <a href="#" class="sa-link" id="saAccountLink" target="_blank" rel="noopener">
+                        {% translate "View full history" %} <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="sa-stats">
+                    <div class="sa-stat"><span>{% translate "Total billed" %}</span><strong id="saBilled">₹0.00</strong></div>
+                    <div class="sa-stat paid"><span>{% translate "Paid" %}</span><strong id="saPaid">₹0.00</strong></div>
+                    <div class="sa-stat due"><span>{% translate "Balance payable" %}</span><strong id="saDue">₹0.00</strong></div>
+                    <div class="sa-stat overdue"><span>{% translate "Overdue" %}</span><strong id="saOverdue">₹0.00</strong></div>
+                </div>
+                <div class="sa-open" id="saOpenWrap">
+                    <div class="sa-sub-title">{% translate "Unpaid bills" %}</div>
+                    <div class="sa-table-wrap">
+                        <table class="sa-table">
+                            <thead>
+                                <tr>
+                                    <th>{% translate "Bill No." %}</th>
+                                    <th>{% translate "Bill date" %}</th>
+                                    <th>{% translate "Due date" %}</th>
+                                    <th class="right">{% translate "Total" %}</th>
+                                    <th class="right">{% translate "Left to pay" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="saOpenRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <p class="sa-clear" id="saClear" hidden><i class="fas fa-circle-check"></i> {% translate "Nothing is due to this supplier." %}</p>
             </div>
 
             <!-- Items Table -->
             <div class="items-section">
                 <div class="items-header">
-                    <h3><i class="fas fa-list"></i>Items</h3>
+                    <div class="items-heading">
+                        <h3><i class="fas fa-list"></i>{% translate "Items" %} <span class="items-count-chip" id="itemsCountChip">0</span></h3>
+                        <p>{% translate "Pick a product to see its purchase price history" %}</p>
+                    </div>
                     <button type="button" class="btn-add-product-inline" id="btnOpenProductModal">
-                        <i class="fas fa-plus"></i> Add New Product
+                        <i class="fas fa-plus"></i> {% translate "Add New Product" %}
                     </button>
                 </div>
 
@@ -151,95 +205,86 @@
                         <thead>
                             <tr>
                                 <th class="center" style="width:40px;">#</th>
-                                <th>Product Name</th>
+                                <th>{% translate "Product Name" %}</th>
                                 <th class="right" style="width:100px;">MRP</th>
-                                <th class="center" style="width:80px;">Qty</th>
-                                <th class="center" style="width:80px;">Free Qty</th>
-                                <th style="width:100px;">Unit</th>
-                                <th class="right" style="width:120px;">Price/Unit <span style="font-size:10px;color:var(--text-muted);font-weight:400;">(Without Tax)</span></th>
-                                <th style="width:100px;">Tax</th>
-                                <th class="right" style="width:110px;">Amount</th>
-                                <th class="center" style="width:40px;"></th>
+                                <th class="center" style="width:80px;">{% translate "Qty" %}</th>
+                                <th class="center" style="width:80px;">{% translate "Free Qty" %}</th>
+                                <th style="width:100px;">{% translate "Unit" %}</th>
+                                <th class="right" style="width:120px;">{% translate "Price/Unit" %} <span class="th-hint">{% translate "(Without Tax)" %}</span></th>
+                                <th style="width:100px;">{% translate "Tax" %}</th>
+                                <th class="right" style="width:110px;">{% translate "Amount" %}</th>
+                                <th class="center" style="width:40px;"><span class="sr-only">{% translate "Remove" %}</span></th>
                             </tr>
                         </thead>
                         <tbody id="itemsBody">
                             <!-- Rows added by JS -->
                         </tbody>
-                        <tbody>
-                            <tr>
-                                <td colspan="10" style="padding:12px 14px;">
-                                    <button type="button" class="add-row-btn" id="addRowBtn">
-                                        <i class="fas fa-plus"></i> Add Row
-                                    </button>
-                                </td>
-                            </tr>
+                        <tfoot>
                             <tr class="total-row">
-                                <td colspan="3" class="total-label">Total</td>
-                                <td class="total-value" id="totalQty">0</td>
-                                <td class="total-value" id="totalFreeQty">0</td>
+                                <td colspan="3" class="total-label">
+                                    {% translate "Total" %}
+                                    <span class="total-sub" id="totalItems">{% translate "0 products" %}</span>
+                                </td>
+                                <td class="total-value center">
+                                    <span class="total-caption">{% translate "Qty" %}</span>
+                                    <span id="totalQty">0</span>
+                                </td>
+                                <td class="total-value center">
+                                    <span class="total-caption">{% translate "Free" %}</span>
+                                    <span id="totalFreeQty">0</span>
+                                </td>
                                 <td></td>
-                                <td></td>
-                                <td></td>
-                                <td class="total-value" id="totalAmount">&#8377;0</td>
+                                <td class="total-value right" title="{% translate "Taxable value (Qty × Price)" %}">
+                                    <span class="total-caption">{% translate "Taxable" %}</span>
+                                    <span id="totalTaxable">&#8377;0.00</span>
+                                </td>
+                                <td class="total-value right" title="{% translate "Total GST" %}">
+                                    <span class="total-caption">GST</span>
+                                    <span id="totalTax">&#8377;0.00</span>
+                                </td>
+                                <td class="total-value right total-amount" title="{% translate "Taxable value + GST" %}">
+                                    <span class="total-caption">{% translate "Amount" %}</span>
+                                    <span id="totalAmount">&#8377;0.00</span>
+                                </td>
                                 <td></td>
                             </tr>
-                        </tbody>
+                        </tfoot>
                     </table>
+                </div>
+
+                <div class="items-actions">
+                    <button type="button" class="add-row-btn" id="addRowBtn">
+                        <i class="fas fa-plus"></i> {% translate "Add Row" %}
+                    </button>
                 </div>
             </div>
 
             <!-- Bottom Section -->
-            <div class="bottom-section">
+            <div class="bottom-section swapped">
                 <div class="bottom-left">
-                    <div class="payment-type-group">
-                        <label>Payment Type</label>
-                        <select class="form-control" name="payment_type" id="paymentType" style="max-width:240px;">
-                            <option value="">Select Payment Type</option>
-                            <option value="Cash">Cash</option>
-                            <option value="Bank Transfer">Bank Transfer</option>
-                            <option value="UPI">UPI</option>
-                            <option value="Cheque">Cheque</option>
-                            <option value="Credit">Credit</option>
-                        </select>
-                        <a href="#" class="add-payment-link">
-                            <i class="fas fa-plus-circle"></i> Add Payment Type
-                        </a>
-                    </div>
-
-                    <div class="form-group" style="max-width:240px;">
-                        <label>Paid Amount</label>
-                        <input type="number" class="form-control" name="paid_amount" id="paidamount" placeholder="Enter paid amount" value="0" min="0" step="0.01" required>
-                    </div>
-
-                    <div>
-                        <button type="button" class="upload-bill-btn" id="uploadBillBtn">
-                            <i class="fas fa-cloud-upload-alt"></i> Upload Bill
-                        </button>
-                        <span id="billFileName" style="margin-left:8px;font-size:13px;color:var(--text-muted);"></span>
-                        <input type="file" id="billFileInput" name="bill_file" style="display:none;" accept="image/*,.pdf">
-                    </div>
-                </div>
-
-                <div class="bottom-right">
                     <div class="summary-box">
+
+                    <div class="payment-card-title summary-title">
+                        <i class="fas fa-receipt"></i> {% translate "Bill Summary" %}
+                    </div>
 
                     <!-- Subtotal -->
                     <div class="summary-row">
-                        <span class="summary-label">Subtotal</span>
+                        <span class="summary-label">{% translate "Subtotal" %}</span>
                         <span class="summary-value" id="summarySubtotal">&#8377;0.00</span>
                         <input type="hidden" name="subtotal" id="subtotalInput" value="0">
                     </div>
 
                     <!-- Tax -->
                     <div class="summary-row">
-                        <span class="summary-label">Tax</span>
+                        <span class="summary-label">{% translate "Tax" %}</span>
                         <span class="summary-value" id="summaryTax">&#8377;0.00</span>
                         <input type="hidden" name="gst" id="taxInput" value="0">
                     </div>
 
                     <!-- Discount -->
                     <div class="summary-row">
-                        <span class="summary-label">Discount</span>
+                        <span class="summary-label">{% translate "Discount" %}</span>
                         <div class="summary-value">
                             <input type="number" class="form-control" name="discount" id="discountInput" value="0" min="0" step="0.01" style="width:120px;text-align:right;" placeholder="0.00">
                         </div>
@@ -247,7 +292,7 @@
 
                     <!-- Transport Charge -->
                     <div class="summary-row">
-                        <span class="summary-label">Transport Charge</span>
+                        <span class="summary-label">{% translate "Transport Charge" %}</span>
                         <div class="summary-value">
                             <input type="number" class="form-control" name="transport_charge" id="transportChargeInput" value="0" min="0" step="0.01" style="width:120px;text-align:right;" placeholder="0.00">
                         </div>
@@ -255,7 +300,7 @@
 
                     <!-- Other Charges -->
                     <div class="summary-row">
-                        <span class="summary-label">Other Charges</span>
+                        <span class="summary-label">{% translate "Other Charges" %}</span>
                         <div class="summary-value">
                             <input type="number" class="form-control" name="other_charge" id="otherChargeInput" value="0" min="0" step="0.01" style="width:120px;text-align:right;" placeholder="0.00">
                         </div>
@@ -263,42 +308,57 @@
 
                     <!-- Grand Total -->
                     <div class="summary-row grand-total">
-                        <span class="summary-label">Grand Total</span>
+                        <span class="summary-label">{% translate "Grand Total" %}</span>
                         <span class="summary-value" id="summaryGrandTotal">&#8377;0.00</span>
                         <input type="hidden" name="grand_total" id="grandTotalInput" value="0">
                     </div>
 
                     <!-- Paid Amount -->
                     <div class="summary-row">
-                        <span class="summary-label">Paid Amount</span>
+                        <span class="summary-label">{% translate "Paid Amount" %}</span>
                         <span class="summary-value"><span id="summaryPaidAmount">&#8377;0.00</span></span>
                     </div>
 
                     <!-- Due Amount -->
                     <div class="summary-row">
-                        <span class="summary-label">Due Amount</span>
+                        <span class="summary-label">{% translate "Due Amount" %}</span>
                         <span class="summary-value" id="summaryDueAmount">&#8377;0.00</span>
                         <input type="hidden" name="due_amount" id="dueAmountInput" value="0">
                     </div>
 
                     <!-- Payment Status -->
                     <div class="summary-row">
-                        <span class="summary-label">Payment Status</span>
-                        <span class="summary-value" id="summaryPaymentStatus">Unpaid</span>
+                        <span class="summary-label">{% translate "Payment Status" %}</span>
+                        <span class="po-status" id="summaryPaymentStatus" data-status="Unpaid">{% translate "Unpaid" %}</span>
                         <input type="hidden" name="payment_status" id="paymentStatusInput" value="Unpaid">
                     </div>
 
                 </div>
+                </div>
 
-                    <div class="tax-section">
-                        <label>Tax</label>
-                        <select class="form-control" id="taxType" name="tax_type">
-                            <option value="none" selected>None</option>
-                            <option value="gst5">GST 5%</option>
-                            <option value="gst12">GST 12%</option>
-                            <option value="gst18">GST 18%</option>
-                            <option value="gst28">GST 28%</option>
-                        </select>
+                <div class="bottom-right">
+                    <div class="payment-card">
+                        <div class="payment-card-title">
+                            <i class="fas fa-wallet"></i> {% translate "Payment Details" %}
+                        </div>
+
+                        <div class="payment-type-group">
+                            <label for="paymentType">{% translate "Payment Type" %}</label>
+                            <select class="form-control" name="payment_type" id="paymentType">
+                                <option value="">{% translate "Select Payment Type" %}</option>
+                                <option value="Cash">{% translate "Cash" %}</option>
+                                <option value="Bank Transfer">{% translate "Bank Transfer" %}</option>
+                                <option value="UPI">UPI</option>
+                                <option value="Cheque">{% translate "Cheque" %}</option>
+                                <option value="Credit">{% translate "Credit" %}</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="paidamount">{% translate "Paid Amount" %}</label>
+                            <input type="number" class="form-control" name="paid_amount" id="paidamount" placeholder="{% translate "Enter paid amount" %}" value="0" min="0" step="0.01" required>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -306,8 +366,12 @@
 
         <!-- Form Footer -->
         <div class="form-footer">
-            <button type="submit" class="btn btn-primary" id="submitBtn">
-                <i class="fas fa-check"></i> Save
+            <a href="{% url 'purchase_product_list' %}" class="btn btn-outline">{% translate "Cancel" %}</a>
+            <button type="submit" class="btn btn-outline btn-save" id="submitBtn" name="action" value="save">
+                <i class="fas fa-check"></i> {% translate "Save" %}
+            </button>
+            <button type="submit" class="btn btn-primary" id="submitPrintBtn" name="action" value="save_print">
+                <i class="fas fa-print"></i> {% translate "Save & Print" %}
             </button>
         </div>
     </form>
@@ -319,19 +383,19 @@
 <div class="modal-overlay-po" id="supplierModal">
     <div class="modal-dialog-po">
         <div class="modal-header-po">
-            <h3><span class="modal-header-icon supplier"><i class="fas fa-truck"></i></span> Add New Supplier</h3>
+            <h3><span class="modal-header-icon supplier"><i class="fas fa-truck"></i></span> {% translate "Add New Supplier" %}</h3>
             <button type="button" class="modal-close-po" data-modal="supplierModal"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body-po">
             <form id="supplierModalForm" onsubmit="return false;">
                 {% csrf_token %}
-                <div class="modal-section-title supplier-color"><i class="fas fa-building"></i> Basic Details</div>
+                <div class="modal-section-title supplier-color"><i class="fas fa-building"></i> {% translate "Basic Details" %}</div>
                 <div class="modal-form-grid">
                     {% if request.user.is_superuser %}
                     <div class="form-group form-group-full">
-                        <label>Retailer Name <span class="required">*</span></label>
+                        <label>{% translate "Retailer Name" %} <span class="required">*</span></label>
                         <select class="form-control" name="retailer" required>
-                            <option value="" disabled selected>Select a Retailer</option>
+                            <option value="" disabled selected>{% translate "Select a Retailer" %}</option>
                             {% for retailer in retailer_list %}
                                 <option value="{{ retailer.id }}">{{ retailer.shop_name }}</option>
                             {% endfor %}
@@ -339,80 +403,80 @@
                     </div>
                     {% endif %}
                     <div class="form-group">
-                        <label>Supplier Name <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="supplier_name" placeholder="Enter supplier name" required>
+                        <label>{% translate "Supplier Name" %} <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="supplier_name" placeholder="{% translate "Enter supplier name" %}" required>
                     </div>
                     <div class="form-group">
-                        <label>Contact Person</label>
-                        <input type="text" class="form-control" name="contact_person" placeholder="Enter contact person name">
+                        <label>{% translate "Contact Person" %}</label>
+                        <input type="text" class="form-control" name="contact_person" placeholder="{% translate "Enter contact person name" %}">
                     </div>
                     <div class="form-group">
-                        <label>Mobile <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="mobile" placeholder="Enter mobile number" required maxlength="15">
+                        <label>{% translate "Mobile" %} <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="mobile" placeholder="{% translate "Enter mobile number" %}" required maxlength="15">
                     </div>
                     <div class="form-group">
-                        <label>Alternate Mobile</label>
-                        <input type="text" class="form-control" name="alternate_mobile" placeholder="Enter alternate mobile" maxlength="15">
+                        <label>{% translate "Alternate Mobile" %}</label>
+                        <input type="text" class="form-control" name="alternate_mobile" placeholder="{% translate "Enter alternate mobile" %}" maxlength="15">
                     </div>
                     <div class="form-group">
-                        <label>Email Address</label>
-                        <input type="email" class="form-control" name="email" placeholder="Enter email address">
+                        <label>{% translate "Email Address" %}</label>
+                        <input type="email" class="form-control" name="email" placeholder="{% translate "Enter email address" %}">
                     </div>
                     <div class="form-group">
-                        <label>GST Number</label>
-                        <input type="text" class="form-control" name="gst_number" placeholder="Enter GSTIN" maxlength="20">
+                        <label>{% translate "GST Number" %}</label>
+                        <input type="text" class="form-control" name="gst_number" placeholder="{% translate "Enter GSTIN" %}" maxlength="20">
                     </div>
                     <div class="form-group">
-                        <label>PAN Number</label>
-                        <input type="text" class="form-control" name="pan_number" placeholder="Enter PAN" maxlength="20">
+                        <label>{% translate "PAN Number" %}</label>
+                        <input type="text" class="form-control" name="pan_number" placeholder="{% translate "Enter PAN" %}" maxlength="20">
                     </div>
                 </div>
 
-                <div class="modal-section-title supplier-color"><i class="fas fa-map-marker-alt"></i> Address &amp; Financials</div>
+                <div class="modal-section-title supplier-color"><i class="fas fa-map-marker-alt"></i> {% translate "Address & Financials" %}</div>
                 <div class="modal-form-grid">
                     <div class="form-group">
-                        <label>City <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="city" placeholder="Enter city" required>
+                        <label>{% translate "City" %} <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="city" placeholder="{% translate "Enter city" %}" required>
                     </div>
                     <div class="form-group">
-                        <label>State <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="state" placeholder="Enter state" required>
+                        <label>{% translate "State" %} <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="state" placeholder="{% translate "Enter state" %}" required>
                     </div>
                     <div class="form-group">
-                        <label>Pincode <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="pincode" placeholder="Enter pincode" required maxlength="10">
+                        <label>{% translate "Pincode" %} <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="pincode" placeholder="{% translate "Enter pincode" %}" required maxlength="10">
                     </div>
                     <div class="form-group">
-                        <label>Opening Balance</label>
+                        <label>{% translate "Opening Balance" %}</label>
                         <input type="number" step="0.01" class="form-control" name="opening_balance" value="0.00" min="0">
                     </div>
                     <div class="form-group">
-                        <label>Credit Limit</label>
+                        <label>{% translate "Credit Limit" %}</label>
                         <input type="number" step="0.01" class="form-control" name="credit_limit" value="0.00" min="0">
                     </div>
                     <div class="form-group">
-                        <label>Credit Days</label>
+                        <label>{% translate "Credit Days" %}</label>
                         <input type="number" class="form-control" name="credit_days" value="0" min="0">
                     </div>
                     <div class="form-group form-group-full">
-                        <label>Address <span class="required">*</span></label>
-                        <textarea class="form-control" name="address" rows="2" placeholder="Enter complete address" required></textarea>
+                        <label>{% translate "Address" %} <span class="required">*</span></label>
+                        <textarea class="form-control" name="address" rows="2" placeholder="{% translate "Enter complete address" %}" required></textarea>
                     </div>
                     <div class="form-group form-group-full">
-                        <label>Notes</label>
-                        <textarea class="form-control" name="notes" rows="2" placeholder="Add remarks"></textarea>
+                        <label>{% translate "Notes" %}</label>
+                        <textarea class="form-control" name="notes" rows="2" placeholder="{% translate "Add remarks" %}"></textarea>
                     </div>
                     <div class="form-group form-group-full">
                         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500;">
-                            <input type="checkbox" name="is_active" checked> Is Active
+                            <input type="checkbox" name="is_active" checked> {% translate "Is Active" %}
                         </label>
                     </div>
                 </div>
             </form>
         </div>
         <div class="modal-footer-po">
-            <button type="button" class="btn-modal btn-modal-outline modal-close" data-modal="supplierModal">Cancel</button>
-            <button type="button" class="btn-modal btn-modal-primary" id="saveSupplierBtn"><i class="fas fa-save"></i> Save Supplier</button>
+            <button type="button" class="btn-modal btn-modal-outline modal-close" data-modal="supplierModal">{% translate "Cancel" %}</button>
+            <button type="button" class="btn-modal btn-modal-primary" id="saveSupplierBtn"><i class="fas fa-save"></i> {% translate "Save Supplier" %}</button>
         </div>
     </div>
 </div>
@@ -421,125 +485,134 @@
 <div class="modal-overlay-po" id="productModal">
     <div class="modal-dialog-po">
         <div class="modal-header-po">
-            <h3><span class="modal-header-icon product"><i class="fas fa-box"></i></span> Add New Product</h3>
+            <h3><span class="modal-header-icon product"><i class="fas fa-box"></i></span> {% translate "Add New Product" %}</h3>
             <button type="button" class="modal-close-po" data-modal="productModal"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body-po">
             <form id="productModalForm" onsubmit="return false;">
                 {% csrf_token %}
-                <div class="modal-section-title product-color"><i class="fas fa-info-circle"></i> Basic Information</div>
+                <div class="modal-section-title product-color"><i class="fas fa-info-circle"></i> {% translate "Basic Information" %}</div>
                 <div class="modal-form-grid">
+                    {% if request.user.is_superuser %}
                     <div class="form-group">
-                        <label>Retailer <span class="required">*</span></label>
+                        <label>{% translate "Retailer" %} <span class="required">*</span></label>
                         <select class="form-control" name="retailer" id="productRetailerSelect" required>
-                            <option value="" disabled selected>Select retailer</option>
+                            <option value="" disabled selected>{% translate "Select retailer" %}</option>
                             {% for retailer in retailer_list %}
                                 <option value="{{ retailer.id }}">{{ retailer }}</option>
                             {% endfor %}
                         </select>
                     </div>
+                    {% else %}
+                    {# Retailers can only add products to their own shop. #}
+                    <input type="hidden" name="retailer" value="{{ retailer_list.0.id }}">
+                    {% endif %}
 
                     <div class="form-group ">
-                        <label>Product Name <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="product_name" placeholder="e.g., Tata Salt, Aashirvaad Atta 5kg" required maxlength="200">
+                        <label>{% translate "Product Name" %} <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="product_name" placeholder="{% translate "e.g., Tata Salt, Aashirvaad Atta 5kg" %}" required maxlength="200">
                     </div>
                     <div class="form-group">
-                        <label>Barcode</label>
-                        <input type="text" class="form-control" name="barcode" placeholder="Scan or enter barcode" maxlength="100">
+                        <label>{% translate "Barcode" %}</label>
+                        <input type="text" class="form-control" name="barcode" placeholder="{% translate "Scan or enter barcode" %}" maxlength="100">
                     </div>
                     <div class="form-group">
-                        <label>HSN Code <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="hsn_code" placeholder="e.g., 2106" required maxlength="20">
+                        <label>{% translate "HSN Code" %} <span class="required" data-rule="hsn_required">*</span></label>
+                        <input type="text" class="form-control" name="hsn_code" placeholder="{% translate "e.g., 2106" %}" maxlength="20">
                     </div>
                     
                     <!-- Brand with Other -->
                     <div class="form-group">
-                        <label>Brand <span class="required">*</span></label>
+                        <label>{% translate "Brand" %} <span class="required">*</span></label>
                         <select class="form-control" name="brand" id="brandSelect" required>
-                            <option value="" disabled selected>Select brand</option>
+                            <option value="" disabled selected>{% translate "Select brand" %}</option>
                             {% for brand in brands %}
                                 <option value="{{ brand.id }}" data-retailer="{{ brand.retailer_id }}">{{ brand }}</option>
                             {% endfor %}
-                            <option value="other">➕ Other (Add New)</option>
+                            <option value="other">{% translate "➕ Other (Add New)" %}</option>
                         </select>
                         <div class="other-input-wrapper" id="brandOtherWrapper" style="display:none;">
-                            <input type="text" class="form-control other-input" name="brand_other" id="brandOtherInput" placeholder="Enter new brand name" maxlength="100">
+                            <input type="text" class="form-control other-input" name="brand_other" id="brandOtherInput" placeholder="{% translate "Enter new brand name" %}" maxlength="100">
                         </div>
                     </div>
                     
                     <!-- Category with Other -->
                     <div class="form-group">
-                        <label>Category <span class="required">*</span></label>
+                        <label>{% translate "Category" %} <span class="required">*</span></label>
                         <select class="form-control" name="category" id="categorySelect" required>
-                            <option value="" disabled selected>Select category</option>
+                            <option value="" disabled selected>{% translate "Select category" %}</option>
                             {% for category in categories %}
                                 <option value="{{ category.id }}" data-retailer="{{ category.retailer_id }}">{{ category }}</option>
                             {% endfor %}
-                            <option value="other">➕ Other (Add New)</option>
+                            <option value="other">{% translate "➕ Other (Add New)" %}</option>
                         </select>
                         <div class="other-input-wrapper" id="categoryOtherWrapper" style="display:none;">
-                            <input type="text" class="form-control other-input" name="category_other" id="categoryOtherInput" placeholder="Enter new category name" maxlength="100">
+                            <input type="text" class="form-control other-input" name="category_other" id="categoryOtherInput" placeholder="{% translate "Enter new category name" %}" maxlength="100">
                         </div>
                     </div>
                     
                     <!-- Unit with Other -->
                     <div class="form-group">
-                        <label>Unit <span class="required">*</span></label>
+                        <label>{% translate "Unit" %} <span class="required">*</span></label>
                         <select class="form-control" name="unit" id="unitSelect" required>
-                            <option value="" disabled selected>Select unit</option>
+                            <option value="" disabled selected>{% translate "Select unit" %}</option>
                             {% for unit in units %}
                                 <option value="{{ unit.id }}">{{ unit }}</option>
                             {% endfor %}
-                            <option value="other">➕ Other (Add New)</option>
+                            <option value="other">{% translate "➕ Other (Add New)" %}</option>
                         </select>
                         <div class="other-input-wrapper" id="unitOtherWrapper" style="display:none;">
-                            <input type="text" class="form-control other-input" name="unit_other" id="unitOtherInput" placeholder="Enter new unit (e.g., dozen, pack)" maxlength="50">
+                            <input type="text" class="form-control other-input" name="unit_other" id="unitOtherInput" placeholder="{% translate "Enter new unit (e.g., dozen, pack)" %}" maxlength="50">
                         </div>
                     </div>
                 </div>
 
-                <div class="modal-section-title product-color"><i class="fas fa-tags"></i> Pricing Details</div>
+                <div class="modal-section-title product-color"><i class="fas fa-tags"></i> {% translate "Pricing Details" %}</div>
                 <div class="modal-form-grid">
                     <div class="form-group">
-                        <label>Purchase Price <span class="required">*</span></label>
+                        <label>{% translate "Purchase Price" %} <span class="required">*</span></label>
                         <input type="number" class="form-control" name="purchase_price" placeholder="0.00" step="0.01" min="0" required>
                     </div>
                     <div class="form-group">
-                        <label>Selling Price <span class="required">*</span></label>
+                        <label>{% translate "Selling Price" %} <span class="required">*</span></label>
                         <input type="number" class="form-control" name="selling_price" placeholder="0.00" step="0.01" min="0" required>
                     </div>
                     <div class="form-group">
-                        <label>MRP <span class="required">*</span></label>
-                        <input type="number" class="form-control" name="mrp" placeholder="0.00" step="0.01" min="0" required>
+                        <label>MRP <span class="required" data-rule="mrp_required">*</span><span class="field-hint" data-rule-off="mrp_required"> {% translate "(optional)" %}</span></label>
+                        <input type="number" class="form-control" name="mrp" placeholder="0.00" step="0.01" min="0">
                     </div>
                     <div class="form-group">
-                        <label>GST (%)</label>
-                        <input type="number" class="form-control" name="gst" placeholder="e.g., 5, 12, 18" step="0.01" min="0" max="100">
+                        <label>{% translate "GST (%)" %}</label>
+                        <select class="form-control" name="gst">
+                            {% for value, label in gst_choices %}
+                                <option value="{{ value }}">{{ label|tr }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
 
-                <div class="modal-section-title product-color"><i class="fas fa-warehouse"></i> Stock &amp; Availability</div>
+                <div class="modal-section-title product-color"><i class="fas fa-warehouse"></i> {% translate "Stock & Availability" %}</div>
                 <div class="modal-form-grid">
                     <div class="form-group">
-                        <label>Current Stock <span class="required">*</span></label>
-                        <input type="number" class="form-control" name="current_stock" placeholder="e.g., 50" min="0" step="1" required>
+                        <label>{% translate "Current Stock" %} <span class="required">*</span></label>
+                        <input type="number" class="form-control" name="current_stock" placeholder="{% translate "e.g., 50" %}" min="0" step="{% if features.decimal_quantity %}0.001{% else %}1{% endif %}" required>
                     </div>
                     <div class="form-group">
-                        <label>Minimum Stock <span class="required">*</span></label>
-                        <input type="number" class="form-control" name="minimum_stock" placeholder="e.g., 10" min="0" step="1" required>
+                        <label>{% translate "Minimum Stock" %} <span class="required">*</span></label>
+                        <input type="number" class="form-control" name="minimum_stock" placeholder="{% translate "e.g., 10" %}" min="0" step="{% if features.decimal_quantity %}0.001{% else %}1{% endif %}" required>
                     </div>
                     
                     <div class="form-group" style="display:flex;align-items:flex-end;">
                         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500;margin-bottom:10px;">
-                            <input type="checkbox" name="is_active" checked> Product Active
+                            <input type="checkbox" name="is_active" checked> {% translate "Product Active" %}
                         </label>
                     </div>
                 </div>
             </form>
         </div>
         <div class="modal-footer-po">
-            <button type="button" class="btn-modal btn-modal-outline modal-close" data-modal="productModal">Cancel</button>
-            <button type="button" class="btn-modal btn-modal-success" id="saveProductBtn"><i class="fas fa-save"></i> Save Product</button>
+            <button type="button" class="btn-modal btn-modal-outline modal-close" data-modal="productModal">{% translate "Cancel" %}</button>
+            <button type="button" class="btn-modal btn-modal-success" id="saveProductBtn"><i class="fas fa-save"></i> {% translate "Save Product" %}</button>
         </div>
     </div>
 </div>
@@ -548,107 +621,145 @@
 <div class="modal-overlay-po" id="retailerModal">
     <div class="modal-dialog-po">
         <div class="modal-header-po">
-            <h3><span class="modal-header-icon retailer"><i class="fas fa-store"></i></span> Add New Retailer</h3>
+            <h3><span class="modal-header-icon retailer"><i class="fas fa-store"></i></span> {% translate "Add New Retailer" %}</h3>
             <button type="button" class="modal-close-po" data-modal="retailerModal"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body-po">
             <form id="retailerModalForm" onsubmit="return false;">
                 {% csrf_token %}
-                <div class="modal-section-title retailer-color"><i class="fas fa-user-shield"></i> Account Information</div>
+                <div class="modal-section-title retailer-color"><i class="fas fa-user-shield"></i> {% translate "Account Information" %}</div>
                 <div class="modal-form-grid">
                     <div class="form-group">
-                        <label>Username <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="username" placeholder="e.g. rajesh_store" required autocomplete="username">
+                        <label>{% translate "Username" %} <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="username" placeholder="{% translate "e.g. rajesh_store" %}" required autocomplete="username">
                     </div>
                     <div class="form-group">
-                        <label>Email Address <span class="required">*</span></label>
-                        <input type="email" class="form-control" name="email" placeholder="e.g. rajesh@store.com" required autocomplete="email">
+                        <label>{% translate "Email Address" %} <span class="required">*</span></label>
+                        <input type="email" class="form-control" name="email" placeholder="{% translate "e.g. rajesh@store.com" %}" required autocomplete="email">
                     </div>
                     <div class="form-group">
-                        <label>Password <span class="required">*</span></label>
+                        <label>{% translate "Password" %} <span class="required">*</span></label>
                         <div class="password-input-wrapper">
-                            <input type="password" class="form-control password-field" name="password" placeholder="Min 8 characters" required autocomplete="new-password" minlength="8">
-                            <button type="button" class="password-toggle" aria-label="Show password" title="Show password">
+                            <input type="password" class="form-control password-field" name="password" placeholder="{% translate "Min 8 characters" %}" required autocomplete="new-password" minlength="8">
+                            <button type="button" class="password-toggle" aria-label="{% translate "Show password" %}" title="{% translate "Show password" %}">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Confirm Password <span class="required">*</span></label>
+                        <label>{% translate "Confirm Password" %} <span class="required">*</span></label>
                         <div class="password-input-wrapper">
-                            <input type="password" class="form-control password-field" name="confirm_password" placeholder="Re-enter password" required minlength="8" autocomplete="new-password">
-                            <button type="button" class="password-toggle" aria-label="Show confirm password" title="Show confirm password">
+                            <input type="password" class="form-control password-field" name="confirm_password" placeholder="{% translate "Re-enter password" %}" required minlength="8" autocomplete="new-password">
+                            <button type="button" class="password-toggle" aria-label="{% translate "Show confirm password" %}" title="{% translate "Show confirm password" %}">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="modal-section-title retailer-color"><i class="fas fa-store"></i> Shop Details</div>
+                <div class="modal-section-title retailer-color"><i class="fas fa-store"></i> {% translate "Shop Details" %}</div>
                 <div class="modal-form-grid">
                     <div class="form-group">
-                        <label>Shop Name <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="shop_name" placeholder="e.g. Rajesh General Store" required>
+                        <label>{% translate "Shop Name" %} <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="shop_name" placeholder="{% translate "e.g. Rajesh General Store" %}" required>
                     </div>
                     <div class="form-group">
-                        <label>Owner Name <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="owner_name" placeholder="e.g. Rajesh Kumar Sharma" required>
+                        <label>{% translate "Owner Name" %} <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="owner_name" placeholder="{% translate "e.g. Rajesh Kumar Sharma" %}" required>
                     </div>
                     <div class="form-group">
-                        <label>Mobile Number <span class="required">*</span></label>
-                        <input type="tel" class="form-control" name="mobile" placeholder="e.g. 9876543210" required maxlength="10" inputmode="numeric" autocomplete="tel">
-                    </div>
-                </div>
-
-                <div class="modal-section-title retailer-color"><i class="fas fa-map-marker-alt"></i> Address</div>
-                <div class="modal-form-grid">
-                    <div class="form-group">
-                        <label>City <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="city" placeholder="e.g. Mumbai" required>
-                    </div>
-                    <div class="form-group">
-                        <label>State <span class="required">*</span></label>
-                        <select class="form-control" name="state" required>
-                            <option value="">Select State</option>
-                            <option value="maharashtra">Maharashtra</option>
-                            <option value="gujarat">Gujarat</option>
-                            <option value="karnataka">Karnataka</option>
-                            <option value="tamilnadu">Tamil Nadu</option>
-                            <option value="delhi">Delhi</option>
-                            <option value="rajasthan">Rajasthan</option>
-                            <option value="telangana">Telangana</option>
-                            <option value="westbengal">West Bengal</option>
-                            <option value="punjab">Punjab</option>
-                            <option value="haryana">Haryana</option>
-                            <option value="up">Uttar Pradesh</option>
-                            <option value="mp">Madhya Pradesh</option>
-                            <option value="kerala">Kerala</option>
-                            <option value="andhra">Andhra Pradesh</option>
-                            <option value="bihar">Bihar</option>
-                            <option value="odisha">Odisha</option>
-                            <option value="assam">Assam</option>
-                            <option value="jharkhand">Jharkhand</option>
-                            <option value="chhattisgarh">Chhattisgarh</option>
-                            <option value="goa">Goa</option>
+                        <label>{% translate "Shop Type" %} <span class="required">*</span></label>
+                        <select class="form-control" name="shop_type" required>
+                            <option value="">{% translate "Select shop type" %}</option>
+                            {% for value, label in shop_type_choices %}
+                                <option value="{{ value }}">{{ label|tr }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>PIN Code <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="pincode" placeholder="e.g. 400001" required maxlength="6" inputmode="numeric">
+                        <label>{% translate "Mobile Number" %} <span class="required">*</span></label>
+                        <input type="tel" class="form-control" name="mobile" placeholder="{% translate "e.g. 9876543210" %}" required maxlength="10" inputmode="numeric" autocomplete="tel">
+                    </div>
+                </div>
+
+                <div class="modal-section-title retailer-color"><i class="fas fa-map-marker-alt"></i> {% translate "Address" %}</div>
+                <div class="modal-form-grid">
+                    <div class="form-group" style="grid-column:1 / -1;">
+                        <label>{% translate "Shop Address" %} <span class="required">*</span></label>
+                        <textarea class="form-control" name="address" rows="2" placeholder="{% translate "e.g. 12, MG Road, Near City Mall" %}" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>{% translate "City" %} <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="city" placeholder="{% translate "e.g. Mumbai" %}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>{% translate "State" %} <span class="required">*</span></label>
+                        <select class="form-control" name="state" required>
+                            <option value="">{% translate "Select State" %}</option>
+                            <option value="maharashtra">{% translate "Maharashtra" %}</option>
+                            <option value="gujarat">{% translate "Gujarat" %}</option>
+                            <option value="karnataka">{% translate "Karnataka" %}</option>
+                            <option value="tamilnadu">{% translate "Tamil Nadu" %}</option>
+                            <option value="delhi">{% translate "Delhi" %}</option>
+                            <option value="rajasthan">{% translate "Rajasthan" %}</option>
+                            <option value="telangana">{% translate "Telangana" %}</option>
+                            <option value="westbengal">{% translate "West Bengal" %}</option>
+                            <option value="punjab">{% translate "Punjab" %}</option>
+                            <option value="haryana">{% translate "Haryana" %}</option>
+                            <option value="up">{% translate "Uttar Pradesh" %}</option>
+                            <option value="mp">{% translate "Madhya Pradesh" %}</option>
+                            <option value="kerala">{% translate "Kerala" %}</option>
+                            <option value="andhra">{% translate "Andhra Pradesh" %}</option>
+                            <option value="bihar">{% translate "Bihar" %}</option>
+                            <option value="odisha">{% translate "Odisha" %}</option>
+                            <option value="assam">{% translate "Assam" %}</option>
+                            <option value="jharkhand">{% translate "Jharkhand" %}</option>
+                            <option value="chhattisgarh">{% translate "Chhattisgarh" %}</option>
+                            <option value="goa">{% translate "Goa" %}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>{% translate "PIN Code" %} <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="pincode" placeholder="{% translate "e.g. 400001" %}" required maxlength="6" inputmode="numeric">
                     </div>
                 </div>
             </form>
         </div>
         <div class="modal-footer-po">
-            <button type="button" class="btn-modal btn-modal-outline modal-close" data-modal="retailerModal">Cancel</button>
-            <button type="button" class="btn-modal btn-modal-primary" id="saveRetailerBtn"><i class="fas fa-save"></i> Save Retailer</button>
+            <button type="button" class="btn-modal btn-modal-outline modal-close" data-modal="retailerModal">{% translate "Cancel" %}</button>
+            <button type="button" class="btn-modal btn-modal-primary" id="saveRetailerBtn"><i class="fas fa-save"></i> {% translate "Save Retailer" %}</button>
         </div>
     </div>
 </div>
 
 <!-- Toast Container -->
 <div class="toast-container-po" id="ajaxToastContainer"></div>
+
+<!-- Purchase History Modal (filled by JS from the purchase_history endpoint) -->
+<div class="modal-overlay-po" id="historyModal">
+    <div class="modal-dialog-po history-dialog">
+        <div class="modal-header-po">
+            <h3>
+                <span class="modal-header-icon history"><i class="fas fa-history"></i></span>
+                <span>{% translate "Purchase History" %} <small id="historyProductName" class="history-product-name"></small></span>
+            </h3>
+            <button type="button" class="modal-close-po" data-modal="historyModal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body-po" id="historyModalBody"></div>
+        <div class="modal-footer-po">
+            <button type="button" class="btn-modal btn-modal-outline modal-close" data-modal="historyModal">{% translate "Close" %}</button>
+        </div>
+    </div>
+</div>
+
+{{ payment_term_days|json_script:"paymentTermDays" }}
+{% url 'purchase_history' 0 as purchase_history_url_template %}
+{{ purchase_history_url_template|json_script:"purchaseHistoryUrl" }}
+{% url 'supplier_summary' 0 as supplier_summary_url_template %}
+{{ supplier_summary_url_template|json_script:"supplierSummaryUrl" }}
+{{ shop_rules|json_script:"productShopRules" }}
+{{ supplier_products|json_script:"supplierProducts" }}
 
 
 {% endblock %}
@@ -753,12 +864,12 @@ document.querySelectorAll('.password-toggle').forEach(function(toggle) {
 
             this.setAttribute(
                 'aria-label',
-                'Hide password'
+                gettext('Hide password')
             );
 
             this.setAttribute(
                 'title',
-                'Hide password'
+                gettext('Hide password')
             );
 
         } else {
@@ -771,12 +882,12 @@ document.querySelectorAll('.password-toggle').forEach(function(toggle) {
 
             this.setAttribute(
                 'aria-label',
-                'Show password'
+                gettext('Show password')
             );
 
             this.setAttribute(
                 'title',
-                'Show password'
+                gettext('Show password')
             );
         }
     });
@@ -787,13 +898,141 @@ document.querySelectorAll('.password-toggle').forEach(function(toggle) {
 document.addEventListener('DOMContentLoaded', function () {
     /* GLOBAL VARIABLES */
     let rowCounter = 0;
-    const taxRates = {
-        none: 0,
-        gst5: 5,
-        gst12: 12,
-        gst18: 18,
-        gst28: 28
-    };
+
+    // GST slabs come from the server (pharma_app/gst.py); each option's
+    // value is the rate itself, e.g. "5" or "0.25".
+    // Loose quantities (2.5 kg) only for shops with decimal_quantity.
+    // The server checks this again for the shop the purchase is for.
+    const purchaseShopRules = JSON.parse(
+        (document.getElementById('productShopRules') || {}).textContent || '{}'
+    );
+
+    function purchaseAllowsFractions() {
+        const shopSelect = document.getElementById('retailerSelect');
+        const shopIds = Object.keys(purchaseShopRules);
+        const shopId = shopSelect ? shopSelect.value : (shopIds.length === 1 ? shopIds[0] : '');
+        const rules = purchaseShopRules[shopId];
+        return rules ? !!rules.decimal_quantity : true;
+    }
+
+    function purchaseShopFlag(name) {
+        const shopSelect = document.getElementById('retailerSelect');
+        const shopIds = Object.keys(purchaseShopRules);
+        const shopId = shopSelect ? shopSelect.value : (shopIds.length === 1 ? shopIds[0] : '');
+        const rules = purchaseShopRules[shopId];
+        return rules ? !!rules[name] : false;
+    }
+
+    /* ---------------------------------------------------------
+       BATCH + EXPIRY (shops with batch tracking, e.g. pharmacy)
+       Required on every row when shown; hidden inputs are
+       disabled so they are neither validated nor sent.
+       --------------------------------------------------------- */
+    function applyBatchFields() {
+        const on = purchaseShopFlag('batch_tracking');
+        document.querySelectorAll('#itemsBody .batch-fields').forEach(function (box) {
+            box.hidden = !on;
+            box.querySelectorAll('input').forEach(function (input) {
+                input.disabled = !on;
+                input.required = on;
+            });
+        });
+    }
+
+    /* ---------------------------------------------------------
+       UNIT CONVERSION ON A PURCHASE ROW
+       A product bought in a bigger unit (1 Box = 100 pc) can be
+       entered per Box or per pc. Stock is always kept in pc.
+       Only for shops with unit conversion (server checks too).
+       --------------------------------------------------------- */
+
+    // Factor of the unit chosen on the row (1 = base unit).
+    function rowFactor(row) {
+        const unitSelect = row.querySelector('.unit-select');
+        if (row.dataset.purchaseUnit && unitSelect && unitSelect.value === row.dataset.purchaseUnit) {
+            return parseFloat(row.dataset.factor) || 1;
+        }
+        return 1;
+    }
+
+    function setupRowUnits(row, option) {
+        const unitSelect = row.querySelector('.unit-select');
+        if (!unitSelect || !option) return;
+
+        // Keep the full unit list once, so a new product starts fresh.
+        if (!unitSelect.dataset.allUnits) {
+            unitSelect.dataset.allUnits = unitSelect.innerHTML;
+        }
+        unitSelect.innerHTML = unitSelect.dataset.allUnits;
+
+        row.dataset.basePrice = option.dataset.price || '0';
+        row.dataset.baseUnitName = option.dataset.unitName || '';
+        row.dataset.purchaseUnit = '';
+        row.dataset.purchaseUnitName = '';
+        row.dataset.factor = '1';
+
+        const purchaseUnit = option.dataset.purchaseUnit;
+        const factor = parseFloat(option.dataset.factor);
+
+        if (purchaseShopFlag('unit_conversion') && purchaseUnit && factor > 1) {
+            // Only the product's two units make sense here.
+            Array.from(unitSelect.options).forEach(function (unitOption) {
+                if (unitOption.value !== option.dataset.unit && unitOption.value !== purchaseUnit) {
+                    unitOption.remove();
+                }
+            });
+
+            row.dataset.purchaseUnit = purchaseUnit;
+            row.dataset.purchaseUnitName = option.dataset.purchaseUnitName || '';
+            row.dataset.factor = String(factor);
+            unitSelect.value = purchaseUnit;     // usually bought per Box / Strip
+        } else if (option.dataset.unit) {
+            unitSelect.value = option.dataset.unit;
+        }
+
+        applyUnitChoice(row);
+    }
+
+    // Unit changed: price follows (price per Box = price per pc x factor).
+    function applyUnitChoice(row) {
+        const priceInput = row.querySelector('[data-field="price"]');
+        if (priceInput && row.dataset.basePrice !== undefined) {
+            priceInput.value = (getNumber(row.dataset.basePrice) * rowFactor(row)).toFixed(2);
+        }
+        if (priceInput) {
+            calculateRow({ target: priceInput });
+        }
+        updateUnitHint(row);
+    }
+
+    // "1 Box = 100 pc · ₹5.00 per pc · adds 200 pc"
+    function updateUnitHint(row) {
+        const hint = row.querySelector('.unit-hint');
+        if (!hint) return;
+
+        const factor = rowFactor(row);
+        if (factor === 1) {
+            hint.hidden = true;
+            hint.textContent = '';
+            return;
+        }
+
+        const qty = getNumber(row.querySelector('[data-field="qty"]')?.value) +
+                    getNumber(row.querySelector('[data-field="freeQty"]')?.value);
+        const price = getNumber(row.querySelector('[data-field="price"]')?.value);
+        const base = row.dataset.baseUnitName || 'unit';
+
+        hint.textContent =
+            '1 ' + (row.dataset.purchaseUnitName || '') + ' = ' + formatQuantity(factor) + ' ' + base +
+            ' · ₹' + (price / factor).toFixed(2) + ' per ' + base +
+            (qty > 0 ? gettext(' · adds ') + formatQuantity(qty * factor) + ' ' + base : '');
+        hint.hidden = false;
+    }
+
+    function taxRateOf(select) {
+        const rate = parseFloat(select ? select.value : '0');
+        return Number.isFinite(rate) ? rate : 0;
+    }
 
     /* COMMON HELPERS */
     function getNumber(value) {
@@ -831,6 +1070,529 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function escapeHtml(value) {
+        return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function pad2(number) {
+        return String(number).padStart(2, '0');
+    }
+
+    // "2026-10-24" -> "24 Oct 2026" (parsed as a local date, not UTC)
+    function formatDate(isoDate) {
+        if (!isoDate) {
+            return '—';
+        }
+        const parts = isoDate.split('-').map(Number);
+        const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+        return dateObj.toLocaleDateString('en-IN', {
+            day: '2-digit', month: 'short', year: 'numeric'
+        });
+    }
+
+
+    /* =========================================================
+       DUE DATE = BILL DATE + PAYMENT TERM DAYS
+       ========================================================= */
+
+    const paymentTermDays = JSON.parse(
+        document.getElementById('paymentTermDays').textContent
+    );
+
+    const billDateInput = document.getElementById('billDate');
+    const paymentTermsSelect = document.getElementById('paymentTerms');
+    const dueDateInput = document.getElementById('dueDate');
+
+    function updateDueDate() {
+        const days = paymentTermDays[paymentTermsSelect.value];
+
+        if (!billDateInput.value || days === undefined) {
+            dueDateInput.value = '';
+            return;
+        }
+
+        const parts = billDateInput.value.split('-').map(Number);
+        const due = new Date(parts[0], parts[1] - 1, parts[2] + days);
+
+        dueDateInput.value =
+            due.getFullYear() + '-' + pad2(due.getMonth() + 1) + '-' + pad2(due.getDate());
+    }
+
+    billDateInput.addEventListener('change', updateDueDate);
+    billDateInput.addEventListener('input', updateDueDate);
+    paymentTermsSelect.addEventListener('change', updateDueDate);
+    updateDueDate();
+
+
+    /* =========================================================
+       PRODUCTS ADDED FROM THE "ADD NEW PRODUCT" MODAL
+       ========================================================= */
+
+    const extraProducts = [];
+
+    function buildProductOption(product) {
+        // Backend looks products up by name, so the option value is the name.
+        const option = new Option(product.product_name, product.product_name);
+        option.dataset.id = product.id;
+        option.dataset.retailer = product.retailer_id;
+        option.dataset.mrp = product.mrp || '0';
+        option.dataset.price = product.purchase_price || '0';
+        option.dataset.unit = product.unit_id || '';
+        option.dataset.gst = product.gst || '0';
+        // Just created: no supplier is linked yet, so never hide it.
+        option.dataset.new = '1';
+        return option;
+    }
+
+    window.registerPurchaseProduct = function (product) {
+        extraProducts.push(product);
+
+        document.querySelectorAll('#itemsBody .product-select').forEach(function (select) {
+            select.add(buildProductOption(product));
+        });
+
+        filterProductsByRetailer();
+    };
+
+
+    /* =========================================================
+       PURCHASE HISTORY ("PRICE INSIGHT") OF THE SELECTED PRODUCT
+
+       When a product is picked, a panel opens right under its
+       row with the lowest / highest / last / average price paid,
+       where the entered price sits in that range, and the
+       cheapest suppliers. "Full history" opens the modal.
+       ========================================================= */
+
+    const historyUrlTemplate = JSON.parse(
+        document.getElementById('purchaseHistoryUrl').textContent
+    );
+
+    // product id -> Promise of the history JSON (one request per product)
+    const historyCache = {};
+
+    // Product rows only (each one may be followed by its insight row).
+    function itemRows() {
+        return document.querySelectorAll('#itemsBody > tr.item-row');
+    }
+
+    function selectedProductId(row) {
+        const select = row.querySelector('.product-select');
+        const option = select ? select.options[select.selectedIndex] : null;
+        return option && option.dataset.id ? option.dataset.id : '';
+    }
+
+    function fetchHistory(productId) {
+        if (!historyCache[productId]) {
+            const url = historyUrlTemplate.replace(/\/0\/$/, '/' + productId + '/');
+
+            historyCache[productId] = fetch(url, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+                .then(function (response) {
+                    return response.json().then(function (data) {
+                        if (!response.ok || !data.success) {
+                            throw new Error(data.message || gettext('Unable to load purchase history.'));
+                        }
+                        return data;
+                    });
+                })
+                .catch(function (error) {
+                    // Allow a retry on the next selection.
+                    delete historyCache[productId];
+                    throw error;
+                });
+        }
+
+        return historyCache[productId];
+    }
+
+    function insightPanel(row) {
+        return row.insightRow ? row.insightRow.querySelector('.price-insight') : null;
+    }
+
+    function setInsightOpen(row, open) {
+        if (!row.insightRow) {
+            return;
+        }
+
+        row.insightRow.hidden = !open;
+        row.classList.toggle('insight-open', open);
+
+        const button = row.querySelector('.history-btn');
+        if (button) {
+            button.classList.toggle('active', open);
+            button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+    }
+
+    function plural(count, word) {
+        return count + ' ' + word + (Number(count) === 1 ? '' : 's');
+    }
+
+    // Position (0-100) of a price between the lowest and highest price.
+    function rangePercent(value, min, max) {
+        if (max <= min) {
+            return 50;
+        }
+        return Math.min(100, Math.max(0, (value - min) / (max - min) * 100));
+    }
+
+    function statTile(tone, label, price, unit, meta) {
+        return '<div class="pi-stat ' + tone + '">' +
+            '<span class="pi-stat-label">' + label + '</span>' +
+            '<span class="pi-stat-value">' + formatMoney(price) + unit + '</span>' +
+            '<span class="pi-stat-meta" title="' + escapeHtml(meta) + '">' + escapeHtml(meta) + '</span>' +
+        '</div>';
+    }
+
+    function statTiles(s, unit) {
+        return statTile('low', gettext('Lowest'), s.min_price, unit, s.min_supplier + ' · ' + formatDate(s.min_date)) +
+            statTile('high', gettext('Highest'), s.max_price, unit, s.max_supplier + ' · ' + formatDate(s.max_date)) +
+            statTile('last', gettext('Last paid'), s.last_price, unit, s.last_supplier + ' · ' + formatDate(s.last_date)) +
+            statTile('avg', gettext('Average'), s.avg_price, unit, formatQuantity(s.total_qty) + gettext(' qty bought'));
+    }
+
+    function unitSuffix(data) {
+        return data.product.unit
+            ? '<small>/' + escapeHtml(data.product.unit) + '</small>'
+            : '';
+    }
+
+    function renderInsight(data) {
+        const s = data.summary;
+
+        if (!s) {
+            return '<div class="pi-message pi-first">' +
+                '<i class="fas fa-seedling"></i>' +
+                '<span><strong>First purchase of this product.</strong> ' +
+                'There is no earlier price to compare with.</span>' +
+            '</div>';
+        }
+
+        const min = getNumber(s.min_price);
+        const max = getNumber(s.max_price);
+        const avg = getNumber(s.avg_price);
+        const last = getNumber(s.last_price);
+        const supplierCount = data.suppliers.length;
+
+        let html =
+            '<div class="pi-head">' +
+                '<span class="pi-icon"><i class="fas fa-chart-line"></i></span>' +
+                '<div class="pi-title">' +
+                    '<strong>Price insight</strong>' +
+                    '<span>' + plural(s.purchases, 'purchase') + ' · ' +
+                        plural(supplierCount, 'supplier') + gettext(' · last on ') + formatDate(s.last_date) + '</span>' +
+                '</div>' +
+                '<span class="pi-verdict" data-verdict hidden></span>' +
+                '<button type="button" class="pi-link" data-action="full-history">' +
+                    'Full history <i class="fas fa-arrow-right"></i>' +
+                '</button>' +
+            '</div>' +
+
+            '<div class="pi-body">' +
+                '<div class="pi-main">' +
+                    '<div class="pi-stats">' + statTiles(s, unitSuffix(data)) + '</div>' +
+
+                    '<div class="pi-range">' +
+                        '<div class="pi-track">' +
+                            '<span class="pi-pin avg" style="left:' + rangePercent(avg, min, max) + '%" title="Average ' + formatMoney(avg) + '"></span>' +
+                            '<span class="pi-pin last" style="left:' + rangePercent(last, min, max) + '%" title="Last paid ' + formatMoney(last) + '"></span>' +
+                            '<span class="pi-pin current" data-current hidden></span>' +
+                        '</div>' +
+                        '<div class="pi-range-labels">' +
+                            '<span class="text-low">' + formatMoney(min) + '</span>' +
+                            '<span class="pi-legend">' +
+                                '<span><i class="dot avg"></i>Average</span>' +
+                                '<span><i class="dot last"></i>Last</span>' +
+                                '<span><i class="dot current"></i>Your price</span>' +
+                            '</span>' +
+                            '<span class="text-high">' + formatMoney(max) + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+
+                '<div class="pi-suppliers">' +
+                    '<div class="pi-sub-title">Cheapest suppliers</div>';
+
+        data.suppliers.slice(0, 3).forEach(function (supplier, index) {
+            html +=
+                '<div class="pi-supplier">' +
+                    '<span class="pi-rank' + (index === 0 ? ' best' : '') + '">' + (index + 1) + '</span>' +
+                    '<div class="pi-supplier-name">' +
+                        '<strong title="' + escapeHtml(supplier.supplier) + '">' + escapeHtml(supplier.supplier) + '</strong>' +
+                        '<span>' + plural(supplier.purchases, 'purchase') + gettext(' · last ') + formatDate(supplier.last_date) + '</span>' +
+                    '</div>' +
+                    '<span class="pi-supplier-price">' + formatMoney(supplier.min_price) + '</span>' +
+                '</div>';
+        });
+
+        if (supplierCount > 3) {
+            html += '<button type="button" class="pi-link small" data-action="full-history">' +
+                '+' + (supplierCount - 3) + gettext(' more supplier') + (supplierCount - 3 === 1 ? '' : 's') +
+            '</button>';
+        }
+
+        html += '</div></div>';
+
+        return html;
+    }
+
+    // Load and show the price insight for the product picked in a row.
+    // (Name kept for the other code that calls it.)
+    function updateHistoryHint(row) {
+        const panel = insightPanel(row);
+        const button = row.querySelector('.history-btn');
+        const productId = selectedProductId(row);
+
+        row.historyData = null;
+        updatePriceComparison(row);
+
+        if (!panel) {
+            return;
+        }
+
+        if (!productId) {
+            panel.innerHTML = '';
+            if (button) {
+                button.disabled = true;
+            }
+            setInsightOpen(row, false);
+            return;
+        }
+
+        if (button) {
+            button.disabled = false;
+        }
+
+        panel.className = 'price-insight is-loading';
+        panel.innerHTML = '<div class="pi-message"><i class="fas fa-spinner fa-spin"></i> Loading purchase history…</div>';
+        setInsightOpen(row, true);
+
+        fetchHistory(productId)
+            .then(function (data) {
+                // Ignore the response if the user picked another product meanwhile.
+                if (selectedProductId(row) !== productId) {
+                    return;
+                }
+
+                row.historyData = data;
+                panel.className = 'price-insight' + (data.summary ? '' : ' is-first');
+                panel.innerHTML = renderInsight(data);
+                updatePriceComparison(row);
+            })
+            .catch(function (error) {
+                if (selectedProductId(row) !== productId) {
+                    return;
+                }
+
+                panel.className = 'price-insight is-error';
+                panel.innerHTML = '<div class="pi-message">' +
+                    '<i class="fas fa-exclamation-circle"></i> ' + escapeHtml(error.message) +
+                    ' <button type="button" class="pi-link" data-action="retry">Try again</button>' +
+                '</div>';
+            });
+    }
+
+    // Compare the entered price with the lowest price paid before:
+    // colours the price input, moves the "Your price" pin and
+    // updates the verdict badge in the insight panel.
+    function updatePriceComparison(row) {
+        const priceInput = row.querySelector('[data-field="price"]');
+
+        if (!priceInput) {
+            return;
+        }
+
+        priceInput.classList.remove('price-above-low', 'price-at-low');
+        priceInput.removeAttribute('title');
+
+        const panel = insightPanel(row);
+        const verdict = panel ? panel.querySelector('[data-verdict]') : null;
+        const pin = panel ? panel.querySelector('[data-current]') : null;
+        const summary = row.historyData ? row.historyData.summary : null;
+        // History prices are per base unit (pc); a row priced per Box
+        // is compared per pc too.
+        const price = getNumber(priceInput.value) / rowFactor(row);
+
+        if (!summary || price <= 0) {
+            if (verdict) {
+                verdict.hidden = true;
+            }
+            if (pin) {
+                pin.hidden = true;
+            }
+            return;
+        }
+
+        const lowest = getNumber(summary.min_price);
+        const highest = getNumber(summary.max_price);
+
+        if (pin) {
+            pin.hidden = false;
+            pin.style.left = rangePercent(price, lowest, highest) + '%';
+            pin.title = gettext('Your price ') + formatMoney(price);
+        }
+
+        if (price > lowest) {
+            const difference = price - lowest;
+            const percent = lowest > 0 ? Math.round(difference / lowest * 100) : 0;
+
+            priceInput.classList.add('price-above-low');
+            priceInput.title =
+                formatMoney(difference) + gettext(' above the lowest price paid (') + formatMoney(lowest) + ')';
+
+            if (verdict) {
+                verdict.hidden = false;
+                verdict.className = 'pi-verdict warn';
+                verdict.innerHTML = '<i class="fas fa-arrow-up"></i> ' + formatMoney(difference) +
+                    (percent ? ' (' + percent + '%)' : '') + gettext(' above lowest');
+            }
+        } else {
+            priceInput.classList.add('price-at-low');
+            priceInput.title = gettext('At or below the lowest price paid (') + formatMoney(lowest) + ')';
+
+            if (verdict) {
+                verdict.hidden = false;
+                verdict.className = 'pi-verdict good';
+                verdict.innerHTML = '<i class="fas fa-check"></i> ' +
+                    (price < lowest ? gettext('Lower than ever before') : gettext('Matches best price'));
+            }
+        }
+    }
+
+    function renderHistory(data) {
+        const s = data.summary;
+
+        if (!s) {
+            return '<div class="history-empty"><i class="fas fa-box-open"></i>' +
+                '<p>This product has not been purchased yet.</p></div>';
+        }
+
+        const min = getNumber(s.min_price);
+        const max = getNumber(s.max_price);
+
+        let html = '<div class="pi-stats history-stats">' + statTiles(s, unitSuffix(data)) + '</div>';
+
+        html += '<div class="modal-section-title history-color"><i class="fas fa-truck"></i> Supplier comparison' +
+            '<span class="section-note">Cheapest first · bar shows each supplier\'s price range</span></div>' +
+            '<div class="hs-list">';
+
+        data.suppliers.forEach(function (row, index) {
+            const left = rangePercent(getNumber(row.min_price), min, max);
+            const right = rangePercent(getNumber(row.max_price), min, max);
+
+            html +=
+                '<div class="hs-row">' +
+                    '<div class="hs-name">' +
+                        '<strong>' + escapeHtml(row.supplier) +
+                            (index === 0 && data.suppliers.length > 1 ? ' <span class="best-tag">Best price</span>' : '') +
+                        '</strong>' +
+                        '<span>' + plural(row.purchases, 'purchase') + ' · ' + formatQuantity(row.total_qty) +
+                            gettext(' qty · last ') + formatDate(row.last_date) + '</span>' +
+                    '</div>' +
+                    '<div class="hs-bar">' +
+                        '<div class="pi-track"><span class="hs-span" style="left:' + left + '%;width:' + (right - left) + '%"></span></div>' +
+                        '<div class="pi-range-labels">' +
+                            '<span class="text-low">' + formatMoney(row.min_price) + '</span>' +
+                            '<span class="text-high">' + formatMoney(row.max_price) + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="hs-last"><span>Last price</span><strong>' + formatMoney(row.last_price) + '</strong></div>' +
+                '</div>';
+        });
+
+        html += '</div>';
+
+        html += '<div class="modal-section-title history-color"><i class="fas fa-receipt"></i> Recent purchases</div>' +
+            '<div class="history-table-wrap"><table class="history-table"><thead><tr>' +
+            '<th>Date</th><th>Bill No.</th><th>Supplier</th><th class="right">Qty</th>' +
+            '<th class="right">Price</th><th class="right">GST</th>' +
+            '</tr></thead><tbody>';
+
+        data.recent.forEach(function (row) {
+            const price = getNumber(row.price);
+            const priceClass = price <= min ? ' text-low' : (price >= max ? ' text-high' : '');
+            const free = getNumber(row.free_quantity) > 0
+                ? ' <span class="free-tag">+' + formatQuantity(row.free_quantity) + ' free</span>'
+                : '';
+
+            html += '<tr>' +
+                '<td>' + formatDate(row.date) + '</td>' +
+                '<td>' + escapeHtml(row.bill_number) + '</td>' +
+                '<td>' + escapeHtml(row.supplier) + '</td>' +
+                '<td class="right">' + formatQuantity(row.quantity) + free + '</td>' +
+                '<td class="right' + priceClass + '"><strong>' + formatMoney(row.price) + '</strong></td>' +
+                '<td class="right">' + formatQuantity(row.gst) + '%</td>' +
+                '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+
+        return html;
+    }
+
+    function openHistoryModal(row) {
+        const productId = selectedProductId(row);
+
+        if (!productId) {
+            return;
+        }
+
+        const select = row.querySelector('.product-select');
+        const modal = document.getElementById('historyModal');
+        const body = document.getElementById('historyModalBody');
+
+        document.getElementById('historyProductName').textContent =
+            select.options[select.selectedIndex].text.trim();
+
+        body.innerHTML = '<div class="history-empty"><i class="fas fa-spinner fa-spin"></i><p>Loading…</p></div>';
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        fetchHistory(productId)
+            .then(function (data) {
+                body.innerHTML = renderHistory(data);
+            })
+            .catch(function (error) {
+                body.innerHTML = '<div class="history-empty error"><i class="fas fa-exclamation-circle"></i>' +
+                    '<p>' + escapeHtml(error.message) + '</p></div>';
+            });
+    }
+
+    document.getElementById('itemsBody').addEventListener('click', function (event) {
+        // History button on a product row: show / hide its insight panel.
+        const historyButton = event.target.closest('.history-btn');
+
+        if (historyButton) {
+            const row = historyButton.closest('tr');
+            if (row && row.insightRow) {
+                setInsightOpen(row, row.insightRow.hidden);
+            }
+            return;
+        }
+
+        // Links inside an insight panel.
+        const action = event.target.closest('[data-action]');
+        const insightRow = action ? action.closest('tr.insight-row') : null;
+        const row = insightRow ? insightRow.itemRow : null;
+
+        if (!row) {
+            return;
+        }
+
+        if (action.dataset.action === 'full-history') {
+            openHistoryModal(row);
+        } else if (action.dataset.action === 'retry') {
+            updateHistoryHint(row);
+        }
+    });
+
     /* ADD ROW */
     const addRowBtn = document.getElementById('addRowBtn');
 
@@ -840,15 +1602,40 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // filter Products By Retailer
+    /* ---------------------------------------------------------
+       SUPPLIER <-> PRODUCT FILTERS (supplier product list)
+       - Supplier chosen: product rows show only that supplier's
+         products.
+       - Products chosen first: the supplier list shows only the
+         suppliers who sell all of them.
+       A supplier or product with no link yet shows everything (with
+       a note), so the first purchase is never blocked; saving the
+       bill links them for next time.
+       --------------------------------------------------------- */
+    const supplierProducts = JSON.parse(
+        (document.getElementById('supplierProducts') || {}).textContent || '{}'
+    );
+
+    function setSupplierHint(text) {
+        const hint = document.getElementById('supplierProductHint');
+        if (!hint) return;
+        hint.textContent = text || '';
+        hint.hidden = !text;
+    }
+
+    function linkedProductIds(supplierId) {
+        return (supplierProducts[supplierId] || []).map(String);
+    }
+
+    // Products of the chosen shop (admin) and of the chosen supplier.
     function filterProductsByRetailer() {
         const retailerSelect = document.getElementById('retailerSelect');
+        const supplierSelect = document.getElementById('supplierSelect');
+        const retailerId = retailerSelect ? retailerSelect.value : null;
+        const supplierId = supplierSelect ? supplierSelect.value : '';
+        const linked = supplierId ? linkedProductIds(supplierId) : [];
+        const bySupplier = linked.length > 0;
 
-        if (!retailerSelect) {
-            return;
-        }
-
-        const retailerId = retailerSelect.value;
         document.querySelectorAll('.product-select').forEach(function(select) {
             const selectedValue = select.value;
             select.querySelectorAll('option').forEach(function(option) {
@@ -857,37 +1644,75 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
-                if (option.dataset.retailer === retailerId) {
-                    option.style.display = '';
-                } else {
-                    option.style.display = 'none';
-                }
+                const shopOk = retailerId === null || option.dataset.retailer === retailerId;
+                const supplierOk = !bySupplier
+                    || option.dataset.new === '1'
+                    || option.value === selectedValue      // keep what the user already picked
+                    || linked.indexOf(String(option.dataset.id)) !== -1;
+
+                option.style.display = shopOk && supplierOk ? '' : 'none';
             });
 
             // Reset selected product if it doesn't belong to selected retailer
-            const selectedOption = select.querySelector(
-                `option[value="${CSS.escape(selectedValue)}"]`
-            );
+            const selectedOption = selectedValue
+                ? select.querySelector(`option[value="${CSS.escape(selectedValue)}"]`)
+                : null;
 
             if (
+                retailerId !== null &&
                 selectedOption &&
-                selectedValue &&
                 selectedOption.dataset.retailer !== retailerId
             ) {
                 select.value = '';
+                updateHistoryHint(select.closest('tr'));
             }
         });
+
+        if (supplierId) {
+            setSupplierHint(bySupplier
+                ? interpolate(gettext('Showing the %s product(s) you buy from this supplier.'), [linked.length])
+                : gettext('No products are linked to this supplier yet, so all products are shown. Products on this bill will be linked when you save.'));
+        }
+    }
+
+    // Suppliers who sell every product picked in the rows.
+    function filterSuppliersByProducts() {
+        const supplierSelect = document.getElementById('supplierSelect');
+        if (!supplierSelect) return;
+
+        const picked = [];
+        document.querySelectorAll('#itemsBody .product-select').forEach(function (select) {
+            const option = select.options[select.selectedIndex];
+            if (option && option.value && option.dataset.id && option.dataset.new !== '1') {
+                picked.push(String(option.dataset.id));
+            }
+        });
+
+        const options = Array.prototype.slice.call(supplierSelect.options).filter(function (o) { return o.value; });
+        const sellers = options.filter(function (option) {
+            const linked = linkedProductIds(option.value);
+            return picked.length && picked.every(function (id) { return linked.indexOf(id) !== -1; });
+        });
+        const filter = picked.length > 0 && sellers.length > 0;
+
+        options.forEach(function (option) {
+            const show = !filter || sellers.indexOf(option) !== -1 || option.value === supplierSelect.value;
+            option.style.display = show ? '' : 'none';
+        });
+
+        if (!supplierSelect.value) {
+            if (filter) {
+                setSupplierHint(interpolate(gettext('Showing only the %s supplier(s) who sell the selected product(s).'), [sellers.length]));
+            } else if (picked.length) {
+                setSupplierHint(gettext('No supplier is linked to the selected product(s) yet, so all suppliers are shown.'));
+            } else {
+                setSupplierHint('');
+            }
+        }
     }
 
     
     window.addRow = function () {
-        const retailerSelect = document.getElementById('retailerSelect');
-        if (retailerSelect) {
-            retailerSelect.addEventListener('change', function() {
-                filterProductsByRetailer();
-            });
-        }
-
         rowCounter++;
         const tbody =
             document.getElementById('itemsBody');
@@ -897,14 +1722,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const tr = document.createElement('tr');
+        tr.className = 'item-row';
         tr.dataset.rowId = rowCounter;
         tr.innerHTML = `
             <td class="row-num">
                 ${rowCounter}
             </td>
 
-            <!-- Product -->
-            <td>
+            <!-- Product (+ purchase history) -->
+            <td class="product-cell">
+                <div class="product-field">
                 <select class="item-select product-select" name="item_name_${rowCounter}" required>
 
                     <option value="">
@@ -914,10 +1741,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     {% for product in products %}
                         <option
                             value="{{ product.product_name|escapejs }}"
+                            data-id="{{ product.id }}"
                             data-retailer="{{ product.retailer_id }}"
                             data-mrp="{{ product.mrp|default:'0' }}"
                             data-price="{{ product.purchase_price|default:'0' }}"
                             data-unit="{% if product.unit %}{{ product.unit.id }}{% endif %}"
+                            data-unit-name="{{ product.unit.short_name|default:''|escapejs }}"
+                            data-purchase-unit="{% if product.has_purchase_unit %}{{ product.purchase_unit_id }}{% endif %}"
+                            data-purchase-unit-name="{% if product.has_purchase_unit %}{{ product.purchase_unit.short_name|escapejs }}{% endif %}"
+                            data-factor="{{ product.conversion_factor|qty }}"
                             data-gst="{{ product.gst|default:'0' }}"
                         >
                             {{ product.product_name|escapejs }}
@@ -925,6 +1757,37 @@ document.addEventListener('DOMContentLoaded', function () {
                     {% endfor %}
 
                 </select>
+                <button
+                    type="button"
+                    class="history-btn"
+                    title="Show / hide price history"
+                    aria-label="Show or hide price history"
+                    aria-expanded="false"
+                    disabled
+                >
+                    <i class="fas fa-chart-line"></i>
+                </button>
+                </div>
+                <!-- Batch + expiry (features.batch_tracking); disabled when hidden -->
+                <div class="batch-fields" data-feature="batch_tracking" hidden>
+                    <input
+                        type="text"
+                        class="item-input batch-input"
+                        name="item_batch_${rowCounter}"
+                        placeholder="Batch no."
+                        maxlength="100"
+                        aria-label="Batch number"
+                        disabled
+                    >
+                    <input
+                        type="month"
+                        class="item-input expiry-input"
+                        name="item_expiry_${rowCounter}"
+                        aria-label="Expiry (month)"
+                        title="Expiry month"
+                        disabled
+                    >
+                </div>
             </td>
 
 
@@ -950,8 +1813,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     placeholder="0"
                     data-field="qty"
                     name="item_qty_${rowCounter}"
-                    min="0"
-                    step="0.01"
+                    min="{% if features.decimal_quantity %}0.001{% else %}1{% endif %}"
+                    step="{% if features.decimal_quantity %}0.001{% else %}1{% endif %}"
                     required
                 >
             </td>
@@ -966,7 +1829,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     data-field="freeQty"
                     name="item_free_qty_${rowCounter}"
                     min="0"
-                    step="0.01"
+                    step="{% if features.decimal_quantity %}0.001{% else %}1{% endif %}"
                 >
             </td>
 
@@ -987,6 +1850,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     {% endfor %}
 
                 </select>
+                <small class="unit-hint" hidden></small>
             </td>
 
 
@@ -1013,25 +1877,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     name="item_tax_${rowCounter}"
                 >
 
-                    <option value="none" selected>
-                        Select
-                    </option>
-
-                    <option value="gst5">
-                        GST 5%
-                    </option>
-
-                    <option value="gst12">
-                        GST 12%
-                    </option>
-
-                    <option value="gst18">
-                        GST 18%
-                    </option>
-
-                    <option value="gst28">
-                        GST 28%
-                    </option>
+                    {% for value, label in gst_choices %}
+                        <option value="{{ value }}"{% if forloop.first %} selected{% endif %}>
+                            GST {{ label|tr }}
+                        </option>
+                    {% endfor %}
 
                 </select>
             </td>
@@ -1062,8 +1912,30 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
 
 
+        // Price insight panel for this row (shown once a product is picked).
+        const insightRow = document.createElement('tr');
+        insightRow.className = 'insight-row';
+        insightRow.hidden = true;
+        insightRow.innerHTML = '<td colspan="10"><div class="price-insight"></div></td>';
+        insightRow.itemRow = tr;
+        tr.insightRow = insightRow;
+
         tbody.appendChild(tr);
+        tbody.appendChild(insightRow);
+
+        // Unit changed (Box <-> pc): price and hint follow.
+        tr.querySelector('.unit-select').addEventListener('change', function () {
+            applyUnitChoice(tr);
+        });
+
+        // Products created from the "Add New Product" modal after page load.
+        const rowProductSelect = tr.querySelector('.product-select');
+        extraProducts.forEach(function (product) {
+            rowProductSelect.add(buildProductOption(product));
+        });
+
         filterProductsByRetailer();
+        applyBatchFields();
 
 
         /* -----------------------------------------------------
@@ -1110,6 +1982,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     calculateRow({
                         target: productSelect
                     });
+
+                    updateHistoryHint(tr);
+                    filterSuppliersByProducts();
                 }
             );
         }
@@ -1125,6 +2000,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // Change Supplier options on user retailer option selection 
     const retailerSelect = document.getElementById('retailerSelect');
     const supplierSelect = document.getElementById('supplierSelect');
+
+    // Admin: only show the chosen retailer's products in every row.
+    if (retailerSelect) {
+        retailerSelect.addEventListener('change', filterProductsByRetailer);
+        retailerSelect.addEventListener('change', applyBatchFields);
+    }
 
     if (retailerSelect && supplierSelect) {
 
@@ -1142,7 +2023,7 @@ document.addEventListener('DOMContentLoaded', function () {
             
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
-            defaultOption.textContent = 'Select Supplier';
+            defaultOption.textContent = gettext('Select Supplier');
             supplierSelect.appendChild(defaultOption);
 
             if (!retailerId) {
@@ -1157,7 +2038,114 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
             });
+            setSupplierHint('');
         });
+    }
+
+    // Supplier chosen: product rows show that supplier's products.
+    if (supplierSelect) {
+        supplierSelect.addEventListener('change', function () {
+            filterProductsByRetailer();
+            if (!supplierSelect.value) {
+                filterSuppliersByProducts();
+            }
+        });
+    }
+
+
+    /* =========================================================
+       SUPPLIER ACCOUNT PANEL
+       Shows what is still owed to the chosen supplier (from
+       earlier bills) and its unpaid bills.
+       ========================================================= */
+
+    const supplierSummaryTemplate = JSON.parse(
+        document.getElementById('supplierSummaryUrl').textContent
+    );
+    const supplierAccount = document.getElementById('supplierAccount');
+    let supplierRequest = 0;
+
+    function supplierSummaryUrl(option) {
+        if (!option || !option.value) {
+            return '';
+        }
+        return option.dataset.summaryUrl ||
+            supplierSummaryTemplate.replace(/\/0\/summary\/$/, '/' + option.value + '/summary/');
+    }
+
+    function loadSupplierAccount() {
+        const option = supplierSelect ? supplierSelect.options[supplierSelect.selectedIndex] : null;
+        const url = supplierSummaryUrl(option);
+        const requestId = ++supplierRequest;
+
+        if (!url) {
+            supplierAccount.hidden = true;
+            return;
+        }
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (response) { return response.json(); })
+            .then(function (data) {
+                if (requestId !== supplierRequest || !data.success) {
+                    return;
+                }
+
+                setText('saName', data.supplier);
+                setText('saMeta',
+                    data.bills + (data.bills === 1 ? ' bill' : ' bills') +
+                    (data.last_payment
+                        ? gettext(' · last paid ') + formatMoney(data.last_payment.amount) + ' on ' + formatDate(data.last_payment.date)
+                        : ''));
+                setText('saBilled', formatMoney(data.billed));
+                setText('saPaid', formatMoney(data.paid));
+                setText('saDue', formatMoney(data.due));
+                setText('saOverdue', formatMoney(data.overdue));
+                document.getElementById('saAccountLink').href = data.account_url;
+
+                const rows = document.getElementById('saOpenRows');
+                rows.innerHTML = '';
+
+                data.open_bills.forEach(function (bill) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML =
+                        '<td><a href="' + bill.url + '" target="_blank" rel="noopener">' + escapeHtml(bill.bill_number) + '</a></td>' +
+                        '<td>' + formatDate(bill.bill_date) + '</td>' +
+                        '<td>' + (bill.due_date ? formatDate(bill.due_date) : '—') +
+                            (bill.overdue ? ' <span class="sa-overdue-tag">Overdue</span>' : '') + '</td>' +
+                        '<td class="right">' + formatMoney(bill.total) + '</td>' +
+                        '<td class="right due">' + formatMoney(bill.due) + '</td>';
+                    rows.appendChild(tr);
+                });
+
+                if (data.open_count > data.open_bills.length) {
+                    const more = document.createElement('tr');
+                    more.innerHTML = '<td colspan="5" class="sa-more"><a href="' + data.account_url +
+                        '" target="_blank" rel="noopener">+' + (data.open_count - data.open_bills.length) +
+                        ' more unpaid bills</a></td>';
+                    rows.appendChild(more);
+                }
+
+                document.getElementById('saOpenWrap').hidden = data.open_bills.length === 0;
+                document.getElementById('saClear').hidden = data.open_bills.length > 0;
+                supplierAccount.classList.toggle('has-due', getNumber(data.due) > 0);
+                supplierAccount.hidden = false;
+            })
+            .catch(function () {
+                if (requestId === supplierRequest) {
+                    supplierAccount.hidden = true;
+                }
+            });
+    }
+
+    if (supplierSelect && supplierAccount) {
+        supplierSelect.addEventListener('change', loadSupplierAccount);
+
+        // Changing the retailer rebuilds the supplier list (admin).
+        if (retailerSelect) {
+            retailerSelect.addEventListener('change', function () {
+                supplierAccount.hidden = true;
+            });
+        }
     }
 
 
@@ -1238,6 +2226,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 unitId;
         }
 
+        // Purchase unit (Box / Strip) when the shop uses unit conversion
+        setupRowUnits(row, selectedOption);
+
 
         /* -----------------------------------------------------
            GST
@@ -1257,25 +2248,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (taxSelect) {
 
-            if (gst === 5) {
+            // Pick the slab equal to the product's GST. A product saved
+            // with an old slab (e.g. 12%) is not offered any more, so the
+            // user has to choose the current rate.
+            const match = Array.from(taxSelect.options).find(function (option) {
+                return parseFloat(option.value) === gst;
+            });
 
-                taxSelect.value = 'gst5';
+            taxSelect.value = match ? match.value : taxSelect.options[0].value;
 
-            } else if (gst === 12) {
-
-                taxSelect.value = 'gst12';
-
-            } else if (gst === 18) {
-
-                taxSelect.value = 'gst18';
-
-            } else if (gst === 28) {
-
-                taxSelect.value = 'gst28';
-
+            if (!match && gst > 0) {
+                taxSelect.title = gettext('This product is saved with ') + gst +
+                    gettext('% GST, which is not a current slab. Please choose the correct rate.');
+                taxSelect.classList.add('gst-needs-check');
             } else {
-
-                taxSelect.value = 'none';
+                taxSelect.removeAttribute('title');
+                taxSelect.classList.remove('gst-needs-check');
             }
         }
     }
@@ -1343,14 +2331,7 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
 
-        const taxType =
-            taxSelect
-                ? taxSelect.value
-                : 'none';
-
-
-        const taxRate =
-            taxRates[taxType] || 0;
+        const taxRate = taxRateOf(taxSelect);
 
 
         /* -----------------------------------------------------
@@ -1397,6 +2378,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
 
+        updatePriceComparison(row);
+
+        // "1 Box = 100 pc · adds 200 pc" follows quantity / price changes
+        updateUnitHint(row);
+
+
         /* -----------------------------------------------------
            Recalculate complete purchase
            ----------------------------------------------------- */
@@ -1422,9 +2409,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
 
-        const rows =
-            tbody.querySelectorAll('tr');
+        const rows = itemRows();
 
+        let productCount = 0;
 
         let totalQty = 0;
 
@@ -1471,14 +2458,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
 
 
-            const taxType =
-                taxSelect
-                    ? taxSelect.value
-                    : 'none';
-
-
-            const taxRate =
-                taxRates[taxType] || 0;
+            const taxRate = taxRateOf(taxSelect);
 
 
             /* -------------------------------------------------
@@ -1502,6 +2482,10 @@ document.addEventListener('DOMContentLoaded', function () {
             /* -------------------------------------------------
                Add to totals
                ------------------------------------------------- */
+
+            if (row.querySelector('.product-select')?.value) {
+                productCount += 1;
+            }
 
             totalQty += qty;
 
@@ -1729,6 +2713,36 @@ document.addEventListener('DOMContentLoaded', function () {
             formatQuantity(totalFreeQty)
         );
 
+        setText(
+            'totalItems',
+            productCount + (productCount === 1 ? ' product' : ' products')
+        );
+
+        setText(
+            'itemsCountChip',
+            String(productCount)
+        );
+
+
+        /* Item section footer: taxable value, GST and line total */
+
+        setText(
+            'totalTaxable',
+            formatMoney(subtotal)
+        );
+
+
+        setText(
+            'totalTax',
+            formatMoney(totalGST)
+        );
+
+
+        setText(
+            'totalAmount',
+            formatMoney(subtotal + totalGST)
+        );
+
 
         /* =====================================================
            UPDATE SUMMARY
@@ -1784,8 +2798,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         setText(
             'summaryPaymentStatus',
-            paymentStatus
+            gettext(paymentStatus)   // shown translated; the form keeps the English value
         );
+
+        const statusChip = document.getElementById('summaryPaymentStatus');
+        if (statusChip) {
+            statusChip.dataset.status = paymentStatus;
+        }
 
 
         /* =====================================================
@@ -1859,8 +2878,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
 
-        const rows =
-            tbody.querySelectorAll('tr');
+        const rows = itemRows();
 
 
         /* -----------------------------------------------------
@@ -1870,7 +2888,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (rows.length <= 1) {
 
             alert(
-                'At least one product row is required.'
+                gettext('At least one product row is required.')
             );
 
             return;
@@ -1882,6 +2900,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         if (row) {
+
+            if (row.insightRow) {
+                row.insightRow.remove();
+            }
 
             row.remove();
         }
@@ -1899,6 +2921,7 @@ document.addEventListener('DOMContentLoaded', function () {
            ----------------------------------------------------- */
 
         calculateTotals();
+        filterSuppliersByProducts();
     };
 
 
@@ -1919,8 +2942,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
 
-        const rows =
-            tbody.querySelectorAll('tr');
+        const rows = itemRows();
 
 
         rows.forEach(
@@ -2142,7 +3164,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     event.preventDefault();
 
                     alert(
-                        'Unable to calculate purchase totals.'
+                        gettext('Unable to calculate purchase totals.')
                     );
 
                     return;
@@ -2161,7 +3183,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const rows =
                     tbody
-                        ? tbody.querySelectorAll('tr')
+                        ? itemRows()
                         : [];
 
 
@@ -2170,7 +3192,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     event.preventDefault();
 
                     alert(
-                        'Please add at least one product.'
+                        gettext('Please add at least one product.')
                     );
 
                     return;
@@ -2236,7 +3258,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         event.preventDefault();
 
                         alert(
-                            'Please select a product in row ' +
+                            gettext('Please select a product in row ') +
                             (i + 1) +
                             '.'
                         );
@@ -2251,12 +3273,12 @@ document.addEventListener('DOMContentLoaded', function () {
                        Quantity
                        ----------------------------------------- */
 
-                    if (qty <= 0) {
+                    if (qty <= 0 || (!purchaseAllowsFractions() && !Number.isInteger(qty))) {
 
                         event.preventDefault();
 
                         alert(
-                            'Please enter a quantity greater than 0 in row ' +
+                            gettext('Please enter a quantity greater than 0') + (purchaseAllowsFractions() ? '' : gettext(' (whole number for this shop)')) + gettext(' in row ') +
                             (i + 1) +
                             '.'
                         );
@@ -2276,7 +3298,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         event.preventDefault();
 
                         alert(
-                            'Please enter a purchase price greater than 0 in row ' +
+                            gettext('Please enter a purchase price greater than 0 in row ') +
                             (i + 1) +
                             '.'
                         );
@@ -2299,7 +3321,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     event.preventDefault();
 
                     alert(
-                        'Discount cannot be negative.'
+                        gettext('Discount cannot be negative.')
                     );
 
                     return;
@@ -2314,7 +3336,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     event.preventDefault();
 
                     alert(
-                        'Discount cannot be greater than subtotal.'
+                        gettext('Discount cannot be greater than subtotal.')
                     );
 
                     return;
@@ -2332,7 +3354,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     event.preventDefault();
 
                     alert(
-                        'Paid amount cannot be negative.'
+                        gettext('Paid amount cannot be negative.')
                     );
 
                     return;
@@ -2347,7 +3369,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     event.preventDefault();
 
                     alert(
-                        'Paid amount cannot be greater than Grand Total.'
+                        gettext('Paid amount cannot be greater than Grand Total.')
                     );
 
                     paidAmountInput?.focus();
@@ -2375,7 +3397,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     event.preventDefault();
 
                     alert(
-                        'Please select Payment Type.'
+                        gettext('Please select Payment Type.')
                     );
 
                     paymentType.focus();
@@ -2554,7 +3576,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (modalId) closeModal(modalId);
         });
     });
-    ['supplierModal','productModal','retailerModal'].forEach(function(id) {
+    ['supplierModal','productModal','retailerModal','historyModal'].forEach(function(id) {
         var el = document.getElementById(id);
         if (el) {
             el.addEventListener('click', function(e) {
@@ -2568,7 +3590,17 @@ document.addEventListener('DOMContentLoaded', function () {
     var btnOpenRetailer = document.getElementById('btnOpenRetailerModal');
 
     if (btnOpenSupplier) btnOpenSupplier.addEventListener('click', function() { openModal('supplierModal'); });
-    if (btnOpenProduct) btnOpenProduct.addEventListener('click', function() { openModal('productModal'); });
+    if (btnOpenProduct) btnOpenProduct.addEventListener('click', function() {
+        openModal('productModal');
+
+        // Admin: default the product's retailer to the one chosen on the purchase form.
+        var mainRetailer = document.getElementById('retailerSelect');
+        var productRetailer = document.getElementById('productRetailerSelect');
+        if (mainRetailer && productRetailer && mainRetailer.value) {
+            productRetailer.value = mainRetailer.value;
+            productRetailer.dispatchEvent(new Event('change'));
+        }
+    });
     if (btnOpenRetailer) btnOpenRetailer.addEventListener('click', function() { openModal('retailerModal'); });
 
     // ===== AJAX: Add Supplier =====
@@ -2590,9 +3622,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (!el || !el.value.trim()) { missing = true; if (el) el.style.borderColor = '#ef4444'; }
                 else { if (el) el.style.borderColor = ''; }
             });
-            if (missing) { showToast('Please fill all required supplier fields', 'error'); return; }
+            if (missing) { showToast(gettext('Please fill all required supplier fields'), 'error'); return; }
             var mobile = form.querySelector('[name="mobile"]').value.trim();
-            if (!/^\d{10,15}$/.test(mobile.replace(/\D/g,''))) { showToast('Please enter a valid mobile number', 'error'); return; }
+            if (!/^\d{10,15}$/.test(mobile.replace(/\D/g,''))) { showToast(gettext('Please enter a valid mobile number'), 'error'); return; }
 
             var formData = new FormData(form);
             fetch("{% url 'add_new_supplier' %}", {
@@ -2606,12 +3638,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     var select = document.querySelector('select[name="supplier"]');
                     if (select) { var opt = new Option(data.supplier_name || formData.get('supplier_name'), data.id, true, true); select.add(opt); }
                     closeModal('supplierModal');
-                    showToast('Supplier added successfully!', 'success');
+                    showToast(gettext('Supplier added successfully!'), 'success');
                 } else {
-                    showToast(data.message || data.error || 'Failed to add supplier', 'error');
+                    showToast(data.message || data.error || gettext('Failed to add supplier'), 'error');
                 }
             })
-            .catch(function(err) { console.error(err); showToast('Network error while adding supplier', 'error'); });
+            .catch(function(err) { console.error(err); showToast(gettext('Network error while adding supplier'), 'error'); });
         });
     }
 
@@ -2646,6 +3678,32 @@ document.addEventListener('DOMContentLoaded', function () {
         setupOtherToggle('categorySelect', 'categoryOtherWrapper', 'categoryOtherInput');
         setupOtherToggle('unitSelect',     'unitOtherWrapper',     'unitOtherInput');
 
+        // ── Rules of the shop the new product is for ──
+        var productRulesEl = document.getElementById('productShopRules');
+        var productRulesByShop = productRulesEl ? JSON.parse(productRulesEl.textContent || '{}') : {};
+
+        function productShopRules(form) {
+            var shopField = form.querySelector('[name="retailer"]');
+            var shopId = shopField ? shopField.value : '';
+            return productRulesByShop[shopId] || { mrp_required: false, hsn_required: false, allow_below_cost_sale: false };
+        }
+
+        function applyProductRules() {
+            var form = document.getElementById('productModalForm');
+            if (!form) return;
+            var rules = productShopRules(form);
+            form.querySelectorAll('[data-rule]').forEach(function (el) {
+                el.style.display = rules[el.dataset.rule] ? '' : 'none';
+            });
+            form.querySelectorAll('[data-rule-off]').forEach(function (el) {
+                el.style.display = rules[el.dataset.ruleOff] ? 'none' : '';
+            });
+        }
+
+        var productShopField = document.querySelector('#productModalForm [name="retailer"]');
+        if (productShopField) productShopField.addEventListener('change', applyProductRules);
+        applyProductRules();
+
         // ── Save Product Handler ──
         var saveProductBtn = document.getElementById('saveProductBtn');
         if (saveProductBtn) {
@@ -2653,8 +3711,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 var form = document.getElementById('productModalForm');
                 if (!form) return;
 
-                // Required fields validation
-                var reqFields = ['product_name','hsn_code','brand','category','unit','purchase_price','selling_price','mrp','current_stock','minimum_stock','retailer'];
+                // Rules of the shop the product is for (server checks again)
+                var rules = productShopRules(form);
+
+                // Required fields validation (HSN / MRP depend on the shop)
+                var reqFields = ['product_name','brand','category','unit','purchase_price','selling_price','current_stock','minimum_stock','retailer'];
+                if (rules.hsn_required) reqFields.push('hsn_code');
+                if (rules.mrp_required) reqFields.push('mrp');
                 var missing = false;
 
                 reqFields.forEach(function(fn) {
@@ -2698,14 +3761,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 });
 
-                if (missing) { showToast('Please fill all required fields', 'error'); return; }
+                if (missing) { showToast(gettext('Please fill all required fields'), 'error'); return; }
 
                 // Price validations
                 var pp  = parseFloat(form.querySelector('[name="purchase_price"]').value) || 0;
                 var sp  = parseFloat(form.querySelector('[name="selling_price"]').value) || 0;
-                var mrp = parseFloat(form.querySelector('[name="mrp"]').value) || 0;
-                if (sp < pp) { showToast('Selling price must be >= purchase price', 'error'); return; }
-                if (mrp < sp) { showToast('MRP must be >= selling price', 'error'); return; }
+                var mrpText = form.querySelector('[name="mrp"]').value.trim();
+                var mrp = parseFloat(mrpText) || 0;
+                if (sp < pp && !rules.allow_below_cost_sale) { showToast(gettext('Selling price must be >= purchase price'), 'error'); return; }
+                if (mrpText && mrp < sp) { showToast(gettext('MRP must be >= selling price'), 'error'); return; }
 
                 // Build FormData
                 var formData = new FormData(form);
@@ -2732,27 +3796,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
                     if (data.success || data.id) {
-                        var prodName = data.product_name || formData.get('product_name');
-                        var prodId = data.id;
-                        document.querySelectorAll('#itemsBody tr').forEach(function(row) {
-                            var select = row.querySelector('td:nth-child(2) select');
-                            if (select) {
-                                var exists = Array.from(select.options).some(function(o) { return o.value == prodId; });
-                                if (!exists) select.add(new Option(prodName, prodId));
-                            }
-                        });
-                        if (typeof window.__purchaseProducts !== 'undefined' && Array.isArray(window.__purchaseProducts)) {
-                            window.__purchaseProducts.push({ id: prodId, name: prodName });
+                        if (typeof window.registerPurchaseProduct === 'function') {
+                            window.registerPurchaseProduct(data);
                         }
                         closeModal('productModal');
-                        showToast('Product added successfully!', 'success');
+                        showToast(gettext('Product added successfully!'), 'success');
                     } else {
                         var msg = data.message || data.error || '';
                         if (typeof data.errors === 'object') msg = Object.values(data.errors).flat().join(', ');
-                        showToast(msg || 'Failed to add product', 'error');
+                        showToast(msg || gettext('Failed to add product'), 'error');
                     }
                 })
-                .catch(function(err) { console.error(err); showToast('Network error while adding product', 'error'); });
+                .catch(function(err) { console.error(err); showToast(gettext('Network error while adding product'), 'error'); });
             });
         }
     })();
@@ -2764,22 +3819,22 @@ document.addEventListener('DOMContentLoaded', function () {
         saveRetailerBtn.addEventListener('click', function() {
             var form = document.getElementById('retailerModalForm');
             if (!form) return;
-            var reqFields = ['username','email','password','confirm_password','shop_name','owner_name','mobile','city','state','pincode'];
+            var reqFields = ['username','email','password','confirm_password','shop_name','owner_name','shop_type','mobile','address','city','state','pincode'];
             var missing = false;
             reqFields.forEach(function(fn) {
                 var el = form.querySelector('[name="' + fn + '"]');
                 if (!el || !el.value.trim()) { missing = true; if (el) el.style.borderColor = '#ef4444'; }
                 else { if (el) el.style.borderColor = ''; }
             });
-            if (missing) { showToast('Please fill all required retailer fields', 'error'); return; }
+            if (missing) { showToast(gettext('Please fill all required retailer fields'), 'error'); return; }
             var pwd = form.querySelector('[name="password"]').value;
             var cpwd = form.querySelector('[name="confirm_password"]').value;
-            if (pwd !== cpwd) { showToast('Passwords do not match', 'error'); return; }
-            if (pwd.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; }
+            if (pwd !== cpwd) { showToast(gettext('Passwords do not match'), 'error'); return; }
+            if (pwd.length < 8) { showToast(gettext('Password must be at least 8 characters'), 'error'); return; }
             var mobile = form.querySelector('[name="mobile"]').value.trim().replace(/\D/g,'');
-            if (mobile.length !== 10) { showToast('Enter a valid 10-digit mobile number', 'error'); return; }
+            if (mobile.length !== 10) { showToast(gettext('Enter a valid 10-digit mobile number'), 'error'); return; }
             var email = form.querySelector('[name="email"]').value.trim();
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Enter a valid email address', 'error'); return; }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast(gettext('Enter a valid email address'), 'error'); return; }
 
             var formData = new FormData(form);
             fetch("{% url 'retailer_register' %}", {
@@ -2793,14 +3848,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     var select = document.querySelector('select[name="retailer"]');
                     if (select) { var opt = new Option(data.shop_name || formData.get('shop_name'), data.id, true, true); select.add(opt); }
                     closeModal('retailerModal');
-                    showToast('Retailer added successfully!', 'success');
+                    showToast(gettext('Retailer added successfully!'), 'success');
                 } else {
                     var msg = data.message || data.error || '';
                     if (typeof data.errors === 'object') msg = Object.values(data.errors).flat().join(', ');
-                    showToast(msg || 'Failed to add retailer', 'error');
+                    showToast(msg || gettext('Failed to add retailer'), 'error');
                 }
             })
-            .catch(function(err) { console.error(err); showToast('Network error while adding retailer', 'error'); });
+            .catch(function(err) { console.error(err); showToast(gettext('Network error while adding retailer'), 'error'); });
         });
     }
 

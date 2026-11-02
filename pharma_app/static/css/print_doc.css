@@ -1,0 +1,257 @@
+/* ===================================================================
+   PRINTABLE DOCUMENTS (purchase bill, account statements)
+   Same look as the sale invoice. A4 friendly; toolbar is not printed.
+   =================================================================== */
+
+:root {
+    --ink: #1e293b;
+    --muted: #64748b;
+    --line: #e2e8f0;
+    --soft: #f8fafc;
+    --primary: #2563eb;
+    --success: #059669;
+    --danger: #dc2626;
+    --warning: #b45309;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: "Inter", "Segoe UI", Arial, sans-serif;
+    background: #e2e8f0;
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 24px 16px 48px;
+}
+
+/* Toolbar (not printed) */
+.toolbar {
+    max-width: 860px;
+    margin: 0 auto 16px;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.toolbar .group { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.tool-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.tool-btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.tool-btn:disabled { opacity: 0.6; cursor: wait; }
+
+/* Sheet */
+.doc {
+    max-width: 860px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    padding: 36px 40px;
+}
+
+.doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--ink);
+}
+
+.shop-name { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
+.shop-meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+.doc-title { text-align: right; }
+.doc-title h1 { font-size: 20px; letter-spacing: 2px; color: var(--primary); text-transform: uppercase; }
+.doc-title .meta { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.doc-title .meta strong { color: var(--ink); }
+
+.status {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.status.paid { background: #d1fae5; color: var(--success); }
+.status.partial { background: #fef3c7; color: var(--warning); }
+.status.unpaid { background: #fee2e2; color: var(--danger); }
+.status.overdue { background: #fee2e2; color: var(--danger); margin-left: 4px; }
+
+.parties {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin: 22px 0;
+}
+
+.party-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+.party-name { font-size: 15px; font-weight: 700; }
+.party-meta { color: var(--muted); font-size: 12px; }
+
+.section-label {
+    margin: 22px 0 8px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--ink);
+}
+
+table { width: 100%; border-collapse: collapse; }
+
+.grid th {
+    background: var(--soft);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 9px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    text-align: left;
+}
+
+.grid td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+}
+
+.grid .num { text-align: right; white-space: nowrap; }
+.grid .strong { font-weight: 600; }
+.grid .muted { font-size: 11px; color: var(--muted); }
+.grid .credit { color: var(--success); }
+.grid .debit { color: var(--ink); }
+.grid tfoot td { font-weight: 700; background: var(--soft); }
+.grid .empty { text-align: center; color: var(--muted); padding: 18px; }
+
+.summary-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px 0 6px;
+}
+
+.summary-strip div {
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--soft);
+}
+
+.summary-strip span {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+}
+
+.summary-strip strong { font-size: 17px; }
+.summary-strip div:last-child strong { color: var(--danger); }
+
+.bottom {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 24px;
+    margin-top: 20px;
+}
+
+.notes { font-size: 12px; color: var(--muted); }
+.notes h4 {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--ink);
+    margin-bottom: 4px;
+}
+.notes p + h4 { margin-top: 14px; }
+
+.totals td { padding: 6px 0; }
+.totals td:last-child { text-align: right; font-weight: 600; }
+.totals .grand td {
+    border-top: 2px solid var(--ink);
+    padding-top: 10px;
+    font-size: 16px;
+    font-weight: 800;
+}
+.totals .paid td:last-child { color: var(--success); }
+.totals .due td:last-child { color: var(--danger); }
+
+.closed-stamp {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 6px 14px;
+    border: 2px solid var(--success);
+    border-radius: 8px;
+    color: var(--success);
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transform: rotate(-4deg);
+}
+
+.doc-footer {
+    margin-top: 32px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.signature { text-align: right; }
+.signature .line {
+    width: 180px;
+    border-top: 1px solid var(--ink);
+    margin: 36px 0 4px auto;
+}
+
+@media (max-width: 640px) {
+    .doc { padding: 22px 18px; }
+    .doc-header, .doc-footer { flex-direction: column; align-items: flex-start; }
+    .doc-title { text-align: left; }
+    .parties, .bottom, .summary-strip { grid-template-columns: 1fr; }
+    .table-wrap { overflow-x: auto; }
+    .grid { min-width: 560px; }
+}
+
+@media print {
+    body { background: #fff; padding: 0; }
+    .toolbar { display: none; }
+    .doc { box-shadow: none; border-radius: 0; max-width: none; padding: 0; }
+    .grid { min-width: 0; }
+    @page { size: A4; margin: 14mm; }
+}

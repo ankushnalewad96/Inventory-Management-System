@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% load i18n i18n_extras %}
+{% load static %}
+{% block title %}{% translate "Sales" %} - {{ app_name }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/list_pages.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <h1>{% translate "Sales" %}</h1>
+    {% if is_admin %}
+        <p>{% translate "Sales invoices of all retailer shops" %}</p>
+    {% else %}
+        <p>{% blocktranslate with shop=request.user.retailer.shop_name %}Sales invoices of {{ shop }}{% endblocktranslate %}</p>
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+
+<!-- Summary for the current filter -->
+<div class="summary-cards compact">
+    <div class="summary-card">
+        <div class="card-top">
+            <div class="card-icon-wrap total"><i class="fas fa-file-invoice"></i></div>
+        </div>
+        <div class="card-label">{% translate "Invoices" %}</div>
+        <div class="card-value">{{ page_obj.paginator.count }}</div>
+    </div>
+    <div class="summary-card">
+        <div class="card-top">
+            <div class="card-icon-wrap total"><i class="fas fa-indian-rupee-sign"></i></div>
+        </div>
+        <div class="card-label">{% translate "Total Sales" %}</div>
+        <div class="card-value">₹{{ total_amount|floatformat:2 }}</div>
+    </div>
+    <div class="summary-card">
+        <div class="card-top">
+            <div class="card-icon-wrap paid"><i class="fas fa-check-circle"></i></div>
+        </div>
+        <div class="card-label">{% translate "Received" %}</div>
+        <div class="card-value">₹{{ total_paid|floatformat:2 }}</div>
+    </div>
+    <div class="summary-card">
+        <div class="card-top">
+            <div class="card-icon-wrap overdue"><i class="fas fa-clock"></i></div>
+        </div>
+        <div class="card-label">{% translate "Outstanding" %}</div>
+        <div class="card-value">₹{{ total_due|floatformat:2 }}</div>
+    </div>
+</div>
+
+<!-- Quick Actions (phones only; on larger screens the button sits in the section header) -->
+<div class="quick-actions only-mobile">
+    <a href="{% url 'sale_create' %}" class="action-btn primary">
+        <i class="fas fa-plus"></i>
+        {% translate "Add sale" %}
+    </a>
+</div>
+
+<div class="purchases-section">
+    <div class="section-header with-count">
+        <div>
+            <h2>{% translate "Sales invoices" %}</h2>
+            <p>{% blocktranslate count counter=page_obj.paginator.count %}{{ counter }} invoice found{% plural %}{{ counter }} invoices found{% endblocktranslate %}</p>
+        </div>
+        <div class="section-actions">
+            {% if customer or selected_retailer or status or from_date or to_date %}
+                <span class="active-filter-note"><i class="fas fa-filter"></i> {% translate "Filters applied" %}</span>
+            {% endif %}
+            <a href="{% url 'sale_create' %}" class="action-btn primary hide-mobile">
+                <i class="fas fa-plus"></i>
+                {% translate "Add sale" %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="GET" class="filters-bar">
+        {% if is_admin %}
+        <div class="filter-group">
+            <label for="filterRetailer">{% translate "Retailer" %}</label>
+            <select name="retailer" id="filterRetailer" class="filter-select">
+                <option value="">{% translate "All Retailers" %}</option>
+                {% for retailer in retailers %}
+                    <option value="{{ retailer.id }}" {% if selected_retailer == retailer.id|stringformat:"s" %}selected{% endif %}>
+                        {{ retailer.shop_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <div class="filter-group filter-text">
+            <i class="fas fa-user"></i>
+            <input
+                type="text"
+                name="customer"
+                class="filter-input"
+                placeholder="{% translate "Customer name or mobile..." %}"
+                value="{{ customer }}"
+                aria-label="{% translate "Customer name" %}"
+            >
+        </div>
+
+        <div class="filter-group">
+            <label for="fromDate">{% translate "From" %}</label>
+            <input type="date" name="from_date" id="fromDate" class="filter-input" value="{{ from_date }}">
+        </div>
+
+        <div class="filter-group">
+            <label for="toDate">{% translate "To" %}</label>
+            <input type="date" name="to_date" id="toDate" class="filter-input" value="{{ to_date }}">
+        </div>
+
+        <div class="filter-group">
+            <label for="filterStatus">{% translate "Status" %}</label>
+            <select name="status" id="filterStatus" class="filter-select">
+                <option value="">{% translate "All Status" %}</option>
+                <option value="Paid" {% if status == "Paid" %}selected{% endif %}>{% translate "Paid" %}</option>
+                <option value="Partial" {% if status == "Partial" %}selected{% endif %}>{% translate "Partial" %}</option>
+                <option value="Unpaid" {% if status == "Unpaid" %}selected{% endif %}>{% translate "Unpaid" %}</option>
+            </select>
+        </div>
+
+        <div class="export-btns">
+            <button type="submit" class="export-btn primary">
+                <i class="fas fa-filter"></i>
+                {% translate "Filter" %}
+            </button>
+            <a href="{% url 'sales_list' %}" class="export-btn">
+                <i class="fas fa-times"></i>
+                {% translate "Clear" %}
+            </a>
+        </div>
+    </form>
+
+    <!-- Table -->
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{% translate "Invoice No." %}</th>
+                    <th>{% translate "Date" %}</th>
+                    {% if is_admin %}<th>{% translate "Retailer Shop" %}</th>{% endif %}
+                    <th>{% translate "Customer" %}</th>
+                    <th>{% translate "Payment Type" %}</th>
+                    <th class="text-right">{% translate "Amount" %}</th>
+                    <th class="text-right">{% translate "Paid" %}</th>
+                    <th class="text-right">{% translate "Due" %}</th>
+                    <th>{% translate "Status" %}</th>
+                    <th class="text-center">{% translate "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales %}
+                <tr>
+                    <td><a href="{% url 'sale_detail' sale.id %}" class="order-no" style="text-decoration:none;">{{ sale.invoice_number }}</a></td>
+                    <td>{{ sale.invoice_date|date:"d M Y" }}</td>
+                    {% if is_admin %}
+                    <td><span class="shop-tag"><i class="fas fa-store"></i>{{ sale.retailer.shop_name }}</span></td>
+                    {% endif %}
+                    <td>
+                        <div class="cell-stack">
+                            <span class="primary-text">{{ sale.customer.customer_name }}</span>
+                            <span class="secondary-text">{{ sale.customer.mobile }}</span>
+                        </div>
+                    </td>
+                    <td>{{ sale.get_payment_type_display|tr|default:"—" }}</td>
+                    <td class="text-right"><strong>₹{{ sale.grand_total|floatformat:2 }}</strong></td>
+                    <td class="text-right amount-paid">₹{{ sale.paid_amount|floatformat:2 }}</td>
+                    <td class="text-right {% if sale.due_amount > 0 %}amount-due{% endif %}">₹{{ sale.due_amount|floatformat:2 }}</td>
+                    <td>
+                        <span class="status-pill {{ sale.payment_status|lower }}"><span class="dot"></span>{{ sale.payment_status|tr }}</span>
+                    </td>
+                    <td>
+                        <div class="action-btns" style="justify-content:center;">
+                            <a href="{% url 'sale_detail' sale.id %}" class="action-icon-btn" title="{% translate "View sale" %}" aria-label="{% translate "View sale" %}">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'sale_invoice' sale.id %}" target="_blank" rel="noopener" class="action-icon-btn" title="{% translate "Print invoice" %}" aria-label="{% translate "Print invoice" %}">
+                                <i class="fas fa-print"></i>
+                            </a>
+                            <a href="{% url 'sale_invoice' sale.id %}?download=1" target="_blank" rel="noopener" class="action-icon-btn success" title="{% translate "Download invoice (PDF)" %}" aria-label="{% translate "Download invoice" %}">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if is_admin %}10{% else %}9{% endif %}" class="empty-state">
+                        <i class="fas fa-receipt"></i>
+                        {% if customer or selected_retailer or status or from_date or to_date %}
+                            <div class="empty-title">{% translate "No sales match your filters" %}</div>
+                            <a href="{% url 'sales_list' %}">{% translate "Clear filters" %}</a>
+                        {% else %}
+                            <div class="empty-title">{% translate "No sales yet" %}</div>
+                            <a href="{% url 'sale_create' %}">{% translate "Create your first sale" %}</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Footer / Pagination -->
+    <div class="table-footer">
+        <div class="showing-text">
+            {% if page_obj.paginator.count %}
+                {% blocktranslate with start=page_obj.start_index end=page_obj.end_index total=page_obj.paginator.count %}Showing {{ start }} - {{ end }} of {{ total }} invoices{% endblocktranslate %}
+            {% else %}
+                {% translate "No invoices to show" %}
+            {% endif %}
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn" title="{% translate "Previous" %}"><i class="fas fa-chevron-left"></i></a>
+            {% else %}
+                <button class="page-btn" disabled><i class="fas fa-chevron-left"></i></button>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                    <button class="page-btn active">{{ num }}</button>
+                {% else %}
+                    <a href="?page={{ num }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn" title="{% translate "Next" %}"><i class="fas fa-chevron-right"></i></a>
+            {% else %}
+                <button class="page-btn" disabled><i class="fas fa-chevron-right"></i></button>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'jss/dashboard.js' %}"></script>
+{% endblock %}

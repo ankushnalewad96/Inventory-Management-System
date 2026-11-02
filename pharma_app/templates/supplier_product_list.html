@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% load i18n i18n_extras %}
+{% load static qty %}
+{% block title %}{% translate "Supplier Products" %} - {{ app_name }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/list_pages.css' %}">
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/quotation.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <div class="page-title-row">
+        <a href="{% url 'supplier_list' %}" class="page-back-btn" title="{% translate "Back to Suppliers" %}" aria-label="{% translate "Back to Suppliers" %}">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            <h1>{% translate "Supplier Products" %}</h1>
+            {% if selected_supplier %}
+                <p>{% blocktranslate with name=selected_supplier.supplier_name %}Products you buy from {{ name }}{% endblocktranslate %}</p>
+            {% else %}
+                <p>{% translate "Which products you buy from which supplier" %}</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+
+<div class="purchases-section">
+    <div class="section-header with-count">
+        <div>
+            <h2>{% if selected_supplier %}{{ selected_supplier.supplier_name }}{% else %}{% translate "All suppliers" %}{% endif %}</h2>
+            <p>{% blocktranslate count counter=page_obj.paginator.count %}{{ counter }} product link{% plural %}{{ counter }} product links{% endblocktranslate %} · {% translate "added automatically when you save a purchase bill" %}</p>
+        </div>
+    </div>
+
+    <form method="GET" class="filters-bar">
+        <div class="filter-group filter-text">
+            <i class="fas fa-search"></i>
+            <input type="text" name="search" class="filter-input" value="{{ search }}" placeholder="{% translate "Product, barcode or supplier..." %}" aria-label="{% translate "Search" %}">
+        </div>
+
+        {% if is_admin %}
+        <div class="filter-group">
+            <label for="filterShopType">{% translate "Shop type" %}</label>
+            <select name="shop_type" id="filterShopType" class="filter-select">
+                <option value="">{% translate "All types" %}</option>
+                {% for value, label in shop_type_choices %}
+                    <option value="{{ value }}" {% if shop_type == value %}selected{% endif %}>{{ label|tr }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="filterRetailer">{% translate "Shop" %}</label>
+            <select name="retailer" id="filterRetailer" class="filter-select">
+                <option value="">{% translate "All shops" %}</option>
+                {% for retailer in retailers %}
+                    <option value="{{ retailer.id }}" {% if retailer_id == retailer.id|stringformat:"s" %}selected{% endif %}>{{ retailer.shop_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <div class="filter-group">
+            <label for="filterSupplier">{% translate "Supplier" %}</label>
+            <select name="supplier" id="filterSupplier" class="filter-select">
+                <option value="">{% translate "All suppliers" %}</option>
+                {% for supplier in suppliers %}
+                    <option value="{{ supplier.id }}" {% if supplier_id == supplier.id|stringformat:"s" %}selected{% endif %}>
+                        {{ supplier.supplier_name }}{% if is_admin %} ({{ supplier.retailer.shop_name }}){% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="export-btns">
+            <button type="submit" class="export-btn primary"><i class="fas fa-filter"></i> {% translate "Filter" %}</button>
+            <a href="{% url 'supplier_product_list' %}" class="export-btn"><i class="fas fa-times"></i> {% translate "Clear" %}</a>
+        </div>
+    </form>
+
+    {% if selected_supplier %}
+    <!-- Link more products to this supplier -->
+    <form method="post" action="{% url 'supplier_product_add' %}" class="qt-card supplier-link-form">
+        {% csrf_token %}
+        <input type="hidden" name="supplier" value="{{ selected_supplier.id }}">
+        <input type="hidden" name="next" value="{{ current_query }}">
+        <div class="qt-field">
+            <label for="linkProducts">{% blocktranslate with name=selected_supplier.supplier_name %}Add products you buy from {{ name }}{% endblocktranslate %}</label>
+            {% if linkable_products %}
+                <select id="linkProducts" name="product" class="qt-input" multiple size="5">
+                    {% for product in linkable_products %}
+                        <option value="{{ product.id }}">{{ product.product_name }}{% if product.unit %} ({{ product.unit.short_name }}){% endif %}</option>
+                    {% endfor %}
+                </select>
+                <small class="qt-help">{% translate "Hold Ctrl (or Cmd) to pick more than one." %}</small>
+            {% else %}
+                <p class="qt-muted">{% translate "Every product of this shop is already linked to this supplier." %}</p>
+            {% endif %}
+        </div>
+        {% if linkable_products %}
+        <div class="qt-actions">
+            <button type="submit" class="export-btn primary"><i class="fas fa-link"></i> {% translate "Add to supplier" %}</button>
+        </div>
+        {% endif %}
+    </form>
+    {% else %}
+        <p class="qt-muted supplier-link-tip"><i class="fas fa-circle-info"></i> {% translate "Pick a supplier above to add products to it by hand." %}</p>
+    {% endif %}
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{% translate "Product" %}</th>
+                    <th>{% translate "Supplier" %}</th>
+                    {% if is_admin %}<th>{% translate "Shop" %}</th>{% endif %}
+                    <th class="text-right">{% translate "Last price" %}</th>
+                    <th>{% translate "Last bought" %}</th>
+                    <th class="text-right">{% translate "In stock" %}</th>
+                    <th class="text-center">{% translate "Remove" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for link in links %}
+                <tr>
+                    <td>
+                        <div class="cell-stack">
+                            <span class="primary-text">{{ link.product.product_name }}</span>
+                            {% if link.product.category %}<span class="secondary-text">{{ link.product.category.category_name }}</span>{% endif %}
+                        </div>
+                    </td>
+                    <td><a href="?supplier={{ link.supplier_id }}">{{ link.supplier.supplier_name }}</a></td>
+                    {% if is_admin %}
+                        <td><span class="shop-tag"><i class="fas fa-store"></i>{{ link.retailer.shop_name }}</span></td>
+                    {% endif %}
+                    <td class="text-right">{% if link.last_purchase_price is not None %}₹{{ link.last_purchase_price }}{% if link.product.unit %} / {{ link.product.unit.short_name }}{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
+                    <td>{{ link.last_purchase_date|date:"d M Y"|default:"—" }}</td>
+                    <td class="text-right">{{ link.product.current_stock|qty_unit:link.product.unit.short_name }}</td>
+                    <td>
+                        <form method="post" action="{% url 'supplier_product_remove' link.id %}" class="action-btns" style="justify-content:center;"
+                              onsubmit="return confirm('Remove this product from this supplier? Past bills stay as they are.');">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ current_query }}">
+                            <button type="submit" class="action-icon-btn danger" title="{% translate "Remove from supplier" %}" aria-label="{% translate "Remove from supplier" %}">
+                                <i class="fas fa-link-slash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if is_admin %}7{% else %}6{% endif %}" class="empty-state">
+                        <i class="fas fa-boxes-stacked"></i>
+                        <div class="empty-title">{% translate "No supplier products yet" %}</div>
+                        <span>{% translate "They are added when you save a purchase bill, or pick a supplier above to add them." %}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="table-footer">
+        <div class="showing-text">{% blocktranslate with start=page_obj.start_index end=page_obj.end_index total=page_obj.paginator.count %}Showing {{ start }} - {{ end }} of {{ total }}{% endblocktranslate %}</div>
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+            <button class="page-btn active">{{ page_obj.number }}</button>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" class="page-btn"><i class="fas fa-chevron-right"></i></a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'jss/dashboard.js' %}"></script>
+{% endblock %}

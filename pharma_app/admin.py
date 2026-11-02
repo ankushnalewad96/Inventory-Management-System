@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, Retailer, Category, Brand, Unit, Product, Purchase, PurchaseItem, Supplier
+from .models import CustomUser, Retailer, Category, Brand, Unit, Product, Purchase, PurchaseItem, Supplier, ProductBatch, Quotation, QuotationItem, SaleReturn, PurchaseReturn
 
 
 @admin.register(CustomUser)
@@ -17,10 +17,17 @@ class CustomUserAdmin(UserAdmin):
 class RetailerAdmin(admin.ModelAdmin):
     list_display = (
         "shop_name",
+        "shop_type",
         "owner_name",
         "mobile",
         "city",
         "state",
+        "is_active",
+    )
+
+    list_filter = (
+        "shop_type",
+        "is_active",
     )
 
     search_fields = (
@@ -581,7 +588,7 @@ class PaymentAdmin(admin.ModelAdmin):
 
     autocomplete_fields = (
         "retailer",
-        "customer",
+        "customer", 
         "sale",
     )
 
@@ -651,4 +658,87 @@ class CustomerLedgerAdmin(admin.ModelAdmin):
         "-id",
     )
 
-    list_per_page = 25   
+    list_per_page = 25
+
+@admin.register(ProductBatch)
+class ProductBatchAdmin(admin.ModelAdmin):
+    # Read-only view: batch stock changes only through purchases and
+    # sales so that product stock stays equal to the sum of batches.
+    list_display = ("product", "batch_number", "expiry_date", "quantity", "mrp", "retailer")
+    list_filter = ("retailer",)
+    search_fields = ("product__product_name", "batch_number")
+    readonly_fields = ("retailer", "product", "batch_number", "expiry_date", "mrp", "purchase_price", "quantity", "created_at")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+class QuotationItemInline(admin.TabularInline):
+    model = QuotationItem
+    extra = 0
+    readonly_fields = ("amount",)
+
+
+@admin.register(Quotation)
+class QuotationAdmin(admin.ModelAdmin):
+    list_display = ("quotation_number", "retailer", "customer", "quotation_date", "status", "grand_total")
+    list_filter = ("status", "retailer")
+    search_fields = ("quotation_number", "customer__customer_name", "customer__mobile")
+    readonly_fields = ("quotation_number", "converted_sale")
+    inlines = [QuotationItemInline]
+
+@admin.register(SaleReturn)
+class SaleReturnAdmin(admin.ModelAdmin):
+    # Read-only: returns change stock and accounts, so they are made
+    # only from the app's return pages.
+    list_display = ("credit_note_number", "retailer", "customer", "sale", "return_date", "total", "refund_amount")
+    list_filter = ("retailer",)
+    search_fields = ("credit_note_number", "sale__invoice_number", "customer__customer_name")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(PurchaseReturn)
+class PurchaseReturnAdmin(admin.ModelAdmin):
+    list_display = ("debit_note_number", "retailer", "supplier", "purchase", "return_date", "total", "refund_amount")
+    list_filter = ("retailer",)
+    search_fields = ("debit_note_number", "purchase__bill_number", "supplier__supplier_name")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+from .models import ShopTypeService
+
+
+@admin.register(ShopTypeService)
+class ShopTypeServiceAdmin(admin.ModelAdmin):
+    # One row per shop type (made by migration 0011). The app's
+    # "Shop types" page is the normal place to switch them.
+    list_display = ("shop_type", "is_active", "changed_by", "changed_at")
+    readonly_fields = ("shop_type", "changed_by", "changed_at")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def save_model(self, request, obj, form, change):
+        obj.changed_by = request.user
+        super().save_model(request, obj, form, change)

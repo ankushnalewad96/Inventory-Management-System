@@ -1,392 +1,439 @@
 {% extends "base.html" %}
-{% load static %}
-{% block title %}Purchase Details — Inventory Management{% endblock %}
+{% load i18n i18n_extras %}
+{% load static %}{% load qty %}
+{% block title %}{% translate "Purchase Bill" %} {{ purchase.bill_number }} - {{ app_name }}{% endblock %}
 
 {% block css %}
- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/list_pages.css' %}">
 <link rel="stylesheet" href="{% static 'css/purchase_detail.css' %}">
-<link rel="stylesheet" href="{% static 'css/error_message.css' %}">
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
 {% endblock %}
 
 {% block page_title %}
-    <div class="action-group">
-        <a href="{% url 'purchase_product_list' %}" class="btn-action">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-            </svg>
+    <div class="page-title-row">
+        <a href="{% url 'purchase_product_list' %}" class="page-back-btn" title="{% translate "Back to Purchases" %}" aria-label="{% translate "Back to Purchases" %}">
+            <i class="fas fa-arrow-left"></i>
         </a>
+        <div>
+            <h1>{% translate "Purchase Bill" %}</h1>
+            <div class="title-meta">
+                <span class="chip"><i class="fas fa-hashtag"></i>{{ purchase.bill_number }}</span>
+                <span class="status-pill {{ purchase.payment_status|lower }}"><span class="dot"></span>{{ purchase.payment_status|tr }}</span>
+                {% if is_overdue %}<span class="overdue-tag"><i class="fas fa-clock"></i> {% translate "Overdue" %}</span>{% endif %}
+            </div>
+        </div>
     </div>
-    <div class="bill-meta">
-        <h1>Purchase Details</h1>
-        <span class="bill-number"># {{ purchase.bill_number }}</span>
-        {% if purchase.payment_status == "Paid" %}
-            <span class="status-badge status-paid"><span class="status-dot"></span> Paid</span>
-        {% elif purchase.payment_status == "Partial" %}
-            <span class="status-badge status-partial"><span class="status-dot"></span> Partial</span>
-        {% else %}
-            <span class="status-badge status-unpaid"><span class="status-dot"></span> Unpaid</span>
-        {% endif %}
-    </div>
-    <p>Invoice Date: {{ purchase.invoice_date|date:"d M Y" }} &nbsp;|&nbsp; Created: {{ purchase.created_at|date:"d M Y, h:i A" }}</p>
-    
 {% endblock %}
 
 {% block body %}
 
-    <!-- Info Cards -->
-        <div>
-            <button type="button" class="export-btn" onclick="window.print()" style="margin-bottom: 4px;">
-                <i class="fas fa-print"></i>
-                Print
-            </button>
+<!-- Actions -->
+<div class="page-actions">
+    {% if purchase.due_amount > 0 %}
+    <button type="button" class="action-btn success" data-open-pay>
+        <i class="fas fa-indian-rupee-sign"></i> {% translate "Record payment" %}
+    </button>
+    {% endif %}
+    <a href="{% url 'purchase_invoice' purchase.id %}?print=1" target="_blank" rel="noopener" class="action-btn">
+        <i class="fas fa-print"></i> {% translate "Print bill" %}
+    </a>
+    <a href="{% url 'purchase_invoice' purchase.id %}?download=1" target="_blank" rel="noopener" class="action-btn primary">
+        <i class="fas fa-download"></i> {% translate "Download PDF" %}
+    </a>
+    <a href="{% url 'supplier_account' purchase.supplier_id %}" class="action-btn">
+        <i class="fas fa-scale-balanced"></i> {% translate "Supplier account" %}
+    </a>
+    <a href="{% url 'purchase_return_create' purchase.id %}" class="action-btn">
+        <i class="fas fa-rotate-left"></i> {% translate "Return to supplier" %}
+    </a>
+</div>
+
+<!-- Due / closed status -->
+{% if purchase.due_amount <= 0 %}
+<div class="due-banner closed">
+    <span class="banner-icon"><i class="fas fa-circle-check"></i></span>
+    <div class="banner-text">
+        <strong>{% translate "Bill fully paid and closed" %}</strong>
+        <span>{% blocktranslate count counter=payments|length %}{{ counter }} payment made against this bill.{% plural %}{{ counter }} payments made against this bill.{% endblocktranslate %}</span>
+    </div>
+    <span class="banner-amount">₹{{ purchase.paid_amount }}</span>
+</div>
+{% elif is_overdue %}
+<div class="due-banner overdue">
+    <span class="banner-icon"><i class="fas fa-triangle-exclamation"></i></span>
+    <div class="banner-text">
+        <strong>{% blocktranslate count counter=days_overdue %}Payment overdue by {{ counter }} day{% plural %}Payment overdue by {{ counter }} days{% endblocktranslate %}</strong>
+        <span>{% blocktranslate with date=purchase.due_date|date:"d M Y" %}Due date was {{ date }}. You can still record a payment.{% endblocktranslate %}</span>
+    </div>
+    <span class="banner-amount">₹{{ purchase.due_amount }} {% translate "due" %}</span>
+</div>
+{% else %}
+<div class="due-banner open">
+    <span class="banner-icon"><i class="fas fa-hourglass-half"></i></span>
+    <div class="banner-text">
+        {% if purchase.due_date %}
+            <strong>{% if days_left == 0 %}{% translate "Due today" %}{% else %}{% blocktranslate count counter=days_left %}Due in {{ counter }} day{% plural %}Due in {{ counter }} days{% endblocktranslate %}{% endif %}</strong>
+            <span>{% blocktranslate with date=purchase.due_date|date:"d M Y" %}Due date {{ date }}. Pay in parts or in full before or after this date.{% endblocktranslate %}</span>
+        {% else %}
+            <strong>{% translate "Balance to pay" %}</strong>
+            <span>{% translate "No due date set for this bill." %}</span>
+        {% endif %}
+    </div>
+    <span class="banner-amount">₹{{ purchase.due_amount }} {% translate "due" %}</span>
+</div>
+{% endif %}
+
+<div class="info-grid">
+    <!-- Bill -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <div class="info-icon blue"><i class="fas fa-file-invoice"></i></div>
+            <span class="info-card-title">{% translate "Bill Information" %}</span>
         </div>
-        <div class="info-grid">
-            <!-- Bill Information -->
-            <div class="info-card">
-                <div class="info-card-header">
-                    <div class="info-icon blue">
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
+        <div class="info-row">
+            <span class="info-label">{% translate "Bill Number" %}</span>
+            <span class="info-value highlight">{{ purchase.bill_number }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Bill Date" %}</span>
+            <span class="info-value">{{ purchase.bill_date|date:"d M Y" }}{% if purchase.bill_time %}, {{ purchase.bill_time|time:"h:i A" }}{% endif %}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Payment Terms" %}</span>
+            <span class="info-value">{{ purchase.payment_terms|default:"—" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Due Date" %}</span>
+            <span class="info-value {% if is_overdue %}danger{% endif %}">{{ purchase.due_date|date:"d M Y"|default:"—" }}</span>
+        </div>
+        {% if request.user.is_superuser %}
+        <div class="info-row">
+            <span class="info-label">{% translate "Retailer Shop" %}</span>
+            <span class="info-value">{{ purchase.retailer.shop_name }}</span>
+        </div>
+        {% endif %}
+        <div class="info-row">
+            <span class="info-label">{% translate "Warehouse" %}</span>
+            <span class="info-value">{{ purchase.warehouse|default:"—" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "State of Supply" %}</span>
+            <span class="info-value">{{ purchase.state_of_supply|default:"—" }}</span>
+        </div>
+    </div>
+
+    <!-- Supplier -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <div class="info-icon purple"><i class="fas fa-truck"></i></div>
+            <span class="info-card-title">{% translate "Supplier Details" %}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Supplier" %}</span>
+            <span class="info-value">{{ purchase.supplier.supplier_name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Contact Person" %}</span>
+            <span class="info-value">{{ purchase.supplier.contact_person|default:"—" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Mobile" %}</span>
+            <span class="info-value">{{ purchase.supplier.mobile|default:"—" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Email" %}</span>
+            <span class="info-value">{{ purchase.supplier.email|default:"—" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "GSTIN" %}</span>
+            <span class="info-value highlight">{{ purchase.supplier.gst_number|default:"—" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Address" %}</span>
+            <span class="info-value">{{ purchase.supplier.address|default:"—" }}, {{ purchase.supplier.city }}</span>
+        </div>
+    </div>
+
+    <!-- Payment -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <div class="info-icon green"><i class="fas fa-wallet"></i></div>
+            <span class="info-card-title">{% translate "Payment Summary" %}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Grand Total" %}</span>
+            <span class="info-value highlight">₹ {{ purchase.grand_total }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Paid" %}</span>
+            <span class="info-value success">₹ {{ purchase.paid_amount }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Balance Due" %}</span>
+            <span class="info-value {% if purchase.due_amount > 0 %}danger{% else %}success{% endif %}">₹ {{ purchase.due_amount }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Payments made" %}</span>
+            <span class="info-value">{{ payments|length }}</span>
+        </div>
+        {% if purchase.grand_total > 0 %}
+        <div class="pay-progress" title="{% translate "Paid so far" %}">
+            <span style="width: {% widthratio purchase.paid_amount purchase.grand_total 100 %}%;"></span>
+        </div>
+        {% endif %}
+        {% if purchase.bill_file %}
+        <div class="info-row">
+            <span class="info-label">{% translate "Attachment" %}</span>
+            <a href="{{ purchase.bill_file.url }}" target="_blank" rel="noopener" class="file-link">
+                <i class="fas fa-paperclip"></i> {% translate "View bill" %}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Items -->
+<div class="items-section">
+    <div class="section-header-bar">
+        <span class="section-title">
+            <i class="fas fa-boxes-stacked" style="color: var(--primary);"></i>
+            {% translate "Purchased Items" %}
+        </span>
+        <span class="item-count">{{ items|length }} {% translate "Item" %}{{ items|length|pluralize }}</span>
+    </div>
+
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>{% translate "Product" %}</th>
+                    <th class="numeric">{% translate "Qty" %}</th>
+                    <th class="numeric">{% translate "Free" %}</th>
+                    <th class="numeric">{% translate "P.Price" %}</th>
+                    <th class="numeric">{% translate "S.Price" %}</th>
+                    <th class="numeric">MRP</th>
+                    <th class="numeric">GST %</th>
+                    <th class="numeric">{% translate "Amount" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        <div class="product-cell">
+                            <span class="product-name">{{ item.product.product_name }}</span>
+                            <span class="product-meta">{{ item.unit.short_name }}{% if item.batch_number %} · {% translate "Batch" %} {{ item.batch_number }}{% if item.expiry_date %} · {% translate "Exp" %} {{ item.expiry_date|date:"m/Y" }}{% endif %}{% endif %}</span>
+                        </div>
+                    </td>
+                    <td class="numeric">{{ item.quantity|qty }} {{ item.unit.short_name }}{% if item.is_converted %}<span class="product-meta conversion-meta">= {{ item.base_quantity|qty }} {{ item.product.unit.short_name }} {% translate "in stock" %}</span>{% endif %}</td>
+                    <td class="numeric">{{ item.free_quantity|qty }}</td>
+                    <td class="numeric">₹{{ item.purchase_price }}{% if item.is_converted %}<span class="product-meta conversion-meta">₹{{ item.base_unit_price }} / {{ item.product.unit.short_name }}</span>{% endif %}</td>
+                    <td class="numeric">₹{{ item.selling_price }}</td>
+                    <td class="numeric">₹{{ item.mrp }}</td>
+                    <td class="numeric">{{ item.gst|floatformat:"-2" }}%</td>
+                    <td class="numeric" style="color: var(--primary);">₹{{ item.amount }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="table-empty">{% translate "No items found for this purchase." %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Payment history -->
+<div class="items-section">
+    <div class="section-header-bar">
+        <span class="section-title">
+            <i class="fas fa-money-bill-transfer" style="color: var(--success);"></i>
+            {% translate "Payment History" %}
+        </span>
+        <div class="section-actions">
+            {% if purchase.due_amount > 0 %}
+            <button type="button" class="mini-btn primary" data-open-pay><i class="fas fa-plus"></i> {% translate "Add payment" %}</button>
+            {% else %}
+            <span class="closed-tag"><i class="fas fa-lock"></i> {% translate "Closed" %}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table class="data-table compact">
+            <thead>
+                <tr>
+                    <th>{% translate "Date" %}</th>
+                    <th>{% translate "Mode" %}</th>
+                    <th>{% translate "Reference" %}</th>
+                    <th>{% translate "Remarks" %}</th>
+                    <th>{% translate "Recorded by" %}</th>
+                    <th class="numeric">{% translate "Amount" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td>
+                        {{ payment.payment_date|date:"d M Y" }}
+                        {% if purchase.due_date and payment.payment_date > purchase.due_date %}
+                            <span class="overdue-tag">{% translate "After due date" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ payment.payment_type|tr }}</td>
+                    <td>{{ payment.reference|default:"—" }}</td>
+                    <td>{{ payment.remarks|default:"—" }}</td>
+                    <td>{{ payment.created_by|default:"—" }}</td>
+                    <td class="numeric money-in">₹{{ payment.amount }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="table-empty">
+                        <i class="fas fa-receipt"></i>
+                        {% translate 'No payment made yet. Use "Record payment" when you pay the supplier.' %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if purchase_returns %}
+<!-- Goods sent back (debit notes) -->
+<div class="items-section">
+    <div class="section-header-bar">
+        <span class="section-title">
+            <i class="fas fa-rotate-left" style="color: var(--info);"></i>
+            {% translate "Goods Returned (debit notes)" %}
+        </span>
+    </div>
+    <div class="table-wrap">
+        <table class="data-table compact">
+            <thead>
+                <tr>
+                    <th>{% translate "Debit note" %}</th>
+                    <th>{% translate "Date" %}</th>
+                    <th>{% translate "Reason" %}</th>
+                    <th class="numeric">{% translate "Reduced due" %}</th>
+                    <th class="numeric">{% translate "Refund from supplier" %}</th>
+                    <th class="numeric">{% translate "Total" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for note in purchase_returns %}
+                <tr>
+                    <td><a href="{% url 'debit_note' note.id %}" target="_blank" rel="noopener">{{ note.debit_note_number }}</a></td>
+                    <td>{{ note.return_date|date:"d M Y" }}</td>
+                    <td>{{ note.reason|default:"—" }}</td>
+                    <td class="numeric">₹{{ note.applied_to_bill }}</td>
+                    <td class="numeric">₹{{ note.refund_amount }}</td>
+                    <td class="numeric">₹{{ note.total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Summary & Remarks -->
+<div class="summary-section">
+    <div class="remarks-card">
+        <h3><i class="fas fa-pen-to-square" style="color: var(--warning); margin-right: 6px;"></i>{% translate "Remarks" %}</h3>
+        <div class="remarks-text">
+            {{ purchase.remarks|default:"No remarks added for this purchase." }}
+        </div>
+    </div>
+
+    <div class="totals-card">
+        <div class="totals-title">{% translate "Bill Summary" %}</div>
+        <div class="total-row"><span class="label">{% translate "Subtotal" %}</span><span class="value">₹ {{ purchase.subtotal }}</span></div>
+        <div class="total-row"><span class="label">{% translate "Discount" %}</span><span class="value">- ₹ {{ purchase.discount }}</span></div>
+        {% if purchase.tax_type == "inter" %}
+        <div class="total-row"><span class="label">IGST</span><span class="value">+ ₹ {{ purchase.igst }}</span></div>
+        {% elif purchase.tax_type == "intra" %}
+        <div class="total-row"><span class="label">CGST</span><span class="value">+ ₹ {{ purchase.cgst }}</span></div>
+        <div class="total-row"><span class="label">SGST</span><span class="value">+ ₹ {{ purchase.sgst }}</span></div>
+        {% else %}
+        <div class="total-row"><span class="label">{% translate "GST / Tax" %}</span><span class="value">+ ₹ {{ purchase.gst }}</span></div>
+        {% endif %}
+        <div class="total-row"><span class="label">{% translate "Transport Charge" %}</span><span class="value">+ ₹ {{ purchase.transport_charge }}</span></div>
+        <div class="total-row"><span class="label">{% translate "Other Charge" %}</span><span class="value">+ ₹ {{ purchase.other_charge }}</span></div>
+        <div class="total-row grand"><span class="label">{% translate "Grand Total" %}</span><span class="value">₹ {{ purchase.grand_total }}</span></div>
+        <div class="total-row"><span class="label">{% translate "Paid" %}</span><span class="value">₹ {{ purchase.paid_amount }}</span></div>
+        {% if purchase.returned_amount > 0 %}
+        <div class="total-row"><span class="label">{% translate "Less: goods returned" %}</span><span class="value">- ₹ {{ purchase.returned_amount }}</span></div>
+        {% endif %}
+        {% if purchase.due_amount > 0 %}
+        <div class="due-row"><span>{% translate "Amount Due" %}</span><span>₹ {{ purchase.due_amount }}</span></div>
+        {% else %}
+        <div class="due-row paid"><span>{% translate "Payment Status" %}</span><span>{% translate "Fully Paid" %}</span></div>
+        {% endif %}
+    </div>
+</div>
+
+{% if purchase.due_amount > 0 %}
+<!-- Record payment popup -->
+<div class="pay-modal-overlay" id="payModal" role="dialog" aria-modal="true" aria-labelledby="payModalTitle"
+     data-due="{{ purchase.due_amount }}">
+    <div class="pay-modal">
+        <div class="pay-modal-header">
+            <h3 id="payModalTitle"><span class="icon"><i class="fas fa-indian-rupee-sign"></i></span> {% translate "Record Payment" %}</h3>
+            <button type="button" class="pay-modal-close" data-close-pay aria-label="{% translate "Close" %}"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="pay-modal-body">
+            <form id="payForm" method="POST" action="{% url 'purchase_add_payment' purchase.id %}">
+                {% csrf_token %}
+                <div class="pay-due-box">
+                    <span>{% blocktranslate with name=purchase.supplier.supplier_name %}Balance due to {{ name }}{% endblocktranslate %}</span>
+                    <strong>₹{{ purchase.due_amount }}</strong>
+                </div>
+                <div class="pm-grid">
+                    <div class="pm-field">
+                        <div class="pm-label-row">
+                            <label for="payAmount">{% translate "Amount" %} <span class="required">*</span></label>
+                            <button type="button" class="pm-link" data-fill-due>{% translate "Pay full" %}</button>
+                        </div>
+                        <input type="number" class="pm-input" id="payAmount" name="amount" step="0.01" min="0.01" max="{{ purchase.due_amount }}" required>
                     </div>
-                    <span class="info-card-title">Bill Information</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Bill Number</span>
-                    <span class="info-value highlight">{{ purchase.bill_number }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Bill Date</span>
-                    <span class="info-value">{{ purchase.bill_date|date:"d M Y" }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Bill Time</span>
-                    <span class="info-value">{{ purchase.bill_time|default:"—"|time:"h:i A" }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Invoice Date</span>
-                    <span class="info-value">{{ purchase.invoice_date|date:"d M Y" }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Payment Terms</span>
-                    <span class="info-value">{{ purchase.payment_terms|default:"—" }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Due Date</span>
-                    <span class="info-value">{{ purchase.due_date|default:"—"|date:"d M Y" }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Warehouse</span>
-                    <span class="info-value">{{ purchase.warehouse|default:"—" }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">State of Supply</span>
-                    <span class="info-value">{{ purchase.state_of_supply|default:"—" }}</span>
-                </div>
-            </div>
-
-            <!-- Supplier Information -->
-            <div class="info-card">
-                <div class="info-card-header">
-                    <div class="info-icon purple">
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                        </svg>
+                    <div class="pm-field">
+                        <label for="payType">{% translate "Payment mode" %} <span class="required">*</span></label>
+                        <select class="pm-input" id="payType" name="payment_type" required>
+                            {% for value, label in payment_types %}
+                                <option value="{{ value }}">{{ label|tr }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <span class="info-card-title">Supplier Details</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Supplier Name</span>
-                    <span class="info-value">{{ purchase.supplier.name|default:purchase.supplier }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Contact Person</span>
-                    <span class="info-value">{{ purchase.supplier.contact_person|default:"—" }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Phone</span>
-                    <span class="info-value">{{ purchase.supplier.phone|default:"—" }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Email</span>
-                    <span class="info-value">{{ purchase.supplier.email|default:"—" }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">GSTIN</span>
-                    <span class="info-value highlight">{{ purchase.supplier.gstin|default:"—" }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Address</span>
-                    <span class="info-value">{{ purchase.supplier.address|default:"—" }}</span>
-                </div>
-            </div>
-
-            <!-- Payment Information -->
-            <div class="info-card">
-                <div class="info-card-header">
-                    <div class="info-icon green">
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
+                    <div class="pm-field">
+                        <label for="payDate">{% translate "Payment date" %}</label>
+                        <input type="date" class="pm-input" id="payDate" name="payment_date"
+                               value="{{ today|date:'Y-m-d' }}" min="{{ purchase.bill_date|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}">
                     </div>
-                    <span class="info-card-title">Payment Summary</span>
+                    <div class="pm-field">
+                        <label for="payReference">{% translate "Reference" %}</label>
+                        <input type="text" class="pm-input" id="payReference" name="reference" maxlength="100" placeholder="{% translate "UPI / cheque no." %}">
+                    </div>
+                    <div class="pm-field full">
+                        <label for="payRemarks">{% translate "Remarks" %}</label>
+                        <textarea class="pm-input" id="payRemarks" name="remarks" rows="2" placeholder="{% translate "Optional note" %}"></textarea>
+                    </div>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Payment Type</span>
-                    <span class="info-value">{{ purchase.payment_type|default:"—" }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Payment Status</span>
-                    <span class="info-value {% if purchase.payment_status == 'Paid' %}success{% elif purchase.payment_status == 'Unpaid' %}danger{% endif %}">
-                        {{ purchase.payment_status }}
-                    </span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Grand Total</span>
-                    <span class="info-value highlight">₹ {{ purchase.grand_total }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Paid Amount</span>
-                    <span class="info-value success">₹ {{ purchase.paid_amount }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Due Amount</span>
-                    <span class="info-value danger">₹ {{ purchase.due_amount }}</span>
-                </div>
-                {% if purchase.bill_file %}
-                <div class="info-row">
-                    <span class="info-label">Attachment</span>
-                    <a href="{{ purchase.bill_file.url }}" target="_blank" class="file-link">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
-                        </svg>
-                        View Bill
-                    </a>
-                </div>
-                {% endif %}
-            </div>
-
+                <p class="pm-note"><i class="fas fa-circle-info"></i> {% translate "When the full balance is paid, the bill is closed automatically." %}</p>
+            </form>
         </div>
-
-        <!-- Items Table -->
-        <div class="items-section">
-            <div class="section-header-bar">
-                <span class="section-title">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--primary);">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                    </svg>
-                    Purchased Items
-                </span>
-                <span class="item-count">{{ purchase.items.count }} Items</span>
-            </div>
-
-            <div class="table-wrap">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Product</th>
-                            <th>Batch</th>
-                            <th>Expiry</th>
-                            <th class="numeric">Qty</th>
-                            <th class="numeric">Free</th>
-                            <th class="numeric">P.Price</th>
-                            <th class="numeric">S.Price</th>
-                            <th class="numeric">MRP</th>
-                            <th class="numeric">GST %</th>
-                            <th class="numeric">Disc.</th>
-                            <th class="numeric">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in purchase.items.all %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>
-                                <div class="product-cell">
-                                    <span class="product-name">{{ item.product.product_name }}</span>
-                                    <span class="product-meta">{{ item.unit.short_name }}</span>
-                                </div>
-                            </td>
-                            <td>
-                                {% if item.batch_number %}
-                                    <span class="batch-tag">{{ item.batch_number }}</span>
-                                {% else %}
-                                    <span style="color: var(--placeholder); font-size: 12px;">—</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if item.expiry_date %}
-                                    <span class="{% if item.expiry_date < today %}expiry-warning{% else %}expiry-ok{% endif %}">
-                                        {{ item.expiry_date|date:"M Y" }}
-                                    </span>
-                                {% else %}
-                                    <span style="color: var(--placeholder); font-size: 12px;">—</span>
-                                {% endif %}
-                            </td>
-                            <td class="numeric">{{ item.quantity }}</td>
-                            <td class="numeric">{{ item.free_quantity|default:"0" }}</td>
-                            <td class="numeric">₹{{ item.purchase_price }}</td>
-                            <td class="numeric">₹{{ item.selling_price }}</td>
-                            <td class="numeric">₹{{ item.mrp }}</td>
-                            <td class="numeric">{{ item.gst }}%</td>
-                            <td class="numeric">₹{{ item.discount }}</td>
-                            <td class="numeric" style="font-weight: 700; color: var(--primary);">₹{{ item.amount }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="12" style="text-align: center; color: var(--text-muted); padding: 40px;">
-                                No items found for this purchase.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        <div class="pay-modal-footer">
+            <button type="button" class="pm-btn" data-close-pay>{% translate "Cancel" %}</button>
+            <button type="submit" class="pm-btn success" form="payForm"><i class="fas fa-check"></i> {% translate "Save payment" %}</button>
         </div>
+    </div>
+</div>
+{% endif %}
 
-        <!-- Summary & Remarks -->
-        <div class="summary-section">
-
-            <!-- Remarks -->
-            <div class="remarks-card">
-                <h3>
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 6px; color: var(--warning);">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
-                    Remarks
-                </h3>
-                <div class="remarks-text">
-                    {{ purchase.remarks|default:"No remarks added for this purchase." }}
-                </div>
-            </div>
-
-            <!-- Totals Breakdown -->
-            <div class="totals-card">
-                <div class="totals-title">Bill Summary</div>
-
-                <div class="total-row">
-                    <span class="label">Subtotal</span>
-                    <span class="value">₹ {{ purchase.subtotal }}</span>
-                </div>
-                <div class="total-row">
-                    <span class="label">Discount</span>
-                    <span class="value">- ₹ {{ purchase.discount }}</span>
-                </div>
-                <div class="total-row">
-                    <span class="label">GST / Tax</span>
-                    <span class="value">+ ₹ {{ purchase.gst }}</span>
-                </div>
-                <div class="total-row">
-                    <span class="label">Transport Charge</span>
-                    <span class="value">+ ₹ {{ purchase.transport_charge }}</span>
-                </div>
-                <div class="total-row">
-                    <span class="label">Other Charge</span>
-                    <span class="value">+ ₹ {{ purchase.other_charge }}</span>
-                </div>
-
-                <div class="total-row grand">
-                    <span class="label">Grand Total</span>
-                    <span class="value">₹ {{ purchase.grand_total }}</span>
-                </div>
-
-                {% if purchase.due_amount > 0 %}
-                <div class="due-row">
-                    <span>Amount Due</span>
-                    <span>₹ {{ purchase.due_amount }}</span>
-                </div>
-                {% else %}
-                <div class="due-row paid">
-                    <span>Payment Status</span>
-                    <span>Fully Paid</span>
-                </div>
-                {% endif %}
-            </div>
-
-        </div>
-    
 {% endblock %}
 
 {% block js %}
-<script>
-    // ===== SIDEBAR TOGGLE =====
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
-
-    function toggleSidebar() {
-        sidebar.classList.toggle('collapsed');
-        mainContent.classList.toggle('expanded');
-        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-    }
-
-    function openMobileSidebar() {
-        sidebar.classList.add('open');
-        sidebarOverlay.classList.add('active');
-    }
-
-    function closeMobileSidebar() {
-        sidebar.classList.remove('open');
-        sidebarOverlay.classList.remove('active');
-    }
-
-    if (localStorage.getItem('sidebarCollapsed') === 'true' && window.innerWidth > 768) {
-        sidebar.classList.add('collapsed');
-        mainContent.classList.add('expanded');
-    }
-
-    // ===== THEME TOGGLE =====
-    const html = document.documentElement;
-    const themeIcon = document.getElementById('themeIcon');
-
-    function toggleTheme() {
-        const current = html.getAttribute('data-theme');
-        const next = current === 'light' ? 'dark' : 'light';
-        html.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
-        themeIcon.className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-    }
-
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    html.setAttribute('data-theme', savedTheme);
-    themeIcon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-
-
-    /* ============================================================
-        USER PROFILE DROPDOWN
-        ============================================================ */
-    const userProfile = document.getElementById('userProfile');
-    const userDropdownMenu = document.getElementById('userDropdownMenu');
-
-    userProfile.addEventListener('click', function (e) {
-        e.stopPropagation();
-        userDropdownMenu.classList.toggle('show');
-        userProfile.classList.toggle('open');
-    });
-
-    // Close dropdown when clicking anywhere else
-    document.addEventListener('click', function (e) {
-        if (!userProfile.contains(e.target)) {
-            userDropdownMenu.classList.remove('show');
-            userProfile.classList.remove('open');
-        }
-    });
-
-    // Close dropdown on Escape
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-            userDropdownMenu.classList.remove('show');
-            userProfile.classList.remove('open');
-            closeMobileSidebar();
-        }
-    });
-
-    window.addEventListener('resize', () => {
-        if (window.innerWidth > 768) {
-            closeMobileSidebar();
-        }
-    });
-</script>
+<script src="{% static 'jss/dashboard.js' %}"></script>
+<script src="{% static 'jss/pay_modal.js' %}"></script>
 {% endblock %}

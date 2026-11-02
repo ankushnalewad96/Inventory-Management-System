@@ -1,299 +1,406 @@
-{% load static %}
+{% load i18n %}{% load static %}{% get_current_language as LANGUAGE_CODE %}{% get_available_languages as LANGUAGES %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>General Store — Inventory Management</title>
+    <meta name="theme-color" content="#0b1324">
+    <title>{% translate "Sign in" %} - {{ app_name }}</title>
+    <script src="{% url 'javascript-catalog' %}"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/userlogin.css' %}">
-    
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/userlogin.css' %}?v=3">
 </head>
-<body>
+<body class="auth-body">
 
-    <div class="login-container">
-        <!-- Left Brand Panel -->
-        <div class="brand-panel">
-            <div class="brand-header">
-                <div class="logo">
-                    <div class="logo-icon">
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                        </svg>
-                    </div>
-                    <span class="logo-text">StockWise</span>
-                </div>
-                <h1 class="brand-title">Manage Your Store<br>With Confidence</h1>
-                <p class="brand-subtitle">A complete inventory solution designed for general store owners. Track stock, manage suppliers, and grow your business.</p>
-            </div>
+<div class="auth-shell">
 
-            <div class="brand-features">
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                        </svg>
-                    </div>
-                    <span>Real-time stock analytics & reports</span>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                    <span>Low stock alerts & auto-reorder</span>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                    </div>
-                    <span>Multi-user role management</span>
-                </div>
-            </div>
+    {# ================= Left: brand showcase ================= #}
+    <aside class="showcase">
+        <div class="showcase-bg" aria-hidden="true">
+            <span class="orb orb-1"></span>
+            <span class="orb orb-2"></span>
+            <span class="orb orb-3"></span>
+            <span class="grid-overlay"></span>
         </div>
 
-        <!-- Right Form Panel -->
-        <div class="form-panel">
+        <div class="showcase-inner">
+            <div class="brand">
+                <span class="brand-mark"><i class="fas fa-store"></i></span>
+                <span class="brand-text">
+                    <span class="logo-text">{{ app_name }}</span>
+                    <span class="brand-tag">{% translate "Billing & Stock" %}</span>
+                </span>
+            </div>
+
+            <div class="showcase-copy">
+                <span class="eyebrow"><i class="fas fa-bolt"></i> {% translate "Made for Indian shops" %}</span>
+                <h1>{% translate "Billing, stock and udhari." %} <span class="gradient-text">{% translate "All in one place." %}</span></h1>
+                <p>{% translate "Make GST bills in seconds, know your stock at a glance and never forget a customer's due again." %}</p>
+            </div>
+
+            {# Animated preview of the app (decoration only) #}
+            <div class="scene-wrap" id="sceneWrap" aria-hidden="true"><div class="scene">
+                <div class="glass-card card-sales">
+                    <div class="card-row">
+                        <span class="mini-icon blue"><i class="fas fa-chart-line"></i></span>
+                        <div>
+                            <span class="card-label">{% translate "Today's sales" %}</span>
+                            <span class="card-value">₹<span class="count-up" data-target="18450">18,450</span></span>
+                        </div>
+                        <span class="trend up"><i class="fas fa-arrow-trend-up"></i> 12%</span>
+                    </div>
+                    <div class="bars">
+                        <span style="--h:38%"></span><span style="--h:55%"></span><span style="--h:42%"></span>
+                        <span style="--h:70%"></span><span style="--h:58%"></span><span style="--h:82%"></span>
+                        <span style="--h:96%"></span>
+                    </div>
+                </div>
+
+                <div class="glass-card card-invoice">
+                    <span class="mini-icon green"><i class="fas fa-file-invoice"></i></span>
+                    <div>
+                        <span class="card-label">INV-2026-000128</span>
+                        <span class="card-strong">₹2,360 · UPI</span>
+                    </div>
+                    <span class="paid-pill"><i class="fas fa-check"></i> {% translate "Paid" %}</span>
+                </div>
+
+                <div class="glass-card card-stock">
+                    <span class="mini-icon amber pulse"><i class="fas fa-bell"></i></span>
+                    <div>
+                        <span class="card-strong">{% translate "3 items low on stock" %}</span>
+                        <span class="card-label">{% translate "Reorder list is ready" %}</span>
+                    </div>
+                </div>
+
+                <div class="glass-card card-gst">
+                    <span class="mini-icon violet"><i class="fas fa-percent"></i></span>
+                    <span class="card-strong">CGST + SGST / IGST</span>
+                </div>
+            </div></div>
+
+            {# Shop types that use the app #}
+            <div class="shop-strip" aria-label="{% translate "Shop types" %}">
+                <div class="shop-track">
+                    {% for _ in "12" %}
+                    <span class="shop-chip"><i class="fas fa-basket-shopping"></i> {% translate "General / Kirana store" %}</span>
+                    <span class="shop-chip"><i class="fas fa-pen-ruler"></i> {% translate "Stationery" %}</span>
+                    <span class="shop-chip"><i class="fas fa-gift"></i> {% translate "Cosmetics / Gifts / Mobile accessories" %}</span>
+                    <span class="shop-chip"><i class="fas fa-prescription-bottle-medical"></i> {% translate "Pharmacy" %}</span>
+                    <span class="shop-chip"><i class="fas fa-screwdriver-wrench"></i> {% translate "Hardware" %}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <ul class="highlights">
+                <li><i class="fas fa-receipt"></i> {% translate "GST bills, returns and credit notes" %}</li>
+                <li><i class="fas fa-boxes-stacked"></i> {% translate "Stock, batches and expiry dates" %}</li>
+                <li><i class="fas fa-language"></i> {% translate "English, Hindi and Marathi" %}</li>
+            </ul>
+        </div>
+    </aside>
+
+    {# ================= Right: sign-in ================= #}
+    <main class="auth-panel">
+        <div class="auth-top">
+            <div class="brand brand-mobile">
+                <span class="brand-mark"><i class="fas fa-store"></i></span>
+                <span class="logo-text">{{ app_name }}</span>
+            </div>
+
+            {# Pick the language before signing in #}
+            <form action="{% url 'set_language' %}" method="post" class="login-language">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <label for="loginLanguage"><i class="fas fa-globe"></i><span class="sr-only">{% translate "Language" %}</span></label>
+                <select id="loginLanguage" name="language" onchange="this.form.submit()">
+                    {% get_language_info_list for LANGUAGES as language_list %}{% for language in language_list %}
+                        <option value="{{ language.code }}" {% if language.code == LANGUAGE_CODE %}selected{% endif %}>{{ language.name_local }}</option>
+                    {% endfor %}
+                </select>
+                <i class="fas fa-chevron-down select-caret" aria-hidden="true"></i>
+                <noscript><button type="submit">{% translate "Change" %}</button></noscript>
+            </form>
+        </div>
+
+        <div class="auth-card" id="authCard">
             <div class="form-header">
-                <h2>Welcome Back</h2>
-                <p>Enter your credentials to access your dashboard</p>
+                <span class="hello-badge" aria-hidden="true"><i class="fas fa-hand"></i></span>
+                <h2>{% translate "Welcome back" %}</h2>
+                <p>{% translate "Sign in to open your shop's dashboard" %}</p>
+            </div>
+
+            {# Messages from the server: wrong password, paused service, logged out... #}
+            <div class="alert-stack" id="alertStack" aria-live="polite">
+                {% for message in messages %}
+                    {% with level=message.level_tag|default:"info" %}
+                    <div class="alert alert-{{ level }}" role="{% if level == 'error' or level == 'warning' %}alert{% else %}status{% endif %}"
+                         {% if level == 'success' or level == 'info' %}data-autoclose="6000"{% endif %}>
+                        <span class="alert-icon">
+                            {% if level == "error" %}<i class="fas fa-circle-exclamation"></i>
+                            {% elif level == "success" %}<i class="fas fa-circle-check"></i>
+                            {% elif level == "warning" %}<i class="fas fa-triangle-exclamation"></i>
+                            {% else %}<i class="fas fa-circle-info"></i>{% endif %}
+                        </span>
+                        <div class="alert-body">
+                            <strong class="alert-title">
+                                {% if level == "error" %}{% translate "Could not sign in" %}
+                                {% elif level == "success" %}{% translate "Done" %}
+                                {% elif level == "warning" %}{% translate "Please note" %}
+                                {% else %}{% translate "For your information" %}{% endif %}
+                            </strong>
+                            <span class="alert-text">{{ message }}</span>
+                        </div>
+                        <button type="button" class="alert-close" aria-label="{% translate "Close" %}"><i class="fas fa-xmark"></i></button>
+                        {% if level == 'success' or level == 'info' %}<span class="alert-timer"></span>{% endif %}
+                    </div>
+                    {% endwith %}
+                {% empty %}
+                    {% if request.GET.next %}
+                    <div class="alert alert-info" role="status">
+                        <span class="alert-icon"><i class="fas fa-lock"></i></span>
+                        <div class="alert-body">
+                            <strong class="alert-title">{% translate "Please sign in" %}</strong>
+                            <span class="alert-text">{% translate "Sign in to open that page. We will take you there right after." %}</span>
+                        </div>
+                        <button type="button" class="alert-close" aria-label="{% translate "Close" %}"><i class="fas fa-xmark"></i></button>
+                    </div>
+                    {% endif %}
+                {% endfor %}
             </div>
 
             <form id="loginForm" method="POST" action="{% url 'user_login' %}" novalidate>
                 {% csrf_token %}
-                <!-- Username Field -->
+                {% if request.GET.next or request.POST.next %}<input type="hidden" name="next" value="{% firstof request.POST.next request.GET.next %}">{% endif %}
+
                 <div class="form-group">
-                    <label class="form-label" for="username">Username</label>
+                    <label class="form-label" for="username">{% translate "Username" %}</label>
                     <div class="input-wrapper">
-                        <input 
-                            type="text" 
-                            id="username" 
-                            name="username"
-                            class="form-input" 
-                            placeholder="Enter your username"
-                            autocomplete="username"
-                            maxlength="20"
-                        >
-                        <svg class="input-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                        </svg>
+                        <i class="fas fa-user input-icon" aria-hidden="true"></i>
+                        <input type="text" id="username" name="username" class="form-input"
+                               placeholder="{% translate "Enter your username" %}"
+                               value="{{ request.POST.username|default:'' }}"
+                               autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="20"
+                               aria-describedby="usernameError">
                     </div>
                     <span class="error-message" id="usernameError">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <span class="error-text">Please enter a valid username</span>
+                        <i class="fas fa-circle-exclamation"></i>
+                        <span class="error-text">{% translate "Please enter a valid username" %}</span>
                     </span>
                 </div>
 
-                <!-- Password Field -->
                 <div class="form-group">
-                    <label class="form-label" for="password">Password</label>
+                    <label class="form-label" for="password">{% translate "Password" %}</label>
                     <div class="input-wrapper">
-                        <input 
-                            type="password" 
-                            id="password" 
-                            name="password"
-                            class="form-input" 
-                            placeholder="••••••••"
-                            autocomplete="current-password"
-                        >
-                        <svg class="input-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                        </svg>
-                        <button type="button" class="toggle-password" id="togglePassword" aria-label="Toggle password visibility">
-                            <svg id="eyeIcon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
+                        <i class="fas fa-lock input-icon" aria-hidden="true"></i>
+                        <input type="password" id="password" name="password" class="form-input has-toggle"
+                               placeholder="••••••••" autocomplete="current-password"
+                               aria-describedby="passwordError capsHint">
+                        <button type="button" class="toggle-password" id="togglePassword"
+                                aria-label="{% translate "Toggle password visibility" %}" aria-pressed="false">
+                            <i class="fas fa-eye" id="eyeIcon"></i>
                         </button>
                     </div>
+                    <span class="caps-hint" id="capsHint"><i class="fas fa-arrow-up"></i> {% translate "Caps Lock is on" %}</span>
                     <span class="error-message" id="passwordError">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <span class="error-text">Password must be at least 6 characters</span>
+                        <i class="fas fa-circle-exclamation"></i>
+                        <span class="error-text">{% translate "Password must be at least 6 characters" %}</span>
                     </span>
                 </div>
 
                 <div class="form-options">
                     <label class="remember-me">
                         <input type="checkbox" id="rememberMe" name="remember">
-                        <span>Remember me</span>
+                        <span class="check-box" aria-hidden="true"><i class="fas fa-check"></i></span>
+                        <span>{% translate "Remember me" %}</span>
                     </label>
-                    <a href="#" class="forgot-link">Forgot password?</a>
+                    <button type="button" class="forgot-link" id="forgotBtn" aria-expanded="false" aria-controls="forgotHelp">{% translate "Forgot password?" %}</button>
+                </div>
+
+                <div class="help-box" id="forgotHelp" hidden>
+                    <i class="fas fa-key"></i>
+                    <span>{% translate "Ask the admin to set a new password for you. Then sign in with the new password." %}</span>
                 </div>
 
                 <button type="submit" class="btn-login" id="loginBtn">
-                    <span class="spinner"></span>
-                    <span class="btn-text">Sign In to Dashboard</span>
+                    <span class="spinner" aria-hidden="true"></span>
+                    <span class="btn-text" data-busy="{% translate "Signing you in..." %}">{% translate "Sign in" %}</span>
+                    <i class="fas fa-arrow-right btn-arrow" aria-hidden="true"></i>
                 </button>
             </form>
 
-            <div class="divider">or</div>
+            <div class="trust-row">
+                <span><i class="fas fa-shield-halved"></i> {% translate "Your shop's data is seen only by you and the admin" %}</span>
+            </div>
 
             <p class="signup-text">
-                Don't have an account? <a href="#">Contact Administrator</a>
+                {% translate "New shop?" %} <span>{% translate "Ask the admin to create your account." %}</span>
             </p>
         </div>
-    </div>
 
-    <!-- Toast Notification -->
-    <div class="toast" id="toast">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <span id="toastMessage">Login successful!</span>
-    </div>
+        <footer class="auth-footer">© {% now "Y" %} {{ app_name }}</footer>
+    </main>
+</div>
 
-    <script>
-        (function() {
-            const form = document.getElementById('loginForm');
-            const usernameInput = document.getElementById('username');
-            const passwordInput = document.getElementById('password');
-            const usernameError = document.getElementById('usernameError');
-            const passwordError = document.getElementById('passwordError');
-            const loginBtn = document.getElementById('loginBtn');
-            const togglePassword = document.getElementById('togglePassword');
-            const eyeIcon = document.getElementById('eyeIcon');
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toastMessage');
+<script>
+(function () {
+    var form = document.getElementById('loginForm');
+    var card = document.getElementById('authCard');
+    var usernameInput = document.getElementById('username');
+    var passwordInput = document.getElementById('password');
+    var usernameError = document.getElementById('usernameError');
+    var passwordError = document.getElementById('passwordError');
+    var loginBtn = document.getElementById('loginBtn');
+    var togglePassword = document.getElementById('togglePassword');
+    var eyeIcon = document.getElementById('eyeIcon');
+    var capsHint = document.getElementById('capsHint');
+    var rememberMe = document.getElementById('rememberMe');
+    var forgotBtn = document.getElementById('forgotBtn');
+    var forgotHelp = document.getElementById('forgotHelp');
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-            // Toggle password visibility
-            togglePassword.addEventListener('click', function() {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                
-                if (type === 'text') {
-                    eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.058 10.058 0 01-3.71 4.88m0 0L21 21"/>';
-                } else {
-                    eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>';
-                }
-            });
+    // ---------- server messages: close button + auto close ----------
+    function closeAlert(alertEl) {
+        if (!alertEl || alertEl.classList.contains('closing')) return;
+        alertEl.classList.add('closing');
+        setTimeout(function () { alertEl.remove(); }, 300);
+    }
+    document.querySelectorAll('.alert').forEach(function (alertEl) {
+        var closeBtn = alertEl.querySelector('.alert-close');
+        if (closeBtn) closeBtn.addEventListener('click', function () { closeAlert(alertEl); });
+        var wait = parseInt(alertEl.getAttribute('data-autoclose'), 10);
+        if (wait) {
+            alertEl.style.setProperty('--wait', wait + 'ms');
+            setTimeout(function () { closeAlert(alertEl); }, wait);
+        }
+    });
+    if (document.querySelector('.alert-error')) shake();
 
-            // Real-time validation on blur
-            usernameInput.addEventListener('blur', function() {
-                validateUsername();
-            });
+    // ---------- password show / hide ----------
+    togglePassword.addEventListener('click', function () {
+        var show = passwordInput.type === 'password';
+        passwordInput.type = show ? 'text' : 'password';
+        eyeIcon.className = show ? 'fas fa-eye-slash' : 'fas fa-eye';
+        togglePassword.setAttribute('aria-pressed', show ? 'true' : 'false');
+        passwordInput.focus();
+    });
 
-            passwordInput.addEventListener('blur', function() {
-                validatePassword();
-            });
+    // ---------- Caps Lock hint ----------
+    function checkCaps(event) {
+        if (event.getModifierState) {
+            capsHint.classList.toggle('show', event.getModifierState('CapsLock'));
+        }
+    }
+    passwordInput.addEventListener('keydown', checkCaps);
+    passwordInput.addEventListener('keyup', checkCaps);
+    passwordInput.addEventListener('blur', function () { capsHint.classList.remove('show'); });
 
-            // Clear errors on input
-            usernameInput.addEventListener('input', function() {
-                clearError(usernameInput, usernameError);
-            });
+    // ---------- forgot password help ----------
+    forgotBtn.addEventListener('click', function () {
+        var open = forgotHelp.hidden;
+        forgotHelp.hidden = !open;
+        forgotBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
 
-            passwordInput.addEventListener('input', function() {
-                clearError(passwordInput, passwordError);
-            });
+    // ---------- field checks ----------
+    function showError(input, errorEl, message) {
+        input.classList.add('error');
+        input.setAttribute('aria-invalid', 'true');
+        errorEl.querySelector('.error-text').textContent = message;
+        errorEl.classList.add('show');
+    }
+    function clearError(input, errorEl) {
+        input.classList.remove('error');
+        input.removeAttribute('aria-invalid');
+        errorEl.classList.remove('show');
+    }
+    function validateUsername() {
+        var value = usernameInput.value.trim();
+        if (!value) { showError(usernameInput, usernameError, gettext('Username is required')); return false; }
+        if (value.length < 3) { showError(usernameInput, usernameError, gettext('Username must be at least 3 characters')); return false; }
+        if (value.length > 20) { showError(usernameInput, usernameError, gettext('Username must not exceed 20 characters')); return false; }
+        if (/\s/.test(value)) { showError(usernameInput, usernameError, gettext('Username cannot contain spaces')); return false; }
+        if (!/^[a-zA-Z][a-zA-Z0-9_-]{2,19}$/.test(value)) { showError(usernameInput, usernameError, gettext('Use only letters, numbers, underscores or hyphens. Must start with a letter')); return false; }
+        clearError(usernameInput, usernameError);
+        return true;
+    }
+    function validatePassword() {
+        var value = passwordInput.value;
+        if (!value) { showError(passwordInput, passwordError, gettext('Password is required')); return false; }
+        if (value.length < 6) { showError(passwordInput, passwordError, gettext('Password must be at least 6 characters')); return false; }
+        clearError(passwordInput, passwordError);
+        return true;
+    }
+    function shake() {
+        if (reduceMotion) return;
+        card.classList.remove('shake');
+        void card.offsetWidth;  // restart the animation
+        card.classList.add('shake');
+    }
 
-            function validateUsername() {
-                const value = usernameInput.value.trim();
-                const usernameRegex = /^[a-zA-Z][a-zA-Z0-9_-]{2,19}$/;
-                
-                if (!value) {
-                    showError(usernameInput, usernameError, 'Username is required');
-                    return false;
-                }
-                if (value.length < 3) {
-                    showError(usernameInput, usernameError, 'Username must be at least 3 characters');
-                    return false;
-                }
-                if (value.length > 20) {
-                    showError(usernameInput, usernameError, 'Username must not exceed 20 characters');
-                    return false;
-                }
-                if (/\s/.test(value)) {
-                    showError(usernameInput, usernameError, 'Username cannot contain spaces');
-                    return false;
-                }
-                if (!usernameRegex.test(value)) {
-                    showError(usernameInput, usernameError, 'Use only letters, numbers, underscores or hyphens. Must start with a letter');
-                    return false;
-                }
-                clearError(usernameInput, usernameError);
-                return true;
-            }
+    usernameInput.addEventListener('blur', function () { if (usernameInput.value) validateUsername(); });
+    passwordInput.addEventListener('blur', function () { if (passwordInput.value) validatePassword(); });
+    usernameInput.addEventListener('input', function () { clearError(usernameInput, usernameError); });
+    passwordInput.addEventListener('input', function () { clearError(passwordInput, passwordError); });
 
-            function validatePassword() {
-                const value = passwordInput.value;
-                
-                if (!value) {
-                    showError(passwordInput, passwordError, 'Password is required');
-                    return false;
-                }
-                if (value.length < 6) {
-                    showError(passwordInput, passwordError, 'Password must be at least 6 characters');
-                    return false;
-                }
-                clearError(passwordInput, passwordError);
-                return true;
-            }
+    form.addEventListener('submit', function (event) {
+        var okUser = validateUsername();
+        var okPass = validatePassword();
+        if (!okUser || !okPass) {
+            event.preventDefault();
+            (okUser ? passwordInput : usernameInput).focus();
+            shake();
+            return;
+        }
 
-            function showError(input, errorEl, message) {
-                input.classList.add('error');
-                const textSpan = errorEl.querySelector('.error-text');
-                if (textSpan) textSpan.textContent = message;
-                errorEl.classList.add('show');
-            }
+        try {
+            if (rememberMe.checked) localStorage.setItem('rememberedUsername', usernameInput.value.trim());
+            else localStorage.removeItem('rememberedUsername');
+        } catch (e) { /* storage blocked: nothing to remember */ }
 
-            function clearError(input, errorEl) {
-                input.classList.remove('error');
-                errorEl.classList.remove('show');
-            }
+        var text = loginBtn.querySelector('.btn-text');
+        text.textContent = text.getAttribute('data-busy');
+        loginBtn.classList.add('loading');
+        loginBtn.disabled = true;
+    });
 
-            function showToast(message, isError) {
-                toastMessage.textContent = message;
-                toast.className = 'toast ' + (isError ? 'error-toast' : 'success-toast') + ' show';
-            }
+    // ---------- remembered username ----------
+    try {
+        var remembered = localStorage.getItem('rememberedUsername');
+        if (remembered) {
+            if (!usernameInput.value) usernameInput.value = remembered;
+            rememberMe.checked = true;
+        }
+    } catch (e) { /* storage blocked */ }
+    (usernameInput.value ? passwordInput : usernameInput).focus({ preventScroll: true });
 
-            // Form submission — validate, show redirect message, then submit
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
+    // ---------- fit the preview to the column ----------
+    var sceneWrap = document.getElementById('sceneWrap');
+    function fitScene() {
+        if (!sceneWrap.offsetWidth) return;  // hidden on phones
+        sceneWrap.style.setProperty('--s', Math.min(1, sceneWrap.offsetWidth / 560).toFixed(3));
+    }
+    fitScene();
+    window.addEventListener('resize', fitScene);
 
-                const isUsernameValid = validateUsername();
-                const isPasswordValid = validatePassword();
-
-                if (!isUsernameValid || !isPasswordValid) {
-                    if (!isUsernameValid) usernameInput.focus();
-                    else passwordInput.focus();
-                    return;
-                }
-
-                // Show redirect message
-                showToast('Redirecting to dashboard...', false);
-                
-                // Disable button and show spinner
-                loginBtn.classList.add('loading');
-                loginBtn.disabled = true;
-
-                // Handle Remember Me in localStorage
-                const rememberMe = document.getElementById('rememberMe').checked;
-                if (rememberMe) {
-                    localStorage.setItem('rememberedUsername', usernameInput.value.trim());
-                } else {
-                    localStorage.removeItem('rememberedUsername');
-                }
-
-                // Submit form to backend after brief delay so user sees the message
-                setTimeout(function() {
-                    form.submit();
-                }, 800);
-            });
-
-            // Prefill from localStorage if remembered
-            const remembered = localStorage.getItem('rememberedUsername');
-            if (remembered) {
-                usernameInput.value = remembered;
-                document.getElementById('rememberMe').checked = true;
-            }
-        })();
-    </script>
+    // ---------- sales counter in the preview card ----------
+    var counter = document.querySelector('.count-up');
+    if (counter && !reduceMotion) {
+        var target = parseInt(counter.getAttribute('data-target'), 10);
+        var start = null;
+        var step = function (time) {
+            if (!start) start = time;
+            var progress = Math.min((time - start) / 1600, 1);
+            var eased = 1 - Math.pow(1 - progress, 3);
+            counter.textContent = Math.round(target * eased).toLocaleString('en-IN');
+            if (progress < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    }
+})();
+</script>
 </body>
 </html>

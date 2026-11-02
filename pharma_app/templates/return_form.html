@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% load i18n i18n_extras %}
+{% load static qty %}
+{% block title %}{% translate "Return" %} {{ bill_number }} - {{ app_name }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/list_pages.css' %}">
+<link rel="stylesheet" href="{% static 'css/quotation.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <div class="page-title-row">
+        <a href="{% url back_url_name bill.id %}" class="page-back-btn" title="{% translate "Back to the bill" %}" aria-label="{% translate "Back to the bill" %}">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            {% if kind == "sale" %}
+                <h1>{% translate "Sales Return" %} · {{ bill_number }}</h1>
+                <p>{% blocktranslate %}Goods returned by {{ party_name }}. A credit note is made; stock comes back.{% endblocktranslate %}</p>
+            {% else %}
+                <h1>{% translate "Return to Supplier" %} · {% translate "Bill" %} {{ bill_number }}</h1>
+                <p>{% blocktranslate %}Goods sent back to {{ party_name }}. A debit note is made; stock goes out.{% endblocktranslate %}</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+
+{% if nothing_left %}
+    <section class="qt-card">
+        <p class="qt-strong">{% translate "Everything on this bill has already been returned." %}</p>
+        <p class="qt-muted"><a href="{% url back_url_name bill.id %}">{% translate "Back to the bill" %}</a></p>
+    </section>
+{% else %}
+<form method="post" class="qt-form" id="returnForm">
+    {% csrf_token %}
+
+    <section class="qt-card">
+        <div class="qt-card-head">
+            <h2>{% translate "Items to return" %}</h2>
+            <span class="qt-muted">{% translate "Enter how many of each item come back. Leave 0 for items that stay." %}</span>
+        </div>
+
+        <div class="qt-table-wrap">
+            <table class="qt-table">
+                <thead>
+                    <tr>
+                        <th>{% translate "Product" %}</th>
+                        <th class="num">{% if kind == "sale" %}{% translate "Sold" %}{% else %}{% translate "Bought" %}{% endif %}</th>
+                        <th class="num">{% translate "Already returned" %}</th>
+                        <th class="num">{% translate "Rate (₹)" %}</th>
+                        <th class="num">GST</th>
+                        <th class="num">{% translate "Return now" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for line in lines %}
+                    <tr>
+                        <td>
+                            <div class="qt-strong">{{ line.item.product.product_name }}</div>
+                            {% if line.item.batch %}<div class="qt-muted">{% translate "Batch" %} {{ line.item.batch.batch_number }} · {% translate "Exp" %} {{ line.item.batch.expiry_date|date:"m/Y" }}</div>{% endif %}
+                            {% if kind == "purchase" and line.item.free_quantity %}<div class="qt-muted">+ {{ line.item.free_quantity|qty }} {% translate "free (not returnable)" %}</div>{% endif %}
+                        </td>
+                        <td class="num">{{ line.sold|qty_unit:line.item.unit.short_name }}</td>
+                        <td class="num">{{ line.returned|qty }}</td>
+                        <td class="num">{% if kind == "sale" %}{{ line.item.selling_price }}{% else %}{{ line.item.purchase_price }}{% endif %}</td>
+                        <td class="num">{{ line.item.gst|floatformat:"-2" }}%</td>
+                        <td class="num">
+                            {% if line.returnable > 0 %}
+                                <input type="number" class="qt-input" name="return_qty_{{ line.item.id }}"
+                                       value="0" min="0" max="{{ line.returnable|qty }}"
+                                       step="{% if features.decimal_quantity %}0.001{% else %}1{% endif %}"
+                                       aria-label="Quantity of {{ line.item.product.product_name }} to return">
+                                <div class="qt-muted">{% translate "max" %} {{ line.returnable|qty }}</div>
+                            {% else %}
+                                <span class="qt-muted">{% translate "All returned" %}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="qt-card">
+        <div class="qt-grid">
+            <div class="qt-field">
+                <label for="returnReason">{% translate "Reason" %}</label>
+                <input type="text" id="returnReason" name="reason" class="qt-input" maxlength="300"
+                       placeholder="{% if kind == 'sale' %}e.g. Damaged, wrong size, not needed{% else %}e.g. Damaged, expired, wrong item{% endif %}">
+            </div>
+
+            {% if kind == "sale" %}
+            <div class="qt-field">
+                <label for="refundMode">{% translate "Money for the returned goods" %}</label>
+                <select id="refundMode" name="refund_mode" class="qt-input">
+                    {% for value, label in refund_choices %}
+                        <option value="{{ value }}" {% if value == "account" %}selected{% endif %}>{{ label|tr }}</option>
+                    {% endfor %}
+                </select>
+                <small class="qt-help">
+                    {% translate "First reduces this bill's balance due" %}{% if bill.due_amount > 0 %} (₹{{ bill.due_amount }}){% endif %}.
+                    {% translate "Anything more is paid back now, or kept as credit for the next bill." %}
+                </small>
+            </div>
+            {% else %}
+            <div class="qt-field">
+                <label>{% translate "Money for the returned goods" %}</label>
+                <p class="qt-muted">
+                    {% translate "First reduces this bill's balance due" %}{% if bill.due_amount > 0 %} (₹{{ bill.due_amount }}){% endif %}.
+                    {% translate "Anything more is a refund the supplier pays back." %}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <div class="qt-actions">
+        <a href="{% url back_url_name bill.id %}" class="export-btn">{% translate "Cancel" %}</a>
+        <button type="submit" class="export-btn primary">
+            <i class="fas fa-rotate-left"></i>
+            {% if kind == "sale" %}{% translate "Save credit note" %}{% else %}{% translate "Save debit note" %}{% endif %}
+        </button>
+    </div>
+</form>
+{% endif %}
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'jss/dashboard.js' %}"></script>
+<script>
+(function () {
+    var form = document.getElementById('returnForm');
+    if (!form) return;
+    form.addEventListener('submit', function (event) {
+        var any = Array.prototype.some.call(
+            form.querySelectorAll('input[name^="return_qty_"]'),
+            function (input) { return parseFloat(input.value) > 0; }
+        );
+        if (!any) {
+            event.preventDefault();
+            alert(gettext('Enter the quantity to return for at least one item.'));
+        }
+    });
+})();
+</script>
+{% endblock %}

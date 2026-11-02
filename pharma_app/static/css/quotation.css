@@ -1,0 +1,146 @@
+/* Quotation pages (create / detail). Uses the theme variables from base.css. */
+
+.qt-form { display: flex; flex-direction: column; gap: 16px; }
+
+.qt-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: 0 1px 3px var(--shadow);
+    margin-bottom: 16px;
+}
+
+.qt-form .qt-card { margin-bottom: 0; }
+
+.qt-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.qt-card-head h2,
+.qt-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.qt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+}
+
+.qt-grid-2 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-bottom: 16px; }
+.qt-grid-2 .qt-card { margin-bottom: 0; }
+
+.qt-field { display: flex; flex-direction: column; gap: 6px; }
+
+.qt-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.qt-field .required { color: var(--danger); }
+
+.qt-input {
+    width: 100%;
+    min-width: 0;
+    padding: 9px 11px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--input-bg);
+    color: var(--text-dark);
+    font: inherit;
+    font-size: 13px;
+}
+
+.qt-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+
+.qt-help { font-size: 11px; color: var(--text-muted); }
+
+.qt-table-wrap { overflow-x: auto; }
+
+.qt-table { width: 100%; border-collapse: collapse; min-width: 640px; }
+
+.qt-table th {
+    background: var(--table-header-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 9px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-muted);
+    text-align: left;
+}
+
+.qt-table td {
+    padding: 8px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    color: var(--text-dark);
+}
+
+.qt-table .num { text-align: right; white-space: nowrap; }
+.qt-table td.num .qt-input { text-align: right; max-width: 120px; margin-left: auto; }
+.qt-table .qt-product { min-width: 220px; }
+
+.qt-remove {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+}
+
+.qt-remove:hover { color: var(--danger); background: rgba(239, 68, 68, 0.08); }
+
+.qt-empty { font-size: 13px; color: var(--text-muted); padding: 10px 0 0; }
+.qt-empty[hidden] { display: none; }
+
+.qt-bottom {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 24px;
+    align-items: start;
+}
+
+.qt-totals { width: 100%; border-collapse: collapse; }
+.qt-totals td { padding: 6px 0; color: var(--text-dark); }
+.qt-totals td:last-child { text-align: right; font-weight: 600; }
+.qt-totals .grand td { border-top: 2px solid var(--text-dark); padding-top: 10px; font-size: 16px; font-weight: 800; }
+.qt-totals-right { max-width: 320px; margin: 16px 0 0 auto; }
+
+.qt-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.qt-actions form { margin: 0; }
+.qt-actions-top { justify-content: flex-start; margin-bottom: 16px; }
+.qt-spacer { flex: 1; }
+
+.qt-strong { font-weight: 600; color: var(--text-dark); }
+.qt-muted { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+@media (max-width: 768px) {
+    .qt-bottom { grid-template-columns: 1fr; }
+    .qt-actions { justify-content: stretch; }
+    .qt-actions .export-btn { flex: 1; justify-content: center; }
+    .qt-spacer { display: none; }
+}
+
+/* Supplier products page */
+.supplier-link-form { margin: 0 0 16px; }
+.supplier-link-form select[multiple] { min-height: 120px; }
+.supplier-link-tip { margin: 0 0 12px; font-size: 13px; }

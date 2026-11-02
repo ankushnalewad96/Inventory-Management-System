@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% load i18n i18n_extras %}
 {% load static %}
-{% block title %}Add Product - My Django Site{% endblock %}
+{% block title %}{% translate "Add Product" %} - {{ app_name }}{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
@@ -9,8 +10,12 @@
 {% endblock %}
 
 {% block page_title %}
-    <h1>Add New Product</h1>
-    <p class="page-subtitle">Fill in the details below to add a product to your inventory</p>
+    <h1>{% translate "Add New Product" %}</h1>
+    {% if is_admin %}
+    <p class="page-subtitle">{% translate "Fill in the details below to add a product to your inventory" %}</p>
+    {% else %}
+    <p class="page-subtitle">{% blocktranslate with shop=own_retailer.shop_name %}Fill in the details below to add a product to {{ shop }}{% endblocktranslate %}</p>
+    {% endif %}
 {% endblock %}
 
 {% block body %}
@@ -29,20 +34,21 @@
                         </svg>
                     </div>
                     <div>
-                        <div class="section-title">Basic Information</div>
-                        <div class="section-desc">Product identification and classification details</div>
+                        <div class="section-title">{% translate "Basic Information" %}</div>
+                        <div class="section-desc">{% translate "Product identification and classification details" %}</div>
                     </div>
                 </div>
 
                 <div class="form-grid">
-                    <!-- Retailer -->
+                    {% if is_admin %}
+                    <!-- Retailer (admin only; a retailer always adds to their own shop) -->
                     <div class="form-group">
                         <label class="form-label" for="retailer">
-                            Retailer <span class="required">*</span>
+                            {% translate "Retailer" %} <span class="required">*</span>
                         </label>
-                        <div class="select-wrapper"> 
+                        <div class="select-wrapper">
                             <select id="retailer" name="retailer" class="form-select">
-                                <option value="" disabled selected>Select retailer</option>
+                                <option value="" disabled selected>{% translate "Select retailer" %}</option>
                                 {% for retailer in retailers %}
                                     <option value="{{retailer.id}}">{{ retailer }}</option>
                                 {% endfor %}
@@ -52,74 +58,77 @@
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span class="error-text">Please select a retailer</span>
+                            <span class="error-text">{% translate "Please select a retailer" %}</span>
                         </span>
                     </div>
+                    {% else %}
+                    <input type="hidden" id="retailer" name="retailer" value="{{ own_retailer.id }}">
+                    {% endif %}
                     <!-- Product Name -->
                     <div class="form-group span-2">
                         <label class="form-label" for="product_name">
-                            Product Name <span class="required">*</span>
+                            {% translate "Product Name" %} <span class="required">*</span>
                         </label>
                         <input 
                             type="text" 
                             id="product_name" 
                             name="product_name"
                             class="form-input" 
-                            placeholder="e.g., Tata Salt, Aashirvaad Atta 5kg"
+                            placeholder="{% translate "e.g., Tata Salt, Aashirvaad Atta 5kg" %}"
                             maxlength="200"
                         >
                         <span class="error-message" id="product_name_error">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span class="error-text">Product name is required</span>
+                            <span class="error-text">{% translate "Product name is required" %}</span>
                         </span>
                     </div>
 
                     <!-- Barcode -->
                     <div class="form-group">
-                        <label class="form-label" for="barcode">Barcode</label>
+                        <label class="form-label" for="barcode">{% translate "Barcode" %}</label>
                         <input 
                             type="text" 
                             id="barcode" 
                             name="barcode"
                             class="form-input" 
-                            placeholder="Scan or enter barcode"
+                            placeholder="{% translate "Scan or enter barcode" %}"
                             maxlength="100"
                         >
                         <span class="error-message" id="barcode_error">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span class="error-text">Invalid barcode format</span>
+                            <span class="error-text">{% translate "Invalid barcode format" %}</span>
                         </span>
                     </div>
 
                     <!-- HSN Code -->
                     <div class="form-group">
                         <label class="form-label" for="hsn_code">
-                            HSN Code <span class="required">*</span>
+                            {% translate "HSN Code" %} <span class="required" data-rule="hsn_required">*</span>
                         </label>
                         <input 
                             type="text" 
                             id="hsn_code" 
                             name="hsn_code"
                             class="form-input" 
-                            placeholder="e.g., 2106"
+                            placeholder="{% translate "e.g., 2106" %}"
                             maxlength="20"
                         >
                         <span class="error-message" id="hsn_code_error">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span class="error-text">HSN code is required</span>
+                            <span class="error-text">{% translate "HSN code is required" %}</span>
                         </span>
                     </div>
 
                     <!-- Brand -->
                     <div class="form-group">
                         <label class="form-label" for="brand">
-                            Brand <span class="required">*</span>
+                            {% translate "Brand" %} <span class="required">*</span>
                         </label>
                         <div class="select-wrapper">
                             <select
@@ -128,13 +137,13 @@
                                 class="form-select"
                                 onchange="toggleOtherInput(this, 'brand_other_wrapper')"
                             >
-                                <option value="" disabled selected>Select brand</option>
+                                <option value="" disabled selected>{% translate "Select brand" %}</option>
 
                                 {% for brand in brands %}
                                     <option value="{{ brand.id }}" data-retailer="{{ brand.retailer_id }}">{{ brand }}</option>
                                 {% endfor %}
 
-                                <option value="other">➕ Other (Add New)</option>
+                                <option value="other">{% translate "➕ Other (Add New)" %}</option>
                             </select>
                         </div>
                         <!-- New Input Field for Other Brand -->
@@ -148,67 +157,137 @@
                                 id="brand_other"
                                 name="brand_other"
                                 class="form-input other-input"
-                                placeholder="Enter new brand name"
+                                placeholder="{% translate "Enter new brand name" %}"
                             >
                         </div>
                         <span class="error-message" id="brand_error">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span class="error-text">Please select a brand</span>
+                            <span class="error-text">{% translate "Please select a brand" %}</span>
                         </span>
                     </div>
 
                     <!-- Category -->
                     <div class="form-group">
                         <label class="form-label" for="category">
-                            Category <span class="required">*</span>
+                            {% translate "Category" %} <span class="required">*</span>
                         </label>
                         <div class="select-wrapper">
                             <select id="category" name="category" class="form-select" onchange="toggleOtherInput(this, 'category_other_wrapper')">
-                                <option value="" disabled selected>Select category</option>
+                                <option value="" disabled selected>{% translate "Select category" %}</option>
                                 {% for category in categories %}
                                     <option value="{{category.id}}" data-retailer="{{ category.retailer_id }}">{{ category }}</option>
                                 {% endfor %}
-                                <option value="other">➕ Other (Add New)</option>
+                                <option value="other">{% translate "➕ Other (Add New)" %}</option>
                             </select>
                         </div>
                         <!-- New Input Field for Other Category -->
                         <div id="category_other_wrapper" class="other-input-wrapper" style="display: none; margin-top: 10px;">
-                            <input type="text" id="category_other" name="category_other" class="form-input other-input" placeholder="Enter new category name">
+                            <input type="text" id="category_other" name="category_other" class="form-input other-input" placeholder="{% translate "Enter new category name" %}">
                         </div>
                         <span class="error-message" id="category_error">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span class="error-text">Please select a category</span>
+                            <span class="error-text">{% translate "Please select a category" %}</span>
                         </span>
                     </div>
 
                     <!-- Unit -->
                     <div class="form-group">
                         <label class="form-label" for="unit">
-                            Unit <span class="required">*</span>
+                            {% translate "Unit" %} <span class="required">*</span>
                         </label>
                         <div class="select-wrapper">
                             <select id="unit" name="unit" class="form-select" onchange="toggleOtherInput(this, 'unit_other_wrapper')">
-                                <option value="" disabled selected>Select unit</option>
+                                <option value="" disabled selected>{% translate "Select unit" %}</option>
                                 {% for unit in units %}
                                     <option value="{{unit.id}}">{{ unit }}</option>
                                 {% endfor %}
-                                <option value="other">➕ Other (Add New)</option>
+                                <option value="other">{% translate "➕ Other (Add New)" %}</option>
                             </select>
                         </div>
                         <!-- New Input Field for Other Unit -->
                         <div id="unit_other_wrapper" class="other-input-wrapper" style="display: none; margin-top: 10px;">
-                            <input type="text" id="unit_other" name="unit_other" class="form-input other-input" placeholder="Enter new unit (e.g., dozen, pack)">
+                            <input type="text" id="unit_other" name="unit_other" class="form-input other-input" placeholder="{% translate "Enter new unit (e.g., dozen, pack)" %}">
                         </div>
                         <span class="error-message" id="unit_error">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span class="error-text">Please select a unit</span>
+                            <span class="error-text">{% translate "Please select a unit" %}</span>
                         </span>
+                        <small class="field-help">{% translate "Stock and selling unit (e.g. pc, tablet, metre)." %}</small>
+                    </div>
+
+                    <!-- Purchase unit + conversion (features.unit_conversion) -->
+                    <div class="form-group span-2 conversion-group" data-feature="unit_conversion"{% if not features.unit_conversion %} hidden{% endif %}>
+                        <label class="form-label" for="purchase_unit">
+                            {% translate "Bought in" %} <span class="optional-note">{% translate "(optional)" %}</span>
+                        </label>
+                        <div class="conversion-row">
+                            <span class="conversion-text">1</span>
+                            <div class="select-wrapper">
+                                <select id="purchase_unit" name="purchase_unit" class="form-select">
+                                    <option value="">{% translate "Same as selling unit" %}</option>
+                                    {% for unit in units %}
+                                        <option value="{{ unit.id }}">{{ unit }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <span class="conversion-text">=</span>
+                            <input type="number" id="conversion_factor" name="conversion_factor" class="form-input conversion-factor"
+                                   placeholder="{% translate "e.g. 100" %}" min="1" step="{% if features.decimal_quantity %}0.001{% else %}1{% endif %}">
+                            <span class="conversion-text" id="conversionBaseUnit">{% translate "selling units" %}</span>
+                        </div>
+                        <span class="error-message" id="conversion_factor_error">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span class="error-text">{% translate "Enter how many selling units are in one purchase unit" %}</span>
+                        </span>
+                        <small class="field-help">{% translate "E.g. bought per Box, sold per pc: 1 Box = 100 pc. Prices below are per selling unit." %}</small>
+                    </div>
+
+                    <!-- Specification (features.product_specification) -->
+                    <div class="form-group span-2" data-feature="product_specification"{% if not features.product_specification %} hidden{% endif %}>
+                        <label class="form-label" for="specification">
+                            {% translate "Specification" %} <span class="optional-note">{% translate "(optional)" %}</span>
+                        </label>
+                        <input type="text" id="specification" name="specification" class="form-input"
+                               placeholder="{% translate "e.g., 1.5 sq mm, FR, 90 m coil" %}" maxlength="255">
+                        <small class="field-help">{% translate "Size, gauge, grade or finish. Shown on quotations and bills." %}</small>
+                    </div>
+
+                    <!-- Drug details (features.prescription_details) -->
+                    <div class="form-group" data-feature="prescription_details"{% if not features.prescription_details %} hidden{% endif %}>
+                        <label class="form-label" for="salt_composition">
+                            {% translate "Salt / Composition" %} <span class="optional-note">{% translate "(optional)" %}</span>
+                        </label>
+                        <input type="text" id="salt_composition" name="salt_composition" class="form-input"
+                               placeholder="{% translate "e.g., Paracetamol 500mg" %}" maxlength="255">
+                        <small class="field-help">{% translate "Product search also matches the salt." %}</small>
+                    </div>
+
+                    <div class="form-group" data-feature="prescription_details"{% if not features.prescription_details %} hidden{% endif %}>
+                        <label class="form-label" for="manufacturer">
+                            {% translate "Manufacturer" %} <span class="optional-note">{% translate "(optional)" %}</span>
+                        </label>
+                        <input type="text" id="manufacturer" name="manufacturer" class="form-input"
+                               placeholder="{% translate "e.g., Cipla Ltd" %}" maxlength="150">
+                    </div>
+
+                    <div class="form-group" data-feature="prescription_details"{% if not features.prescription_details %} hidden{% endif %}>
+                        <label class="form-label" for="schedule">{% translate "Drug Schedule" %}</label>
+                        <div class="select-wrapper">
+                            <select id="schedule" name="schedule" class="form-select">
+                                {% for value, label in schedule_choices %}
+                                    <option value="{{ value }}">{{ label|tr }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <small class="field-help">{% translate "Schedule H, H1 and X sales need patient and doctor details." %}</small>
                     </div>
                 </div>
             </div>
@@ -222,8 +301,8 @@
                         </svg>
                     </div>
                     <div>
-                        <div class="section-title">Pricing Details</div>
-                        <div class="section-desc">Purchase, selling price, MRP and tax configuration</div>
+                        <div class="section-title">{% translate "Pricing Details" %}</div>
+                        <div class="section-desc">{% translate "Purchase, selling price, MRP and tax configuration" %}</div>
                     </div>
                 </div>
 
@@ -231,7 +310,7 @@
                     <!-- Purchase Price -->
                     <div class="form-group">
                         <label class="form-label" for="purchase_price">
-                            Purchase Price <span class="required">*</span>
+                            {% translate "Purchase Price" %} <span class="required">*</span>
                         </label>
                         <div class="input-wrapper">
                             <span class="input-prefix">₹</span>
@@ -249,14 +328,14 @@
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span class="error-text">Enter a valid purchase price</span>
+                            <span class="error-text">{% translate "Enter a valid purchase price" %}</span>
                         </span>
                     </div>
 
                     <!-- Selling Price -->
                     <div class="form-group">
                         <label class="form-label" for="selling_price">
-                            Selling Price <span class="required">*</span>
+                            {% translate "Selling Price" %} <span class="required">*</span>
                         </label>
                         <div class="input-wrapper">
                             <span class="input-prefix">₹</span>
@@ -274,14 +353,15 @@
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span class="error-text">Selling price must be greater than purchase price</span>
+                            <span class="error-text">{% translate "Selling price must be greater than purchase price" %}</span>
                         </span>
                     </div>
 
                     <!-- MRP -->
                     <div class="form-group">
                         <label class="form-label" for="mrp">
-                            MRP <span class="required">*</span>
+                            MRP <span class="required" data-rule="mrp_required">*</span>
+                            <span class="optional-note" data-rule-off="mrp_required">{% translate "(optional)" %}</span>
                         </label>
                         <div class="input-wrapper">
                             <span class="input-prefix">₹</span>
@@ -299,31 +379,45 @@
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span class="error-text">MRP must be greater than or equal to selling price</span>
+                            <span class="error-text">{% translate "MRP must be greater than or equal to selling price" %}</span>
                         </span>
+                    </div>
+
+                    <!-- Wholesale price (features.price_levels) -->
+                    <div class="form-group" data-feature="price_levels"{% if not features.price_levels %} hidden{% endif %}>
+                        <label class="form-label" for="wholesale_price">
+                            {% translate "Wholesale Price" %} <span class="optional-note">{% translate "(optional)" %}</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-prefix">₹</span>
+                            <input type="number" id="wholesale_price" name="wholesale_price" class="form-input"
+                                   placeholder="0.00" step="0.01" min="0">
+                        </div>
+                        <span class="error-message" id="wholesale_price_error">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span class="error-text">{% translate "Wholesale price cannot be more than the selling price" %}</span>
+                        </span>
+                        <small class="field-help">{% translate 'Charged to customers marked "Wholesale". Empty = selling price for everyone.' %}</small>
                     </div>
 
                     <!-- GST -->
                     <div class="form-group">
-                        <label class="form-label" for="gst">GST (%)</label>
-                        <div class="input-wrapper">
-                            <input 
-                                type="number" 
-                                id="gst" 
-                                name="gst"
-                                class="form-input" 
-                                placeholder="e.g., 5, 12, 18"
-                                step="0.01"
-                                min="0"
-                                max="100"
-                            >
-                            <span class="input-prefix" style="left: auto; right: 14px;">%</span>
+                        <label class="form-label" for="gst">{% translate "GST (%)" %}</label>
+                        <div class="select-wrapper">
+                            <!-- Current GST slabs (pharma_app/gst.py) -->
+                            <select id="gst" name="gst" class="form-select">
+                                {% for value, label in gst_choices %}
+                                    <option value="{{ value }}">{{ label|tr }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <span class="error-message" id="gst_error">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span class="error-text">GST must be between 0 and 100</span>
+                            <span class="error-text">{% translate "GST must be between 0 and 100" %}</span>
                         </span>
                     </div>
                 </div>
@@ -338,8 +432,8 @@
                         </svg>
                     </div>
                     <div>
-                        <div class="section-title">Stock & Availability</div>
-                        <div class="section-desc">Current inventory levels and product status</div>
+                        <div class="section-title">{% translate "Stock & Availability" %}</div>
+                        <div class="section-desc">{% translate "Current inventory levels and product status" %}</div>
                     </div>
                 </div>
 
@@ -347,44 +441,62 @@
                     <!-- Current Stock -->
                     <div class="form-group">
                         <label class="form-label" for="current_stock">
-                            Current Stock <span class="required">*</span>
+                            {% translate "Current Stock" %} <span class="required">*</span>
                         </label>
                         <input 
                             type="number" 
                             id="current_stock" 
                             name="current_stock"
                             class="form-input" 
-                            placeholder="e.g., 50"
+                            placeholder="{% translate "e.g., 50" %}"
                             min="0"
-                            step="1"
+                            step="{% if features.decimal_quantity %}0.001{% else %}1{% endif %}"
+                            data-quantity
                         >
                         <span class="error-message" id="current_stock_error">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span class="error-text">Enter a valid stock quantity</span>
+                            <span class="error-text">{% translate "Enter a valid stock quantity" %}</span>
                         </span>
+                    </div>
+
+                    <!-- Opening stock expiry (features.batch_tracking): opening
+                         stock is saved as batch "OPENING" with this expiry. -->
+                    <div class="form-group" data-feature="batch_tracking"{% if not features.batch_tracking %} hidden{% endif %}>
+                        <label class="form-label" for="opening_expiry">
+                            {% translate "Expiry of Opening Stock" %}
+                        </label>
+                        <input type="month" id="opening_expiry" name="opening_expiry" class="form-input">
+                        <span class="error-message" id="opening_expiry_error">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span class="error-text">{% translate "Expiry is required when opening stock is more than 0" %}</span>
+                        </span>
+                        <small class="field-help">{% translate 'Needed only when current stock is more than 0. Saved as batch "OPENING".' %}</small>
                     </div>
 
                     <!-- Minimum Stock -->
                     <div class="form-group">
                         <label class="form-label" for="minimum_stock">
-                            Minimum Stock <span class="required">*</span>
+                            {% translate "Minimum Stock" %} <span class="required">*</span>
                         </label>
                         <input 
                             type="number" 
                             id="minimum_stock" 
                             name="minimum_stock"
                             class="form-input" 
-                            placeholder="e.g., 10"
+                            placeholder="{% translate "e.g., 10" %}"
                             min="0"
-                            step="1"
+                            step="{% if features.decimal_quantity %}0.001{% else %}1{% endif %}"
+                            data-quantity
                         >
                         <span class="error-message" id="minimum_stock_error">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <span class="error-text">Enter a valid minimum stock level</span>
+                            <span class="error-text">{% translate "Enter a valid minimum stock level" %}</span>
                         </span>
                     </div>
 
@@ -392,12 +504,12 @@
 
                     <!-- Active Status Toggle -->
                     <div class="form-group">
-                        <label class="form-label">Product Status</label>
+                        <label class="form-label">{% translate "Product Status" %}</label>
                         <div class="toggle-group">
                             <div class="toggle-switch active" id="statusToggle" onclick="toggleStatus()"></div>
                             <div>
-                                <div class="toggle-label" id="statusLabel">Active</div>
-                                <div class="toggle-hint">Product will be visible for billing</div>
+                                <div class="toggle-label" id="statusLabel">{% translate "Active" %}</div>
+                                <div class="toggle-hint">{% translate "Product will be visible for billing" %}</div>
                             </div>
                         </div>
                         <input type="hidden" name="is_active" id="is_active" value="true">
@@ -407,12 +519,12 @@
 
             <!-- Form Actions -->
             <div class="form-actions">
-                <button type="button" class="btn btn-secondary" onclick="history.back()">Cancel</button>
+                <button type="button" class="btn btn-secondary" onclick="history.back()">{% translate "Cancel" %}</button>
                 <button type="submit" class="btn btn-primary" id="submitBtn">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                     </svg>
-                    Save Product
+                    {% translate "Save Product" %}
                 </button>
             </div>
 
@@ -424,8 +536,9 @@
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
-        <span id="toastMessage">Product saved successfully!</span>
+        <span id="toastMessage">{% translate "Product saved successfully!" %}</span>
     </div>
+    {{ shop_rules|json_script:"shopRules" }}
 {% endblock %}
 
 {% block js %}
@@ -554,7 +667,7 @@
             if (!brandOther) {
                 event.preventDefault();
 
-                alert('Please enter a new brand name.');
+                alert(gettext('Please enter a new brand name.'));
                 document.getElementById('brand_other').focus();
 
                 return;
@@ -578,7 +691,7 @@
             if (!categoryOther) {
                 event.preventDefault();
 
-                alert('Please enter a new category name.');
+                alert(gettext('Please enter a new category name.'));
                 document.getElementById('category_other').focus();
 
                 return;
@@ -602,7 +715,7 @@
             if (!unitOther) {
                 event.preventDefault();
 
-                alert('Please enter a new unit name.');
+                alert(gettext('Please enter a new unit name.'));
                 document.getElementById('unit_other').focus();
 
                 return;
@@ -700,8 +813,58 @@
             gst: document.getElementById('gst'),
             current_stock: document.getElementById('current_stock'),
             minimum_stock: document.getElementById('minimum_stock'),
+            conversion_factor: document.getElementById('conversion_factor'),
             retailer: document.getElementById('retailer')
         };
+
+        // Show the selling unit's name next to the conversion ("= 100 pc")
+        function updateConversionLabel() {
+            const label = document.getElementById('conversionBaseUnit');
+            const unitSelect = fields.unit;
+            if (!label || !unitSelect) return;
+            const option = unitSelect.options[unitSelect.selectedIndex];
+            label.textContent = option && option.value && option.value !== 'other'
+                ? option.textContent.trim()
+                : gettext('selling units');
+        }
+        if (fields.unit) fields.unit.addEventListener('change', updateConversionLabel);
+        updateConversionLabel();
+
+        // ----- Rules of the shop the product is for -----
+        // (shop_rules comes from the server; it checks them again on save)
+        const shopRules = JSON.parse(document.getElementById('shopRules').textContent || '{}');
+        const looseRules = { mrp_required: false, hsn_required: false, allow_below_cost_sale: false, decimal_quantity: true };
+
+        function currentRules() {
+            const shopId = fields.retailer ? fields.retailer.value : '';
+            return shopRules[shopId] || looseRules;
+        }
+
+        // Show the * for required fields of the chosen shop.
+        function applyRules() {
+            const rules = currentRules();
+            document.querySelectorAll('[data-quantity]').forEach(function (input) {
+                input.step = rules.decimal_quantity ? '0.001' : '1';
+            });
+            // Feature blocks (purchase unit, drug details, opening expiry)
+            // are shown only when the chosen shop has that feature.
+            document.querySelectorAll('[data-feature]').forEach(function (el) {
+                el.hidden = !rules[el.dataset.feature];
+            });
+            const factorInput = document.getElementById('conversion_factor');
+            if (factorInput) factorInput.step = rules.decimal_quantity ? '0.001' : '1';
+            document.querySelectorAll('[data-rule]').forEach(function (el) {
+                el.style.display = rules[el.dataset.rule] ? '' : 'none';
+            });
+            document.querySelectorAll('[data-rule-off]').forEach(function (el) {
+                el.style.display = rules[el.dataset.ruleOff] ? 'none' : '';
+            });
+        }
+
+        if (fields.retailer) {
+            fields.retailer.addEventListener('change', applyRules);
+        }
+        applyRules();
 
         // Toggle status
         window.toggleStatus = function() {
@@ -709,7 +872,7 @@
             const label = document.getElementById('statusLabel');
             const input = document.getElementById('is_active');
             const isActive = toggle.classList.toggle('active');
-            label.textContent = isActive ? 'Active' : 'Inactive';
+            label.textContent = isActive ? gettext('Active') : gettext('Inactive');
             input.value = isActive ? 'true' : 'false';
         };
 
@@ -753,30 +916,32 @@
             // Product Name
             const pname = fields.product_name.value.trim();
             if (!pname) {
-                showError('product_name', 'Product name is required');
+                showError('product_name', gettext('Product name is required'));
                 isValid = false;
             } else if (pname.length < 2) {
-                showError('product_name', 'Product name must be at least 2 characters');
+                showError('product_name', gettext('Product name must be at least 2 characters'));
                 isValid = false;
             }
 
             // Barcode (optional, but if filled must be valid)
             const barcode = fields.barcode.value.trim();
             if (barcode && barcode.length > 100) {
-                showError('barcode', 'Barcode must not exceed 100 characters');
+                showError('barcode', gettext('Barcode must not exceed 100 characters'));
                 isValid = false;
             }
 
-            // HSN Code
-            if (!fields.hsn_code.value.trim()) {
-                showError('hsn_code', 'HSN code is required');
+            const rules = currentRules();
+
+            // HSN Code (required only when the shop's features say so)
+            if (rules.hsn_required && !fields.hsn_code.value.trim()) {
+                showError('hsn_code', gettext('HSN code is required'));
                 isValid = false;
             }
 
             // Dropdowns
             ['category', 'brand', 'unit', 'retailer'].forEach(field => {
                 if (!fields[field].value) {
-                    showError(field, 'Please select a ' + field.replace('_', ' '));
+                    showError(field, gettext('Please choose an option'));
                     isValid = false;
                 }
             });
@@ -787,44 +952,88 @@
             const mrp = parseFloat(fields.mrp.value);
 
             if (isNaN(pPrice) || pPrice <= 0) {
-                showError('purchase_price', 'Enter a valid purchase price greater than 0');
+                showError('purchase_price', gettext('Enter a valid purchase price greater than 0'));
                 isValid = false;
             }
 
             if (isNaN(sPrice) || sPrice <= 0) {
-                showError('selling_price', 'Enter a valid selling price greater than 0');
+                showError('selling_price', gettext('Enter a valid selling price greater than 0'));
                 isValid = false;
-            } else if (sPrice < pPrice) {
-                showError('selling_price', 'Selling price must be greater than or equal to purchase price');
+            } else if (sPrice < pPrice && !rules.allow_below_cost_sale) {
+                showError('selling_price', gettext('Selling price must be greater than or equal to purchase price'));
                 isValid = false;
             }
 
-            if (isNaN(mrp) || mrp <= 0) {
-                showError('mrp', 'Enter a valid MRP greater than 0');
+            // MRP: required only when the shop's features say so; when it
+            // is empty there is nothing to compare the selling price with.
+            const mrpEmpty = !fields.mrp.value.trim();
+            if (mrpEmpty) {
+                if (rules.mrp_required) {
+                    showError('mrp', gettext('MRP is required'));
+                    isValid = false;
+                }
+            } else if (isNaN(mrp) || mrp <= 0) {
+                showError('mrp', gettext('Enter a valid MRP greater than 0'));
                 isValid = false;
             } else if (mrp < sPrice) {
-                showError('mrp', 'MRP must be greater than or equal to selling price');
-                isValid = false;
-            }
-
-            // GST
-            const gst = parseFloat(fields.gst.value);
-            if (fields.gst.value && (isNaN(gst) || gst < 0 || gst > 100)) {
-                showError('gst', 'GST must be between 0 and 100');
+                showError('mrp', gettext('MRP must be greater than or equal to selling price'));
                 isValid = false;
             }
 
             // Stock
-            const cStock = parseInt(fields.current_stock.value);
-            const mStock = parseInt(fields.minimum_stock.value);
+            // Purchase unit + conversion (only checked when shown)
+            const purchaseUnit = document.getElementById('purchase_unit');
+            const factorField = document.getElementById('conversion_factor');
+            if (rules.unit_conversion && purchaseUnit && purchaseUnit.value) {
+                const factor = parseFloat(factorField.value);
+                if (purchaseUnit.value === fields.unit.value) {
+                    showError('conversion_factor', gettext('Purchase unit must be different from the selling unit'));
+                    isValid = false;
+                } else if (isNaN(factor) || factor <= 1) {
+                    showError('conversion_factor', gettext('Conversion must be more than 1 (e.g. 1 Box = 100 pc)'));
+                    isValid = false;
+                } else if (!rules.decimal_quantity && !Number.isInteger(factor)) {
+                    showError('conversion_factor', gettext('Conversion must be a whole number for this shop'));
+                    isValid = false;
+                }
+            }
+
+            // Stock may be fractional (2.5 kg) only for shops that sell loose quantities
+            const cStock = parseFloat(fields.current_stock.value);
+            const mStock = parseFloat(fields.minimum_stock.value);
+            if (!rules.decimal_quantity) {
+                if (!isNaN(cStock) && !Number.isInteger(cStock)) { showError('current_stock', gettext('Current stock must be a whole number for this shop')); isValid = false; }
+                if (!isNaN(mStock) && !Number.isInteger(mStock)) { showError('minimum_stock', gettext('Minimum stock must be a whole number for this shop')); isValid = false; }
+            }
 
             if (isNaN(cStock) || cStock < 0) {
-                showError('current_stock', 'Current stock must be 0 or greater');
+                showError('current_stock', gettext('Current stock must be 0 or greater'));
                 isValid = false;
             }
 
             if (isNaN(mStock) || mStock < 0) {
-                showError('minimum_stock', 'Minimum stock must be 0 or greater');
+                showError('minimum_stock', gettext('Minimum stock must be 0 or greater'));
+                isValid = false;
+            }
+
+            // Wholesale price (price-level shops): not above the selling price
+            const wholesaleField = document.getElementById('wholesale_price');
+            if (rules.price_levels && wholesaleField && wholesaleField.value) {
+                const wPrice = parseFloat(wholesaleField.value);
+                const sellPrice = parseFloat(fields.selling_price.value);
+                if (isNaN(wPrice) || wPrice <= 0) {
+                    showError('wholesale_price', gettext('Enter a valid wholesale price'));
+                    isValid = false;
+                } else if (!isNaN(sellPrice) && wPrice > sellPrice) {
+                    showError('wholesale_price', gettext('Wholesale price cannot be more than the selling price'));
+                    isValid = false;
+                }
+            }
+
+            // Batch-tracked shops: opening stock needs an expiry
+            const openingExpiry = document.getElementById('opening_expiry');
+            if (rules.batch_tracking && cStock > 0 && openingExpiry && !openingExpiry.value) {
+                showError('opening_expiry', gettext('Expiry is required when opening stock is more than 0'));
                 isValid = false;
             }
 
@@ -858,7 +1067,7 @@
                 Saving...
             `;
 
-            showToast('Product saved successfully! Redirecting...', false);
+            showToast(gettext('Product saved successfully! Redirecting...'), false);
 
             // Submit to backend after brief delay
             setTimeout(() => {

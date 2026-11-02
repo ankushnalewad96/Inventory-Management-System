@@ -1,0 +1,432 @@
+{% load i18n i18n_extras %}{% load qty %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% translate "Invoice" %} {{ sale.invoice_number }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #1e293b;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --soft: #f8fafc;
+            --primary: #2563eb;
+            --success: #059669;
+            --danger: #dc2626;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: "Inter", "Segoe UI", Arial, sans-serif;
+            background: #e2e8f0;
+            color: var(--ink);
+            font-size: 13px;
+            line-height: 1.5;
+            padding: 24px 16px 48px;
+        }
+
+        /* Toolbar (not printed) */
+        .toolbar {
+            max-width: 820px;
+            margin: 0 auto 16px;
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .toolbar .group { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .tool-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 16px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: var(--ink);
+            font: inherit;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .tool-btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .tool-btn:disabled { opacity: 0.6; cursor: wait; }
+
+        /* Invoice sheet */
+        .invoice {
+            max-width: 820px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+            padding: 36px 40px;
+        }
+
+        .inv-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 24px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--ink);
+        }
+
+        .shop-name { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
+        .shop-meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+        .inv-title { text-align: right; }
+        .inv-title h1 { font-size: 20px; letter-spacing: 2px; color: var(--primary); }
+        .inv-title .meta { font-size: 12px; color: var(--muted); margin-top: 6px; }
+        .inv-title .meta strong { color: var(--ink); }
+
+        .status {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status.paid { background: #d1fae5; color: var(--success); }
+        .status.partial { background: #fef3c7; color: #b45309; }
+        .status.unpaid { background: #fee2e2; color: var(--danger); }
+
+        .parties {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin: 22px 0;
+        }
+
+        .party-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .party-name { font-size: 15px; font-weight: 700; }
+        .party-meta { color: var(--muted); font-size: 12px; }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        .items th {
+            background: var(--soft);
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+            padding: 9px 10px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            text-align: left;
+        }
+
+        .items td {
+            padding: 10px;
+            border-bottom: 1px solid var(--line);
+            vertical-align: top;
+        }
+
+        .items .num { text-align: right; white-space: nowrap; }
+        .items .item-name { font-weight: 600; }
+        .items .item-unit { font-size: 11px; color: var(--muted); }
+
+        .bottom {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        .notes { font-size: 12px; color: var(--muted); }
+        .notes h4 {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--ink);
+            margin-bottom: 4px;
+        }
+        .notes p + h4 { margin-top: 14px; }
+
+        .gst-summary { margin-top: 18px; }
+
+        .totals td { padding: 6px 0; }
+        .totals td:last-child { text-align: right; font-weight: 600; }
+        .totals .grand td {
+            border-top: 2px solid var(--ink);
+            padding-top: 10px;
+            font-size: 16px;
+            font-weight: 800;
+        }
+        .totals .paid td:last-child { color: var(--success); }
+        .totals .due td:last-child { color: var(--danger); }
+
+        .inv-footer {
+            margin-top: 32px;
+            padding-top: 14px;
+            border-top: 1px dashed var(--line);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .signature { text-align: right; }
+        .signature .line {
+            width: 180px;
+            border-top: 1px solid var(--ink);
+            margin: 36px 0 4px auto;
+        }
+
+        @media (max-width: 640px) {
+            .invoice { padding: 22px 18px; }
+            .inv-header, .inv-footer { flex-direction: column; align-items: flex-start; }
+            .inv-title { text-align: left; }
+            .parties, .bottom { grid-template-columns: 1fr; }
+            .items-wrap { overflow-x: auto; }
+        }
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .toolbar { display: none; }
+            .invoice { box-shadow: none; border-radius: 0; max-width: none; padding: 0; }
+            @page { size: A4; margin: 14mm; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <div class="group">
+            <a href="{% url 'sale_detail' sale.id %}" class="tool-btn"><i class="fas fa-arrow-left"></i> {% translate "Back to sale" %}</a>
+        </div>
+        <div class="group">
+            <button type="button" class="tool-btn" onclick="window.print()"><i class="fas fa-print"></i> {% translate "Print" %}</button>
+            <button type="button" class="tool-btn primary" id="downloadPdfBtn"><i class="fas fa-download"></i> {% translate "Download PDF" %}</button>
+        </div>
+    </div>
+
+    <div class="invoice" id="invoiceSheet">
+        <div class="inv-header">
+            <div>
+                <div class="shop-name">{{ sale.retailer.shop_name }}</div>
+                <div class="shop-meta">
+                    {{ sale.retailer.address }}<br>
+                    {{ sale.retailer.city }}, {{ sale.retailer.state }} - {{ sale.retailer.pincode }}<br>
+                    {% translate "Phone:" %} {{ sale.retailer.mobile }}{% if sale.retailer.email %} &nbsp;|&nbsp; {{ sale.retailer.email }}{% endif %}
+                    {% if sale.retailer.gst_number %}<br>GSTIN: <strong>{{ sale.retailer.gst_number }}</strong>{% endif %}
+                    {% if sale_features.drug_licence and sale.retailer.drug_licence_number %}
+                        <br>{% translate "D.L. No:" %} <strong>{{ sale.retailer.drug_licence_number }}</strong>{% if sale.retailer.drug_licence_number_2 %}, <strong>{{ sale.retailer.drug_licence_number_2 }}</strong>{% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="inv-title">
+                <h1>{% translate "TAX INVOICE" %}</h1>
+                <div class="meta">
+                    {% translate "Invoice No:" %} <strong>{{ sale.invoice_number }}</strong><br>
+                    {% translate "Date:" %} <strong>{{ sale.invoice_date|date:"d M Y" }}</strong>
+                </div>
+                <span class="status {{ sale.payment_status|lower }}">{{ sale.payment_status|tr }}</span>
+            </div>
+        </div>
+
+        <div class="parties">
+            <div>
+                <div class="party-label">{% translate "Bill To" %}</div>
+                <div class="party-name">{{ sale.customer.customer_name }}</div>
+                <div class="party-meta">
+                    {% translate "Mobile:" %} {{ sale.customer.mobile }}
+                    {% if sale.customer.email %}<br>{{ sale.customer.email }}{% endif %}
+                    {% if sale.customer.address %}<br>{{ sale.customer.address }}{% endif %}
+                    {% if sale.customer.gst_number %}<br>GSTIN: {{ sale.customer.gst_number }}{% endif %}
+                </div>
+            </div>
+            <div>
+                <div class="party-label">{% translate "Payment" %}</div>
+                <div class="party-meta">
+                    {% translate "Type:" %} <strong>{{ sale.get_payment_type_display|tr|default:"—" }}</strong><br>
+                    {% translate "Status:" %} <strong>{{ sale.payment_status|tr }}</strong>
+                </div>
+                {% if sale_features.prescription_details and sale.patient_name or sale_features.prescription_details and sale.doctor_name %}
+                    <div class="party-label" style="margin-top:12px;">{% translate "Prescription" %}</div>
+                    <div class="party-meta">
+                        {% if sale.patient_name %}{% translate "Patient:" %} <strong>{{ sale.patient_name }}</strong><br>{% endif %}
+                        {% if sale.doctor_name %}{% translate "Doctor:" %} <strong>{{ sale.doctor_name }}</strong>{% endif %}
+                        {% if sale.prescription_note %}<br>{{ sale.prescription_note }}{% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="items-wrap">
+            <table class="items">
+                <thead>
+                    <tr>
+                        <th style="width:32px;">#</th>
+                        <th>{% translate "Item" %}</th>
+                        {% if sale_features.batch_tracking %}
+                        <th>{% translate "Batch" %}</th>
+                        <th>{% translate "Expiry" %}</th>
+                        {% endif %}
+                        <th class="num">{% translate "Qty" %}</th>
+                        <th class="num">{% translate "Rate" %}</th>
+                        <th class="num">MRP</th>
+                        <th class="num">{% translate "Disc." %}</th>
+                        <th class="num">GST</th>
+                        <th class="num">{% translate "Amount" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <div class="item-name">{{ item.product.product_name }}</div>
+                            <div class="item-unit">{{ item.unit.short_name }}{% if item.product.hsn_code %} · {% translate "HSN" %} {{ item.product.hsn_code }}{% endif %}{% if sale_features.prescription_details and item.product.needs_prescription %} · {% translate "Sch." %} {{ item.product.schedule }}{% endif %}{% if sale_features.product_specification and item.product.specification %} · {{ item.product.specification }}{% endif %}</div>
+                        </td>
+                        {% if sale_features.batch_tracking %}
+                        <td>{{ item.batch.batch_number|default:"—" }}</td>
+                        <td>{% if item.batch %}{{ item.batch.expiry_date|date:"m/Y" }}{% else %}—{% endif %}</td>
+                        {% endif %}
+                        <td class="num">{{ item.quantity|qty }}</td>
+                        <td class="num">₹{{ item.selling_price }}</td>
+                        <td class="num">{% if item.mrp is not None %}₹{{ item.mrp }}{% else %}—{% endif %}</td>
+                        <td class="num">₹{{ item.discount }}</td>
+                        <td class="num">{{ item.gst|floatformat:"-2" }}%</td>
+                        <td class="num"><strong>₹{{ item.amount }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bottom">
+            <div class="notes">
+                {% if sale.remarks %}
+                    <h4>{% translate "Remarks" %}</h4>
+                    <p>{{ sale.remarks }}</p>
+                {% endif %}
+                <h4>{% translate "Terms" %}</h4>
+                <p>{% translate "Goods once sold will not be taken back or exchanged. Subject to local jurisdiction." %}</p>
+            </div>
+
+            <table class="totals">
+                <tr><td>{% translate "Subtotal" %}</td><td>₹{{ sale.subtotal }}</td></tr>
+                <tr><td>{% translate "Discount" %}</td><td>- ₹{{ sale.discount }}</td></tr>
+                {% if sale.tax_type == "inter" %}
+                    <tr><td>IGST</td><td>+ ₹{{ sale.igst }}</td></tr>
+                {% elif sale.tax_type == "intra" %}
+                    <tr><td>CGST</td><td>+ ₹{{ sale.cgst }}</td></tr>
+                    <tr><td>SGST</td><td>+ ₹{{ sale.sgst }}</td></tr>
+                {% else %}
+                    <tr><td>GST</td><td>+ ₹{{ sale.gst }}</td></tr>
+                {% endif %}
+                <tr class="grand"><td>{% translate "Grand Total" %}</td><td>₹{{ sale.grand_total }}</td></tr>
+                <tr class="paid"><td>{% translate "Paid" %}</td><td>₹{{ sale.paid_amount }}</td></tr>
+                {% if sale.returned_amount > 0 %}
+                    <tr class="paid"><td>{% translate "Less: goods returned" %}</td><td>₹{{ sale.returned_amount }}</td></tr>
+                {% endif %}
+                <tr class="due"><td>{% translate "Balance Due" %}</td><td>₹{{ sale.due_amount }}</td></tr>
+            </table>
+        </div>
+
+        {% if sale.tax_type and gst_summary %}
+        {# GST split per rate: CGST + SGST (same state) or IGST (other state) #}
+        <table class="items gst-summary">
+            <thead>
+                <tr>
+                    <th>{% translate "GST rate" %}</th>
+                    <th class="num">{% translate "Taxable value" %}</th>
+                    {% if sale.tax_type == "inter" %}
+                        <th class="num">IGST</th>
+                    {% else %}
+                        <th class="num">CGST</th>
+                        <th class="num">SGST</th>
+                    {% endif %}
+                    <th class="num">{% translate "Total tax" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in gst_summary %}
+                <tr>
+                    <td>{{ row.rate|floatformat:"-2" }}%{% if sale.tax_type == "intra" %} <span class="item-unit">({{ row.rate|floatformat:"-2" }}% = {% translate "half + half" %})</span>{% endif %}</td>
+                    <td class="num">₹{{ row.taxable }}</td>
+                    {% if sale.tax_type == "inter" %}
+                        <td class="num">₹{{ row.igst }}</td>
+                    {% else %}
+                        <td class="num">₹{{ row.cgst }}</td>
+                        <td class="num">₹{{ row.sgst }}</td>
+                    {% endif %}
+                    <td class="num">₹{{ row.tax }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="item-unit" style="margin-top:6px;">
+            {% if sale.tax_type == "inter" %}{% translate "Inter-state supply: IGST charged." %}{% else %}{% translate "Intra-state supply: CGST + SGST charged." %}{% endif %}
+            {% if sale.customer.state %}{% translate "Place of supply:" %} {{ sale.customer.state_display }}.{% endif %}
+        </p>
+        {% endif %}
+
+        <div class="inv-footer">
+            <div>{% translate "Thank you for your business!" %}<br>{% translate "This is a computer-generated invoice." %}</div>
+            <div class="signature">
+                <div class="line"></div>
+                {% translate "For" %} {{ sale.retailer.shop_name }}
+            </div>
+        </div>
+    </div>
+
+    {{ sale.invoice_number|json_script:"invoiceNumber" }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        var button = document.getElementById('downloadPdfBtn');
+        var fileName = JSON.parse(document.getElementById('invoiceNumber').textContent) + '.pdf';
+
+        function downloadPdf() {
+            // Fall back to the browser's "Save as PDF" if the library didn't load.
+            if (typeof window.html2pdf !== 'function') {
+                window.print();
+                return;
+            }
+
+            button.disabled = true;
+
+            window.html2pdf()
+                .set({
+                    margin: 10,
+                    filename: fileName,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                })
+                .from(document.getElementById('invoiceSheet'))
+                .save()
+                .then(function () { button.disabled = false; })
+                .catch(function () { button.disabled = false; window.print(); });
+        }
+
+        button.addEventListener('click', downloadPdf);
+
+        {% if auto_download %}
+        window.addEventListener('load', downloadPdf);
+        {% endif %}
+    })();
+    </script>
+</body>
+</html>

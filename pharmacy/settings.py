@@ -20,13 +20,34 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-073$3961*0+*w$)s+h%ma00u#qx=rt(0p)l1p5sk37#7+!w(a('
+# Secrets come from environment variables on a real server:
+#     DJANGO_SECRET_KEY=<long random text>   DJANGO_DEBUG=0
+# The fallback key below is only for running on your own computer.
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-local-development-only-change-me",
+)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    # ngrok demo links
+    ".ngrok-free.app",
+    ".ngrok-free.dev",
+    ".ngrok.app",
+    # Cloudflare quick tunnel demo links
+    ".trycloudflare.com",
+]
+
+# Needed for login/forms to work through the tunnel https link (else 403 CSRF error).
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.ngrok-free.app",
+    "https://*.ngrok-free.dev",
+    "https://*.ngrok.app",
+    "https://*.trycloudflare.com",
+]
 
 
 # Application definition
@@ -38,16 +59,21 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'pharma_app',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    # Page language: the user's choice (language menu), else the browser's.
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    # Hides switched-off shop types and signs out their owners.
+    'pharma_app.shop_services.ShopServiceMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -63,6 +89,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'pharma_app.context_processors.shop_features',
+                'pharma_app.context_processors.app_branding',
             ],
         },
     },
@@ -104,7 +132,20 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en'
+
+# Languages a user can pick from the language menu. Translations live in
+# pharma_app/locale/<code>/LC_MESSAGES/django.po; after editing them run
+#     python manage.py build_translations
+LANGUAGES = [
+    ('en', 'English'),
+    ('hi', 'हिन्दी'),
+    ('mr', 'मराठी'),
+]
+
+LOCALE_PATHS = [
+    BASE_DIR / 'pharma_app' / 'locale',
+]
 
 TIME_ZONE = 'UTC'
 
@@ -116,13 +157,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-# STATIC_URL = 'static/'
+# App files live in pharma_app/static; `collectstatic` copies them here.
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 AUTH_USER_MODEL = "pharma_app.CustomUser"
+
+# Name shown to users (page titles, sidebar, login page). Change it here only.
+APP_DISPLAY_NAME = "DukaanPro"
+
+# Where @login_required sends logged-out users (and where logout lands).
+LOGIN_URL = "/user-login/"
+LOGIN_REDIRECT_URL = "/"
 
 
 
@@ -148,6 +194,7 @@ LOGGING = {
             "filename": os.path.join(LOG_DIR, "app.log"),
             "maxBytes": 5 * 1024 * 1024,   # 5 MB per file
             "backupCount": 5,               # keep last 5 files (25 MB max)
+            "encoding": "utf-8",            # messages contain ₹; Windows' default codepage can't write it
             "formatter": "verbose",
         },
         "console": {
@@ -158,7 +205,7 @@ LOGGING = {
     },
 
     "loggers": {
-        "pharma_app": {   # replace with your actual app name
+        "pharma_app": {
             "handlers": ["file", "console"],
             "level": "INFO",
             "propagate": False,

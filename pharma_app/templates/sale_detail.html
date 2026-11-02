@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+{% load i18n i18n_extras %}
+{% load static %}{% load qty %}
+{% block title %}{% translate "Sale" %} {{ sale.invoice_number }} - {{ app_name }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/purchase_detail.css' %}">
+<link rel="stylesheet" href="{% static 'css/list_pages.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <div class="page-title-row">
+        <a href="{% url 'sales_list' %}" class="page-back-btn" title="{% translate "Back to sales" %}" aria-label="{% translate "Back to sales" %}">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            <div class="bill-meta">
+                <h1>{% translate "Sale Details" %}</h1>
+                <span class="bill-number"># {{ sale.invoice_number }}</span>
+                {% if sale.payment_status == "Paid" %}
+                    <span class="status-badge status-paid"><span class="status-dot"></span> {% translate "Paid" %}</span>
+                {% elif sale.payment_status == "Partial" %}
+                    <span class="status-badge status-partial"><span class="status-dot"></span> {% translate "Partial" %}</span>
+                {% else %}
+                    <span class="status-badge status-unpaid"><span class="status-dot"></span> {% translate "Unpaid" %}</span>
+                {% endif %}
+            </div>
+            <p>{% translate "Invoice Date:" %} {{ sale.invoice_date|date:"d M Y" }} &nbsp;|&nbsp; {% translate "Created:" %} {{ sale.created_at|date:"d M Y, h:i A" }}</p>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+
+<div class="quick-actions">
+    <a href="{% url 'sale_invoice' sale.id %}" target="_blank" rel="noopener" class="action-btn">
+        <i class="fas fa-print"></i>
+        {% translate "Print invoice" %}
+    </a>
+    <a href="{% url 'sale_invoice' sale.id %}?download=1" target="_blank" rel="noopener" class="action-btn primary">
+        <i class="fas fa-download"></i>
+        {% translate "Download invoice" %}
+    </a>
+    <a href="{% url 'customer_account' sale.customer_id %}{% if sale.due_amount > 0 %}?pay=1{% endif %}" class="action-btn">
+        <i class="fas fa-book-open"></i>
+        {% if sale.due_amount > 0 %}{% translate "Receive due payment" %}{% else %}{% translate "Customer account" %}{% endif %}
+    </a>
+    <a href="{% url 'sale_return_create' sale.id %}" class="action-btn">
+        <i class="fas fa-rotate-left"></i>
+        {% translate "Return items" %}
+    </a>
+</div>
+
+<div class="info-grid">
+    <!-- Invoice -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <div class="info-icon blue"><i class="fas fa-file-invoice"></i></div>
+            <span class="info-card-title">{% translate "Invoice Information" %}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Invoice Number" %}</span>
+            <span class="info-value highlight">{{ sale.invoice_number }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Invoice Date" %}</span>
+            <span class="info-value">{{ sale.invoice_date|date:"d M Y" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Retailer Shop" %}</span>
+            <span class="info-value">{{ sale.retailer.shop_name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Shop GSTIN" %}</span>
+            <span class="info-value">{{ sale.retailer.gst_number|default:"—" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Items" %}</span>
+            <span class="info-value">{{ items|length }}</span>
+        </div>
+    </div>
+
+    <!-- Customer -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <div class="info-icon purple"><i class="fas fa-user"></i></div>
+            <span class="info-card-title">{% translate "Customer Details" %}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Name" %}</span>
+            <span class="info-value">{{ sale.customer.customer_name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Mobile" %}</span>
+            <span class="info-value">{{ sale.customer.mobile }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Email" %}</span>
+            <span class="info-value">{{ sale.customer.email|default:"—" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "GSTIN" %}</span>
+            <span class="info-value highlight">{{ sale.customer.gst_number|default:"—" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Address" %}</span>
+            <span class="info-value">{{ sale.customer.address|default:"—" }}</span>
+        </div>
+        {% if sale_features.quotations and sale.quotation %}
+        <div class="info-row">
+            <span class="info-label">{% translate "From quotation" %}</span>
+            <span class="info-value"><a href="{% url 'quotation_detail' sale.quotation.id %}">{{ sale.quotation.quotation_number }}</a></span>
+        </div>
+        {% endif %}
+        {% if sale_features.prescription_details %}
+        <div class="info-row">
+            <span class="info-label">{% translate "Patient" %}</span>
+            <span class="info-value">{{ sale.patient_name|default:"—" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Doctor" %}</span>
+            <span class="info-value">{{ sale.doctor_name|default:"—" }}</span>
+        </div>
+        {% if sale.prescription_note %}
+        <div class="info-row">
+            <span class="info-label">{% translate "Prescription" %}</span>
+            <span class="info-value">{{ sale.prescription_note }}</span>
+        </div>
+        {% endif %}
+        {% endif %}
+    </div>
+
+    <!-- Payment -->
+    <div class="info-card">
+        <div class="info-card-header">
+            <div class="info-icon green"><i class="fas fa-wallet"></i></div>
+            <span class="info-card-title">{% translate "Payment Summary" %}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Payment Type" %}</span>
+            <span class="info-value">{{ sale.get_payment_type_display|tr|default:"—" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Payment Status" %}</span>
+            <span class="info-value {% if sale.payment_status == 'Paid' %}success{% elif sale.payment_status == 'Unpaid' %}danger{% endif %}">{{ sale.payment_status|tr }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Grand Total" %}</span>
+            <span class="info-value highlight">₹ {{ sale.grand_total }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Paid Amount" %}</span>
+            <span class="info-value success">₹ {{ sale.paid_amount }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">{% translate "Due Amount" %}</span>
+            <span class="info-value danger">₹ {{ sale.due_amount }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Items -->
+<div class="items-section">
+    <div class="section-header-bar">
+        <span class="section-title">
+            <i class="fas fa-boxes-stacked" style="color: var(--primary);"></i>
+            {% translate "Sold Items" %}
+        </span>
+        <span class="item-count">{{ items|length }} {% translate "Item" %}{{ items|length|pluralize }}</span>
+    </div>
+
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>{% translate "Product" %}</th>
+                    <th class="numeric">{% translate "Qty" %}</th>
+                    <th class="numeric">{% translate "Price" %}</th>
+                    <th class="numeric">MRP</th>
+                    <th class="numeric">{% translate "Disc." %}</th>
+                    <th class="numeric">GST %</th>
+                    <th class="numeric">{% translate "Amount" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        <div class="product-cell">
+                            <span class="product-name">{{ item.product.product_name }}</span>
+                            <span class="product-meta">{{ item.unit.short_name }}{% if sale_features.batch_tracking and item.batch %} · {% translate "Batch" %} {{ item.batch.batch_number }} · {% translate "Exp" %} {{ item.batch.expiry_date|date:"m/Y" }}{% endif %}{% if sale_features.product_specification and item.product.specification %} · {{ item.product.specification }}{% endif %}</span>
+                        </div>
+                    </td>
+                    <td class="numeric">{{ item.quantity|qty }}</td>
+                    <td class="numeric">₹{{ item.selling_price }}</td>
+                    <td class="numeric">{% if item.mrp is not None %}₹{{ item.mrp }}{% else %}—{% endif %}</td>
+                    <td class="numeric">₹{{ item.discount }}</td>
+                    <td class="numeric">{{ item.gst|floatformat:"-2" }}%</td>
+                    <td class="numeric" style="font-weight: 700; color: var(--primary);">₹{{ item.amount }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px;">
+                        {% translate "No items found for this sale." %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if payments %}
+<div class="items-section">
+    <div class="section-header-bar">
+        <span class="section-title">
+            <i class="fas fa-money-bill-wave" style="color: var(--success);"></i>
+            {% translate "Payments Received" %}
+        </span>
+        <span class="item-count">{{ payments|length }}</span>
+    </div>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{% translate "Date" %}</th>
+                    <th>{% translate "Type" %}</th>
+                    <th>{% translate "Reference" %}</th>
+                    <th>{% translate "Receipt No." %}</th>
+                    <th class="numeric">{% translate "Amount" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td>{{ payment.payment_date|date:"d M Y" }}</td>
+                    <td>{{ payment.get_payment_type_display|tr }}</td>
+                    <td>{{ payment.payment_reference|default:"—" }}</td>
+                    <td>{{ payment.receipt_number|default:"—" }}</td>
+                    <td class="numeric" style="font-weight: 700; color: var(--success);">₹{{ payment.amount }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if sale_returns %}
+<div class="items-section">
+    <div class="section-header-bar">
+        <span class="section-title">
+            <i class="fas fa-rotate-left" style="color: var(--info);"></i>
+            {% translate "Goods Returned (credit notes)" %}
+        </span>
+        <span class="item-count">{{ sale_returns|length }}</span>
+    </div>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{% translate "Credit note" %}</th>
+                    <th>{% translate "Date" %}</th>
+                    <th>{% translate "Reason" %}</th>
+                    <th class="numeric">{% translate "Reduced due" %}</th>
+                    <th class="numeric">{% translate "Refunded" %}</th>
+                    <th class="numeric">{% translate "Total" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for note in sale_returns %}
+                <tr>
+                    <td><a href="{% url 'credit_note' note.id %}" target="_blank" rel="noopener">{{ note.credit_note_number }}</a></td>
+                    <td>{{ note.return_date|date:"d M Y" }}</td>
+                    <td>{{ note.reason|default:"—" }}</td>
+                    <td class="numeric">₹{{ note.applied_to_bill }}</td>
+                    <td class="numeric">₹{{ note.refund_amount }}</td>
+                    <td class="numeric" style="font-weight: 700;">₹{{ note.total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Summary & Remarks -->
+<div class="summary-section">
+    <div class="remarks-card">
+        <h3><i class="fas fa-pen-to-square" style="color: var(--warning); margin-right: 6px;"></i>{% translate "Remarks" %}</h3>
+        <div class="remarks-text">
+            {{ sale.remarks|default:"No remarks added for this sale." }}
+        </div>
+    </div>
+
+    <div class="totals-card">
+        <div class="totals-title">{% translate "Invoice Summary" %}</div>
+        <div class="total-row">
+            <span class="label">{% translate "Subtotal" %}</span>
+            <span class="value">₹ {{ sale.subtotal }}</span>
+        </div>
+        <div class="total-row">
+            <span class="label">{% translate "Discount" %}</span>
+            <span class="value">- ₹ {{ sale.discount }}</span>
+        </div>
+        {% if sale.tax_type == "inter" %}
+        <div class="total-row">
+            <span class="label">IGST</span>
+            <span class="value">+ ₹ {{ sale.igst }}</span>
+        </div>
+        {% elif sale.tax_type == "intra" %}
+        <div class="total-row">
+            <span class="label">CGST</span>
+            <span class="value">+ ₹ {{ sale.cgst }}</span>
+        </div>
+        <div class="total-row">
+            <span class="label">SGST</span>
+            <span class="value">+ ₹ {{ sale.sgst }}</span>
+        </div>
+        {% else %}
+        <div class="total-row">
+            <span class="label">{% translate "GST / Tax" %}</span>
+            <span class="value">+ ₹ {{ sale.gst }}</span>
+        </div>
+        {% endif %}
+        <div class="total-row grand">
+            <span class="label">{% translate "Grand Total" %}</span>
+            <span class="value">₹ {{ sale.grand_total }}</span>
+        </div>
+        {% if sale.returned_amount > 0 %}
+        <div class="total-row">
+            <span class="label">{% translate "Less: goods returned" %}</span>
+            <span class="value">- ₹ {{ sale.returned_amount }}</span>
+        </div>
+        {% endif %}
+        {% if sale.due_amount > 0 %}
+        <div class="due-row">
+            <span>{% translate "Amount Due" %}</span>
+            <span>₹ {{ sale.due_amount }}</span>
+        </div>
+        {% else %}
+        <div class="due-row paid">
+            <span>{% translate "Payment Status" %}</span>
+            <span>{% translate "Fully Paid" %}</span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'jss/dashboard.js' %}"></script>
+{% endblock %}

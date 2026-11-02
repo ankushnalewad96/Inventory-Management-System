@@ -1,0 +1,694 @@
+# DukaanPro translations. Edit the msgstr lines, then run: python manage.py build_translations
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: hi\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: sale_create.html
+msgid "  ·  Sch. "
+msgstr "  ·  शेड्यूल "
+
+#: sale_create.html
+msgid "  ·  Stock: "
+msgstr "  ·  स्टॉक: "
+
+#: add_order.html
+msgid " (whole number for this shop)"
+msgstr " (इस दुकान के लिए पूरी संख्या)"
+
+#: add_order.html
+msgid " above lowest"
+msgstr " सबसे कम से ज़्यादा"
+
+#: add_order.html
+msgid " above the lowest price paid ("
+msgstr " सबसे कम दिए दाम से ज़्यादा ("
+
+#: add_order.html
+msgid " in row "
+msgstr " लाइन में "
+
+#: add_order.html
+msgid " more supplier"
+msgstr " और सप्लायर"
+
+#: sale_create.html
+msgid " of ₹ "
+msgstr " / ₹ "
+
+#: add_order.html
+msgid " qty bought"
+msgstr " मात्रा खरीदी"
+
+#: add_order.html
+msgid " qty · last "
+msgstr " मात्रा · आखिरी "
+
+#: add_order.html
+msgid " · adds "
+msgstr " · जोड़ेगा "
+
+#: sale_create.html
+msgid " · Exp "
+msgstr " · एक्स. "
+
+#: add_order.html
+msgid " · last "
+msgstr " · आखिरी "
+
+#: add_order.html
+msgid " · last on "
+msgstr " · आखिरी बार "
+
+#: add_order.html
+msgid " · last paid "
+msgstr " · आखिरी बार दिया "
+
+#: quotation_create.html
+msgid " · Stock "
+msgstr " · स्टॉक "
+
+#: add_order.html
+msgid "% GST, which is not a current slab. Please choose the correct rate."
+msgstr "% GST, जो अभी की दर नहीं है। सही दर चुनें।"
+
+#: add_product.html, product_list.html
+msgid "Active"
+msgstr "चालू"
+
+#: supplier_list.html
+msgid "Address"
+msgstr "पता"
+
+#: sale_create.html
+msgid "Advance with shop"
+msgstr "दुकान के पास एडवांस"
+
+#: supplier_list.html
+msgid "Alternate Mobile"
+msgstr "दूसरा मोबाइल"
+
+#: sale_create.html
+msgid "Are you sure you want to cancel? All unsaved changes will be lost."
+msgstr "क्या आप रद्द करना चाहते हैं? सेव न किए बदलाव मिट जाएंगे।"
+
+#: register.html
+msgid "Are you sure you want to reset the form?"
+msgstr "क्या आप फ़ॉर्म खाली करना चाहते हैं?"
+
+#: add_order.html
+msgid "At least one product row is required."
+msgstr "कम से कम एक सामान की लाइन ज़रूरी है।"
+
+#: add_order.html
+msgid "At or below the lowest price paid ("
+msgstr "सबसे कम दिए दाम के बराबर या कम ("
+
+#: add_order.html
+msgid "Average"
+msgstr "औसत"
+
+#: add_product.html
+msgid "Barcode must not exceed 100 characters"
+msgstr "बारकोड 100 अक्षर से ज़्यादा नहीं हो सकता"
+
+#: product_list.html
+msgid "base units"
+msgstr "छोटी यूनिट"
+
+#: supplier_list.html
+msgid "City / State"
+msgstr "शहर / राज्य"
+
+#: supplier_list.html
+msgid "Contact Person"
+msgstr "संपर्क व्यक्ति"
+
+#: add_product.html, product_list.html
+msgid "Conversion must be a whole number for this shop"
+msgstr "इस दुकान के लिए बदलाव पूरी संख्या में होना चाहिए"
+
+#: add_product.html, product_list.html
+msgid "Conversion must be more than 1 (e.g. 1 Box = 100 pc)"
+msgstr "बदलाव 1 से ज़्यादा होना चाहिए (जैसे 1 डिब्बा = 100 पीस)"
+
+#: supplier_list.html
+msgid "Credit Days"
+msgstr "उधार के दिन"
+
+#: supplier_list.html
+msgid "Credit Limit"
+msgstr "उधार सीमा"
+
+#: add_product.html
+msgid "Current stock must be 0 or greater"
+msgstr "अभी का स्टॉक 0 या ज़्यादा होना चाहिए"
+
+#: product_list.html
+msgid "Current stock must be >= 0"
+msgstr "अभी का स्टॉक 0 या ज़्यादा होना चाहिए"
+
+#: add_product.html
+msgid "Current stock must be a whole number for this shop"
+msgstr "इस दुकान के लिए स्टॉक पूरी संख्या में होना चाहिए"
+
+#: sale_create.html
+msgid "Customer added successfully!"
+msgstr "ग्राहक जुड़ गया!"
+
+#: sale_create.html
+msgid "Customer already exists."
+msgstr "ग्राहक पहले से है।"
+
+#: sale_create.html
+msgid "Customer name is required"
+msgstr "ग्राहक का नाम ज़रूरी है"
+
+#: product_list.html
+msgid "Delete failed"
+msgstr "हटाया नहीं जा सका"
+
+#: add_order.html
+msgid "Discount cannot be greater than subtotal."
+msgstr "छूट कुल रकम से ज़्यादा नहीं हो सकती।"
+
+#: add_order.html
+msgid "Discount cannot be negative."
+msgstr "छूट माइनस में नहीं हो सकती।"
+
+#: supplier_list.html
+msgid "Email"
+msgstr "ईमेल"
+
+#: add_order.html
+msgid "Enter a valid 10-digit mobile number"
+msgstr "सही 10 अंकों का मोबाइल नंबर डालें"
+
+#: add_order.html
+msgid "Enter a valid email address"
+msgstr "सही ईमेल पता डालें"
+
+#: add_product.html
+msgid "Enter a valid MRP greater than 0"
+msgstr "0 से ज़्यादा सही MRP डालें"
+
+#: add_product.html
+msgid "Enter a valid purchase price greater than 0"
+msgstr "0 से ज़्यादा सही खरीद दाम डालें"
+
+#: add_product.html
+msgid "Enter a valid selling price greater than 0"
+msgstr "0 से ज़्यादा सही बेचने का दाम डालें"
+
+#: add_product.html
+msgid "Enter a valid wholesale price"
+msgstr "सही होलसेल दाम डालें"
+
+#: sale_create.html
+msgid "Enter an amount between ₹ 0.01 and %s."
+msgstr "₹ 0.01 से %s के बीच रकम डालें।"
+
+#: return_form.html
+msgid "Enter the quantity to return for at least one item."
+msgstr "कम से कम एक सामान की वापसी मात्रा डालें।"
+
+#: add_product.html
+msgid "Expiry is required when opening stock is more than 0"
+msgstr "शुरुआती स्टॉक 0 से ज़्यादा हो तो एक्सपायरी ज़रूरी है"
+
+#: add_order.html
+msgid "Failed to add product"
+msgstr "सामान नहीं जुड़ पाया"
+
+#: add_order.html
+msgid "Failed to add retailer"
+msgstr "दुकान नहीं जुड़ पाई"
+
+#: add_order.html
+msgid "Failed to add supplier"
+msgstr "सप्लायर नहीं जुड़ पाया"
+
+#: product_list.html
+msgid "GST must be between 0 and 100"
+msgstr "GST 0 से 100 के बीच होना चाहिए"
+
+#: supplier_list.html
+msgid "GST Number"
+msgstr "GST नंबर"
+
+#: add_order.html
+msgid "Hide password"
+msgstr "पासवर्ड छिपाएं"
+
+#: add_order.html
+msgid "Highest"
+msgstr "सबसे ज़्यादा"
+
+#: add_product.html
+msgid "HSN code is required"
+msgstr "HSN कोड ज़रूरी है"
+
+#: add_product.html, product_list.html
+msgid "Inactive"
+msgstr "बंद"
+
+#: register.html
+msgid "Includes: "
+msgstr "इसमें मिलेगा: "
+
+#: sale_create.html
+msgid "Insufficient stock! Available: "
+msgstr "स्टॉक कम है! मौजूद: "
+
+#: add_order.html
+msgid "Last paid"
+msgstr "आखिरी बार दिया"
+
+#: add_order.html
+msgid "Lower than ever before"
+msgstr "अब तक का सबसे कम"
+
+#: add_order.html
+msgid "Lowest"
+msgstr "सबसे कम"
+
+#: add_order.html
+msgid "Matches best price"
+msgstr "सबसे अच्छे दाम के बराबर"
+
+#: register.html
+msgid "Medium strength"
+msgstr "ठीक-ठाक पासवर्ड"
+
+#: add_product.html
+msgid "Minimum stock must be 0 or greater"
+msgstr "कम से कम स्टॉक 0 या ज़्यादा होना चाहिए"
+
+#: product_list.html
+msgid "Minimum stock must be >= 0"
+msgstr "कम से कम स्टॉक 0 या ज़्यादा होना चाहिए"
+
+#: add_product.html
+msgid "Minimum stock must be a whole number for this shop"
+msgstr "इस दुकान के लिए कम से कम स्टॉक पूरी संख्या में होना चाहिए"
+
+#: supplier_list.html
+msgid "Mobile"
+msgstr "मोबाइल"
+
+#: add_product.html, product_list.html
+msgid "MRP is required"
+msgstr "MRP ज़रूरी है"
+
+#: add_order.html
+msgid "MRP must be >= selling price"
+msgstr "MRP बेचने के दाम से कम नहीं हो सकता"
+
+#: product_list.html
+msgid "MRP must be >= Selling price"
+msgstr "MRP बेचने के दाम से कम नहीं हो सकता"
+
+#: product_list.html
+msgid "MRP must be greater than 0"
+msgstr "MRP 0 से ज़्यादा होना चाहिए"
+
+#: add_product.html
+msgid "MRP must be greater than or equal to selling price"
+msgstr "MRP बेचने के दाम के बराबर या उससे ज़्यादा होना चाहिए"
+
+#: add_order.html
+msgid "Network error while adding product"
+msgstr "सामान जोड़ते समय इंटरनेट की गड़बड़ी"
+
+#: add_order.html
+msgid "Network error while adding retailer"
+msgstr "दुकान जोड़ते समय इंटरनेट की गड़बड़ी"
+
+#: add_order.html
+msgid "Network error while adding supplier"
+msgstr "सप्लायर जोड़ते समय इंटरनेट की गड़बड़ी"
+
+#: supplier_list.html
+msgid "Network error while deleting supplier."
+msgstr "सप्लायर हटाते समय इंटरनेट की गड़बड़ी।"
+
+#: supplier_list.html
+msgid "Network error while updating supplier."
+msgstr "सप्लायर बदलते समय इंटरनेट की गड़बड़ी।"
+
+#: sale_create.html
+msgid "No old balance"
+msgstr "कोई पुराना बाकी नहीं"
+
+#: add_order.html
+msgid "No products are linked to this supplier yet, so all products are shown. Products on this bill will be linked when you save."
+msgstr "इस सप्लायर से अभी कोई सामान नहीं जुड़ा, इसलिए सब सामान दिख रहा है। सेव करने पर इस बिल का सामान जुड़ जाएगा।"
+
+#: add_order.html
+msgid "No supplier is linked to the selected product(s) yet, so all suppliers are shown."
+msgstr "चुने सामान से अभी कोई सप्लायर नहीं जुड़ा, इसलिए सब सप्लायर दिख रहे हैं।"
+
+#: supplier_list.html
+msgid "Notes"
+msgstr "नोट"
+
+#: supplier_list.html
+msgid "Opening Balance"
+msgstr "पुराना बाकी"
+
+#: sale_create.html, scripts
+msgid "Paid"
+msgstr "पूरा भुगतान"
+
+#: add_order.html
+msgid "Paid amount cannot be greater than Grand Total."
+msgstr "दी गई रकम कुल रकम से ज़्यादा नहीं हो सकती।"
+
+#: sale_create.html
+msgid "Paid amount cannot be negative"
+msgstr "दी गई रकम माइनस में नहीं हो सकती"
+
+#: add_order.html
+msgid "Paid amount cannot be negative."
+msgstr "दी गई रकम माइनस में नहीं हो सकती।"
+
+#: sale_create.html
+msgid "Paid amount cannot exceed grand total"
+msgstr "दी गई रकम कुल रकम से ज़्यादा नहीं हो सकती"
+
+#: supplier_list.html
+msgid "PAN Number"
+msgstr "PAN नंबर"
+
+#: sale_create.html, scripts
+msgid "Partial"
+msgstr "आंशिक भुगतान"
+
+#: userlogin.html
+msgid "Password is required"
+msgstr "पासवर्ड ज़रूरी है"
+
+#: userlogin.html
+msgid "Password must be at least 6 characters"
+msgstr "पासवर्ड कम से कम 6 अक्षर का होना चाहिए"
+
+#: add_order.html
+msgid "Password must be at least 8 characters"
+msgstr "पासवर्ड कम से कम 8 अक्षर का होना चाहिए"
+
+#: add_order.html
+msgid "Passwords do not match"
+msgstr "दोनों पासवर्ड एक जैसे नहीं हैं"
+
+#: sale_create.html
+msgid "Patient name and doctor name are required for prescription drugs"
+msgstr "पर्चे वाली दवाओं के लिए मरीज़ और डॉक्टर का नाम ज़रूरी है"
+
+#: supplier_list.html
+msgid "Pincode"
+msgstr "पिन कोड"
+
+#: sale_create.html
+msgid "Please add at least one product"
+msgstr "कम से कम एक सामान जोड़ें"
+
+#: add_order.html, quotation_create.html
+msgid "Please add at least one product."
+msgstr "कम से कम एक सामान जोड़ें।"
+
+#: add_product.html
+msgid "Please choose an option"
+msgstr "कोई एक चुनें"
+
+#: add_product.html
+msgid "Please enter a new brand name."
+msgstr "नए ब्रांड का नाम डालें।"
+
+#: add_product.html
+msgid "Please enter a new category name."
+msgstr "नई कैटेगरी का नाम डालें।"
+
+#: add_product.html
+msgid "Please enter a new unit name."
+msgstr "नई यूनिट का नाम डालें।"
+
+#: add_order.html
+msgid "Please enter a purchase price greater than 0 in row "
+msgstr "0 से ज़्यादा खरीद दाम डालें, लाइन "
+
+#: add_order.html
+msgid "Please enter a quantity greater than 0"
+msgstr "0 से ज़्यादा मात्रा डालें"
+
+#: sale_create.html
+msgid "Please enter a valid email address"
+msgstr "सही ईमेल पता डालें"
+
+#: add_order.html, sale_create.html
+msgid "Please enter a valid mobile number"
+msgstr "सही मोबाइल नंबर डालें"
+
+#: supplier_list.html
+msgid "Please enter a valid mobile number."
+msgstr "सही मोबाइल नंबर डालें।"
+
+#: add_order.html
+msgid "Please fill all required fields"
+msgstr "सब ज़रूरी खाने भरें"
+
+#: supplier_list.html
+msgid "Please fill all required fields."
+msgstr "सब ज़रूरी खाने भरें।"
+
+#: add_order.html
+msgid "Please fill all required retailer fields"
+msgstr "दुकान के सब ज़रूरी खाने भरें"
+
+#: add_order.html
+msgid "Please fill all required supplier fields"
+msgstr "सप्लायर के सब ज़रूरी खाने भरें"
+
+#: sale_create.html
+msgid "Please select a customer"
+msgstr "ग्राहक चुनें"
+
+#: sale_create.html
+msgid "Please select a payment type"
+msgstr "पेमेंट का तरीका चुनें"
+
+#: add_order.html
+msgid "Please select a product in row "
+msgstr "सामान चुनें, लाइन "
+
+#: sale_create.html
+msgid "Please select a retailer first."
+msgstr "पहले दुकान चुनें।"
+
+#: sale_create.html
+msgid "Please select an invoice date"
+msgstr "बिल की तारीख चुनें"
+
+#: add_order.html
+msgid "Please select Payment Type."
+msgstr "पेमेंट का तरीका चुनें।"
+
+#: quotation_create.html
+msgid "Please select the shop first."
+msgstr "पहले दुकान चुनें।"
+
+#: sale_create.html
+msgid "Previous balance due"
+msgstr "पुराना बाकी"
+
+#: add_order.html
+msgid "Product added successfully!"
+msgstr "सामान जुड़ गया!"
+
+#: add_product.html
+msgid "Product name is required"
+msgstr "सामान का नाम ज़रूरी है"
+
+#: add_product.html
+msgid "Product name must be at least 2 characters"
+msgstr "सामान का नाम कम से कम 2 अक्षर का होना चाहिए"
+
+#: add_product.html
+msgid "Product saved successfully! Redirecting..."
+msgstr "सामान सेव हो गया! आगे ले जा रहे हैं..."
+
+#: product_list.html
+msgid "Product updated successfully!"
+msgstr "सामान बदल दिया गया!"
+
+#: product_list.html
+msgid "Purchase price must be greater than 0"
+msgstr "खरीद दाम 0 से ज़्यादा होना चाहिए"
+
+#: add_product.html
+msgid "Purchase unit must be different from the selling unit"
+msgstr "खरीद यूनिट बेचने वाली यूनिट से अलग होनी चाहिए"
+
+#: add_order.html
+msgid "Retailer added successfully!"
+msgstr "दुकान जुड़ गई!"
+
+#: supplier_list.html
+msgid "Retailer Shop"
+msgstr "दुकान"
+
+#: sale_create.html
+msgid "Row %s: Discount cannot exceed gross amount"
+msgstr "लाइन %s: छूट कुल रकम से ज़्यादा नहीं हो सकती"
+
+#: sale_create.html
+msgid "Row %s: Insufficient stock! Available: "
+msgstr "लाइन %s: स्टॉक कम है! मौजूद: "
+
+#: sale_create.html
+msgid "Row %s: Please select a product"
+msgstr "लाइन %s: सामान चुनें"
+
+#: sale_create.html
+msgid "Row %s: Quantity must be greater than 0"
+msgstr "लाइन %s: मात्रा 0 से ज़्यादा होनी चाहिए"
+
+#: sale_create.html
+msgid "Row %s: Quantity must be greater than 0 and a whole number for this shop"
+msgstr "लाइन %s: मात्रा 0 से ज़्यादा और पूरी संख्या में होनी चाहिए"
+
+#: sale_create.html
+msgid "Row %s: Selling price cannot be negative"
+msgstr "लाइन %s: बेचने का दाम माइनस में नहीं हो सकता"
+
+#: sale_create.html
+msgid "Search customer by name or mobile"
+msgstr "नाम या मोबाइल से ग्राहक खोजें"
+
+#: sale_create.html
+msgid "Search product"
+msgstr "सामान खोजें"
+
+#: add_order.html
+msgid "Select Supplier"
+msgstr "सप्लायर चुनें"
+
+#: add_order.html
+msgid "Selling price must be >= purchase price"
+msgstr "बेचने का दाम खरीद दाम से कम नहीं हो सकता"
+
+#: product_list.html
+msgid "Selling price must be >= Purchase price"
+msgstr "बेचने का दाम खरीद दाम से कम नहीं हो सकता"
+
+#: product_list.html
+msgid "Selling price must be greater than 0"
+msgstr "बेचने का दाम 0 से ज़्यादा होना चाहिए"
+
+#: add_product.html
+msgid "Selling price must be greater than or equal to purchase price"
+msgstr "बेचने का दाम खरीद दाम के बराबर या उससे ज़्यादा होना चाहिए"
+
+#: add_product.html
+msgid "selling units"
+msgstr "बेचने वाली यूनिट"
+
+#: product_list.html
+msgid "Server error"
+msgstr "सर्वर की गड़बड़ी"
+
+#: add_order.html
+msgid "Show password"
+msgstr "पासवर्ड दिखाएं"
+
+#: add_order.html
+msgid "Showing only the %s supplier(s) who sell the selected product(s)."
+msgstr "चुने सामान बेचने वाले %s सप्लायर ही दिख रहे हैं।"
+
+#: add_order.html
+msgid "Showing the %s product(s) you buy from this supplier."
+msgstr "इस सप्लायर से खरीदे जाने वाले %s सामान दिख रहे हैं।"
+
+#: product_list.html
+msgid "Something went wrong. Please try again."
+msgstr "कुछ गड़बड़ी हुई। फिर से कोशिश करें।"
+
+#: product_list.html
+msgid "Stock must be a whole number for this shop"
+msgstr "इस दुकान के लिए स्टॉक पूरी संख्या में होना चाहिए"
+
+#: register.html
+msgid "Strong password"
+msgstr "मज़बूत पासवर्ड"
+
+#: add_order.html
+msgid "Supplier added successfully!"
+msgstr "सप्लायर जुड़ गया!"
+
+#: supplier_list.html
+msgid "Supplier Name"
+msgstr "सप्लायर का नाम"
+
+#: add_order.html
+msgid "This product is saved with "
+msgstr "यह सामान इस GST पर सेव है: "
+
+#: add_order.html
+msgid "Unable to calculate purchase totals."
+msgstr "खरीद का कुल हिसाब नहीं बन पाया।"
+
+#: sale_create.html
+msgid "Unable to connect to the server. Please try again."
+msgstr "सर्वर से कनेक्ट नहीं हो पाया। फिर से कोशिश करें।"
+
+#: sale_create.html
+msgid "Unable to create customer."
+msgstr "ग्राहक नहीं जुड़ पाया।"
+
+#: supplier_list.html
+msgid "Unable to delete supplier."
+msgstr "सप्लायर नहीं हटा पाए।"
+
+#: add_order.html
+msgid "Unable to load purchase history."
+msgstr "खरीद का पुराना हिसाब नहीं खुल पाया।"
+
+#: supplier_list.html
+msgid "Unable to update supplier."
+msgstr "सप्लायर नहीं बदल पाए।"
+
+#: sale_create.html, scripts
+msgid "Unpaid"
+msgstr "बाकी"
+
+#: userlogin.html
+msgid "Use only letters, numbers, underscores or hyphens. Must start with a letter"
+msgstr "सिर्फ अक्षर, अंक, _ या - इस्तेमाल करें। शुरुआत अक्षर से हो।"
+
+#: userlogin.html
+msgid "Username cannot contain spaces"
+msgstr "यूज़रनेम में खाली जगह नहीं हो सकती"
+
+#: userlogin.html
+msgid "Username is required"
+msgstr "यूज़रनेम ज़रूरी है"
+
+#: userlogin.html
+msgid "Username must be at least 3 characters"
+msgstr "यूज़रनेम कम से कम 3 अक्षर का होना चाहिए"
+
+#: userlogin.html
+msgid "Username must not exceed 20 characters"
+msgstr "यूज़रनेम 20 अक्षर से ज़्यादा नहीं हो सकता"
+
+#: register.html
+msgid "Weak password"
+msgstr "कमज़ोर पासवर्ड"
+
+#: add_product.html
+msgid "Wholesale price cannot be more than the selling price"
+msgstr "होलसेल दाम बेचने के दाम से ज़्यादा नहीं हो सकता"
+
+#: add_order.html
+msgid "Your price "
+msgstr "आपका दाम "

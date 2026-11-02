@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+.venv/
+env/
+pharmacyenv/
+
+# Local data: database, backups, logs, uploaded files
+db.sqlite3
+*.sqlite3
+backups/
+logs/
+media/
+staticfiles/
+
+# Secrets and local settings
+.env
+credential*
+*.pem
+
+# Editors and OS
+.vscode/
+.idea/
+*.vsix
+.DS_Store
+Thumbs.db

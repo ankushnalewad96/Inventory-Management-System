@@ -1,0 +1,216 @@
+{% load i18n %}{% load qty %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% translate "Schedule H1 Register" %} - {{ app_name }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #1e293b;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --soft: #f8fafc;
+            --primary: #2563eb;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: "Inter", "Segoe UI", Arial, sans-serif;
+            background: #e2e8f0;
+            color: var(--ink);
+            font-size: 13px;
+            line-height: 1.5;
+            padding: 24px 16px 48px;
+        }
+
+        .toolbar {
+            max-width: 1100px;
+            margin: 0 auto 16px;
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .toolbar form { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+        .toolbar label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+        .toolbar input[type="date"] {
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font: inherit;
+            background: #fff;
+        }
+
+        .tool-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 16px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: var(--ink);
+            font: inherit;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .tool-btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+        .sheet {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+            padding: 32px 36px;
+        }
+
+        .sheet-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--ink);
+            margin-bottom: 18px;
+        }
+
+        .sheet-header h1 { font-size: 20px; letter-spacing: 0.5px; }
+        .sheet-header .meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+        .shop-block { text-align: right; font-size: 12px; color: var(--muted); }
+        .shop-block strong { color: var(--ink); font-size: 14px; }
+
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+
+        th {
+            background: var(--soft);
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+            padding: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+        .num { text-align: right; white-space: nowrap; }
+        .muted { color: var(--muted); }
+        .empty { text-align: center; padding: 36px 8px; color: var(--muted); }
+        tfoot td { font-weight: 700; border-top: 2px solid var(--ink); }
+
+        @media (max-width: 640px) {
+            .sheet { padding: 20px 16px; }
+            .sheet-header { flex-direction: column; }
+            .shop-block { text-align: left; }
+        }
+
+        @media print {
+            body { background: #fff; padding: 0; font-size: 11px; }
+            .toolbar { display: none; }
+            .sheet { box-shadow: none; border-radius: 0; max-width: none; padding: 0; }
+            @page { size: A4 landscape; margin: 12mm; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <a href="{% url 'dashboard' %}" class="tool-btn"><i class="fas fa-arrow-left"></i> {% translate "Dashboard" %}</a>
+
+        <form method="GET">
+            <div>
+                <label for="dateFrom">{% translate "From" %}</label>
+                <input type="date" id="dateFrom" name="date_from" value="{{ date_from|date:'Y-m-d' }}">
+            </div>
+            <div>
+                <label for="dateTo">{% translate "To" %}</label>
+                <input type="date" id="dateTo" name="date_to" value="{{ date_to|date:'Y-m-d' }}">
+            </div>
+            <button type="submit" class="tool-btn"><i class="fas fa-filter"></i> {% translate "Show" %}</button>
+            <button type="button" class="tool-btn primary" onclick="window.print()"><i class="fas fa-print"></i> {% translate "Print" %}</button>
+        </form>
+    </div>
+
+    <div class="sheet">
+        <div class="sheet-header">
+            <div>
+                <h1>{% translate "Schedule H1 Drug Register" %}</h1>
+                <div class="meta">
+                    {% translate "Period:" %} <strong>{{ date_from|date:"d M Y" }}</strong> {% translate "to" %} <strong>{{ date_to|date:"d M Y" }}</strong>
+                    &nbsp;·&nbsp; {% blocktranslate count counter=entries|length %}{{ counter }} entry{% plural %}{{ counter }} entries{% endblocktranslate %}
+                </div>
+            </div>
+            {% if not is_admin and shops %}
+            {% with shop=shops.0 %}
+            <div class="shop-block">
+                <strong>{{ shop.shop_name }}</strong><br>
+                {{ shop.address }}, {{ shop.city }}<br>
+                {% if shop.drug_licence_number %}{% translate "D.L. No:" %} {{ shop.drug_licence_number }}{% if shop.drug_licence_number_2 %}, {{ shop.drug_licence_number_2 }}{% endif %}{% endif %}
+            </div>
+            {% endwith %}
+            {% endif %}
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>{% translate "Date" %}</th>
+                        <th>{% translate "Invoice" %}</th>
+                        {% if is_admin %}<th>{% translate "Shop" %}</th>{% endif %}
+                        <th>{% translate "Patient" %}</th>
+                        <th>{% translate "Doctor" %}</th>
+                        <th>{% translate "Drug" %}</th>
+                        <th>{% translate "Batch" %}</th>
+                        <th>{% translate "Expiry" %}</th>
+                        <th class="num">{% translate "Qty" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in entries %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ entry.sale.invoice_date|date:"d-m-Y" }}</td>
+                        <td>{{ entry.sale.invoice_number }}</td>
+                        {% if is_admin %}<td>{{ entry.sale.retailer.shop_name }}</td>{% endif %}
+                        <td>{{ entry.sale.patient_name|default:"—" }}</td>
+                        <td>{{ entry.sale.doctor_name|default:"—" }}</td>
+                        <td>
+                            {{ entry.product.product_name }}
+                            {% if entry.product.salt_composition %}<div class="muted">{{ entry.product.salt_composition }}</div>{% endif %}
+                        </td>
+                        <td>{{ entry.batch.batch_number|default:"—" }}</td>
+                        <td>{% if entry.batch %}{{ entry.batch.expiry_date|date:"m/Y" }}{% else %}—{% endif %}</td>
+                        <td class="num">{{ entry.quantity|qty_unit:entry.unit.short_name }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{% if is_admin %}10{% else %}9{% endif %}" class="empty">{% translate "No Schedule H1 drugs were sold in this period." %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if entries %}
+                <tfoot>
+                    <tr>
+                        <td colspan="{% if is_admin %}9{% else %}8{% endif %}">{% translate "Total quantity" %}</td>
+                        <td class="num">{{ total_quantity|qty }}</td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>

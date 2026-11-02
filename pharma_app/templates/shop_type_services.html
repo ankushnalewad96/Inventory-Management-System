@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load i18n i18n_extras %}
+{% load static %}
+{% block title %}{% translate "Shop types" %} - {{ app_name }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/shop_services.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <h1>{% translate "Shop types" %}</h1>
+    <p>{% translate "Switch a shop type on or off for the whole platform" %}</p>
+{% endblock %}
+
+{% block body %}
+
+<div class="service-note">
+    <i class="fas fa-circle-info"></i>
+    <div>
+        {% translate "When a shop type is off, its shops and all their records (products, bills, customers, suppliers) are hidden everywhere and their owners cannot log in. Nothing is deleted. Switch it on again to see everything as before." %}
+    </div>
+</div>
+
+<div class="service-summary">
+    <span class="service-chip on"><span class="dot"></span>{% blocktranslate count counter=active_count %}{{ counter }} type on{% plural %}{{ counter }} types on{% endblocktranslate %}</span>
+    <span class="service-chip off"><span class="dot"></span>{% blocktranslate count counter=paused_count %}{{ counter }} type off{% plural %}{{ counter }} types off{% endblocktranslate %}</span>
+</div>
+
+<div class="service-grid">
+    {% for row in rows %}
+    <div class="service-card {% if row.is_active %}is-on{% else %}is-off{% endif %}" id="service-{{ row.code }}">
+        <div class="service-head">
+            <div class="service-name">
+                <span class="type-badge type-{{ row.code }}">{{ row.label|tr }}</span>
+            </div>
+            {% if row.is_active %}
+                <span class="service-status on"><span class="dot"></span>{% translate "On" %}</span>
+            {% else %}
+                <span class="service-status off"><span class="dot"></span>{% translate "Off" %}</span>
+            {% endif %}
+        </div>
+
+        <div class="service-stats">
+            <div><span>{{ row.shops }}</span>{% translate "Shops" %}</div>
+            <div><span>{{ row.products }}</span>{% translate "Products" %}</div>
+            <div><span>{{ row.sales }}</span>{% translate "Sales" %}</div>
+            <div><span>{{ row.purchases }}</span>{% translate "Purchases" %}</div>
+            <div><span>{{ row.customers }}</span>{% translate "Customers" %}</div>
+            <div><span>{{ row.suppliers }}</span>{% translate "Suppliers" %}</div>
+        </div>
+
+        {% if row.features %}
+        <ul class="service-features">
+            {% for feature in row.features %}<li>{{ feature|tr }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+
+        <div class="service-foot">
+            <div class="service-changed">
+                {% if row.changed_by %}
+                    {% blocktranslate with name=row.changed_by.username when=row.changed_at|date:"d M Y, h:i A" %}Last changed by {{ name }} on {{ when }}{% endblocktranslate %}
+                {% endif %}
+            </div>
+            <form method="POST" action="{% url 'shop_type_service_toggle' row.code %}" class="service-form"
+                  data-confirm="{% if row.is_active %}{% blocktranslate with label=row.label|tr %}Switch off {{ label }}? Its shops and records will be hidden and its owners will be logged out. Nothing is deleted.{% endblocktranslate %}{% else %}{% blocktranslate with label=row.label|tr %}Switch on {{ label }}? Its shops and records will be visible again.{% endblocktranslate %}{% endif %}">
+                {% csrf_token %}
+                {% if row.is_active %}
+                    <input type="hidden" name="action" value="off">
+                    <button type="submit" class="service-btn off"><i class="fas fa-power-off"></i> {% translate "Switch off" %}</button>
+                {% else %}
+                    <input type="hidden" name="action" value="on">
+                    <button type="submit" class="service-btn on"><i class="fas fa-power-off"></i> {% translate "Switch on" %}</button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'jss/dashboard.js' %}"></script>
+<script>
+document.querySelectorAll(".service-form").forEach(function (form) {
+    form.addEventListener("submit", function (event) {
+        if (!window.confirm(form.dataset.confirm)) {
+            event.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

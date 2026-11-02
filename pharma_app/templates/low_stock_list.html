@@ -1,6 +1,7 @@
 {% extends "base.html" %}
-{% load static %}
-{% block title %}Product List - My Django Site{% endblock %}
+{% load i18n %}
+{% load static %}{% load qty %}
+{% block title %}{% translate "Reorder List" %} - {{ app_name }}{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
@@ -11,9 +12,15 @@
 {% endblock %}
 
 {% block page_title %}
-    <h1>Product Inventory</h1>
-    <p>Manage and track all products in your general store</p>
-    
+    <div class="page-title-row">
+        <a href="{% url 'product_list' %}" class="page-back-btn" title="{% translate "Back to Products" %}" aria-label="{% translate "Back to Products" %}">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            <h1>{% translate "Reorder List" %}</h1>
+            <p>{% translate "Products at or below their minimum stock level" %}</p>
+        </div>
+    </div>
 {% endblock %}
 
 {% block body %}
@@ -40,7 +47,7 @@
             type="text"
             name="search"
             value="{{ search }}"
-            placeholder="Search by name, barcode or HSN..."
+            placeholder="{% translate "Search by name, barcode or HSN..." %}"
         >
 
         <input
@@ -57,8 +64,8 @@
 <!-- Table -->
 <div class="table-container">
     <div class="table-header">
-        <span class="table-title">Reorder List</span>
-        <span class="table-count">{{ products|length }} products found</span>
+        <span class="table-title">{% translate "Reorder List" %}</span>
+        <span class="table-count">{% blocktranslate count counter=low_stock_count %}{{ counter }} product found{% plural %}{{ counter }} products found{% endblocktranslate %}</span>
     </div>
 
     <div class="table-wrap">
@@ -66,19 +73,19 @@
             <thead>
                 <tr>
                     {% if is_admin %}
-                        <th>Retailer</th>
+                        <th>{% translate "Retailer" %}</th>
                     {% endif %}
-                    <th>Product</th>
-                    <th>Brand</th>
-                    <th>Category</th>
-                    <th>Unit</th>
-                    <th class="right">Purchase</th>
-                    <th class="right">Selling</th>
+                    <th>{% translate "Product" %}</th>
+                    <th>{% translate "Brand" %}</th>
+                    <th>{% translate "Category" %}</th>
+                    <th>{% translate "Unit" %}</th>
+                    <th class="right">{% translate "Purchase" %}</th>
+                    <th class="right">{% translate "Selling" %}</th>
                     <th class="right">MRP</th>
-                    <th class="center">Stock</th>
-                    <th class="center">Minimum Stock</th>
+                    <th class="center">{% translate "Stock" %}</th>
+                    <th class="center">{% translate "Minimum Stock" %}</th>
                     <th class="center">GST</th>
-                    <th class="center">Status</th>
+                    <th class="center">{% translate "Status" %}</th>
                 </tr>
             </thead>
 
@@ -119,7 +126,7 @@
 
                                 {% if product.barcode %}
                                     {% if product.hsn_code %} | {% endif %}
-                                    Barcode: {{ product.barcode }}
+                                    {% translate "Barcode:" %} {{ product.barcode }}
                                 {% endif %}
                             </span>
                         </div>
@@ -169,7 +176,7 @@
                     <!-- MRP -->
                     <td class="right">
                         <div class="price-muted">
-                            ₹{{ product.mrp|default:"0.00" }}
+                            {% if product.mrp is not None %}₹{{ product.mrp }}{% else %}—{% endif %}
                         </div>
                     </td>
 
@@ -177,17 +184,17 @@
                     <td class="center">
                         {% if product.current_stock == 0 %}
                             <span class="stock-value low">
-                                {{ product.current_stock }}
+                                {{ product.current_stock|qty_unit:product.unit.short_name }}
                             </span>
 
                         {% elif product.current_stock <= product.minimum_stock %}
                             <span class="stock-value medium">
-                                {{ product.current_stock }}
+                                {{ product.current_stock|qty_unit:product.unit.short_name }}
                             </span>
 
                         {% else %}
                             <span class="stock-value high">
-                                {{ product.current_stock }}
+                                {{ product.current_stock|qty_unit:product.unit.short_name }}
                             </span>
                         {% endif %}
                     </td>
@@ -195,7 +202,7 @@
                     <!-- Minimum Stock -->
                     <td class="center">
                         <span>
-                            {{ product.minimum_stock|default:"0" }}
+                            {{ product.minimum_stock|qty }}
                         </span>
                     </td>
 
@@ -211,12 +218,12 @@
                         {% if product.is_active %}
                             <span class="badge badge-success">
                                 <span class="badge-dot"></span>
-                                Active
+                                {% translate "Active" %}
                             </span>
                         {% else %}
                             <span class="badge badge-inactive">
                                 <span class="badge-dot"></span>
-                                Inactive
+                                {% translate "Inactive" %}
                             </span>
                         {% endif %}
                     </td>
@@ -226,7 +233,7 @@
                 {% empty %}
 
                 <tr>
-                    <td colspan="11">
+                    <td colspan="{% if is_admin %}12{% else %}11{% endif %}">
                         <div class="empty-state">
 
                             <svg
@@ -242,10 +249,10 @@
                                 />
                             </svg>
 
-                            <h3>No Products Found</h3>
+                            <h3>{% translate "All stocked up" %}</h3>
 
                             <p>
-                                No products are currently available in the inventory.
+                                {% translate "No product is at or below its minimum stock level." %}
                             </p>
 
                         </div>
@@ -258,111 +265,8 @@
     </div>
 
 
-    <!-- <div class="table-header">
-        <span class="table-title">Low Stock List</span>
-        <span class="table-count">{{ products|length }} products found</span>
-    </div>
-
-    <div class="table-wrap">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Product</th>
-                    <th>Brand</th>
-                    <th>Category</th>
-                    <th>Unit</th>
-                    <th class="right">Purchase</th>
-                    <th class="right">Selling</th>
-                    <th class="right">MRP</th>
-                    <th class="center">Stock</th>
-                    <th class="center">Minimum Stock</th>
-                    <th class="center">GST</th>
-                    <th class="center">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for product in products %}
-                <tr>
-                    <td>
-                        <div class="product-info">
-                            <span class="product-name">{{ product.product_name }}</span>
-                            <span class="product-meta">HSN: {{ product.hsn_code }} {% if product.barcode %}| Barcode: {{ product.barcode }}{% endif %}</span>
-                        </div>
-                    </td>
-                    <td>{{ product.brand.brand_name|default:"—" }}</td>
-                    <td>{{ product.category.category_name|default:"—" }}</td>
-                    <td>{{ product.unit.short_name|default:product.unit|default:"—" }}</td>
-                    <td class="right">
-                        <div class="price">₹{{ product.purchase_price }}</div>
-                    </td>
-                    <td class="right">
-                        <div class="price">₹{{ product.selling_price }}</div>
-                    </td>
-                    <td class="right">
-                        <div class="price-muted">₹{{ product.mrp }}</div>
-                    </td>
-                    <td class="center">
-                        {% if product.current_stock == 0 %}
-                            <span class="stock-value low">
-                                {{ product.current_stock }}
-                            </span>
-                        {% elif product.current_stock <= product.minimum_stock %}
-                            <span class="stock-value medium">
-                                {{ product.current_stock }}
-                            </span>
-                        {% else %}
-                            <span class="stock-value high">
-                                {{ product.current_stock }}
-                            </span>
-                        {% endif %}
-                    </td>
-                    <td class="center">
-                       <span>{{product.minimum_stock}}</span>
-                    </td>
-                    <td class="center">
-                        <span class="price-muted">{{ product.gst }}%</span>
-                    </td>
-                    <td class="center">
-                        {% if product.is_active %}
-                            <span class="badge badge-success"><span class="badge-dot"></span> Active</span>
-                        {% else %}
-                            <span class="badge badge-inactive"><span class="badge-dot"></span> Inactive</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="12">
-                        <div class="empty-state">
-                            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                            </svg>
-                            <h3>No Products Found</h3>
-                            <p>Get started by adding your first product to the inventory.</p>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div> -->
 
 
-
-<!-- Toast -->
-<div class="toast" id="modalToast">
-    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-    </svg>
-    <span id="modalToastMessage">Saved successfully!</span>
-</div>
-
-<div class="toast" id="modalToast">
-    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-    </svg>
-    <span id="modalToastMessage">Deleted successfully!</span>
-</div>
 
 
     <!-- Pagination -->
@@ -372,17 +276,11 @@
 
         {% if page_obj.paginator.count > 0 %}
 
-            Showing
-            {{ page_obj.start_index }}
-            -
-            {{ page_obj.end_index }}
-            of
-            {{ page_obj.paginator.count }}
-            products
+            {% blocktranslate with start=page_obj.start_index end=page_obj.end_index total=page_obj.paginator.count %}Showing {{ start }} - {{ end }} of {{ total }} products{% endblocktranslate %}
 
         {% else %}
 
-            Showing 0 of 0 products
+            {% translate "Showing 0 of 0 products" %}
 
         {% endif %}
 
@@ -455,7 +353,8 @@
         {% endif %}
 
     </div>
-</div>
+    </div>
+</div><!-- /.table-container -->
 
 {% endblock %}
 
@@ -533,253 +432,10 @@
         }
     });
 
-    // Django CSRF helper
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    // Toast (reuses your existing toast element if present, else falls back to alert)
-    function showToast(message, isError = false) {
-        let toast = document.getElementById('modalToast') || document.getElementById('toast');
-        
-        if (toast) {
-            const msgEl = toast.querySelector('#modalToastMessage') || toast.querySelector('#toastMessage') || toast;
-            if (msgEl !== toast) msgEl.textContent = message;
-            
-            toast.className = 'toast ' + (isError ? 'error-toast' : '') + ' show';
-            setTimeout(() => toast.classList.remove('show'), 3500);
-        } else {
-            // fallback if no toast element exists yet
-            alert(message);
-        }
-    }
-
-    // Delete handler
-    async function handleDelete(btn) {
-        const url = btn.dataset.url;
-        const name = btn.dataset.name;
-        const row = btn.closest('tr');
-
-        if (!confirm(`Are you sure you want to delete "${name}"?`)) {
-            return;
-        }
-
-        // Optional: dim the row while deleting
-        if (row) {
-            row.style.opacity = '0.5';
-            row.style.pointerEvents = 'none';
-        }
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({ '_method': 'delete' }) // optional; remove if your view doesn't need it
-            });
-
-            const data = await response.json();
-
-            if (response.ok && data.success) {
-                showToast(data.message, false);
-                
-                // Smoothly remove the row
-                if (row) {
-                    row.style.transition = 'all 0.3s ease';
-                    row.style.transform = 'translateX(20px)';
-                    row.style.opacity = '0';
-                    setTimeout(() => row.remove(), 300);
-                }
-            } else {
-                throw new Error(data.message || 'Delete failed');
-            }
-
-        } catch (err) {
-            showToast(err.message || 'Something went wrong. Please try again.', true);
-            if (row) {
-                row.style.opacity = '1';
-                row.style.pointerEvents = '';
-            }
-        }
-    }
-
     window.addEventListener('resize', () => {
         if (window.innerWidth > 768) {
             closeMobileSidebar();
         }
     });
-
-
-(function() {
-    let isEditMode = false;
-
-    const modal = document.getElementById('productModal');
-    const editBtn = document.getElementById('modalEditBtn');
-    const saveBtn = document.getElementById('modalSaveBtn');
-    const editPanel = document.getElementById('editPanel');
-    const toast = document.getElementById('modalToast');
-    const toastMsg = document.getElementById('modalToastMessage');
-
-    // All editable inputs
-    const editableInputs = [
-        document.getElementById('modalPurchasePrice'),
-        document.getElementById('modalSellingPrice'),
-        document.getElementById('modalMrp'),
-        document.getElementById('modalGst'),
-        document.getElementById('modalCurrentStock'),
-        document.getElementById('modalMinimumStock')
-    ];
-
-    // Open modal
-    window.openProductModal = function(data) {
-        document.getElementById('modalProductName').textContent = data.name;
-        document.getElementById('modalProductMeta').textContent = `HSN: ${data.hsn} | Barcode: ${data.barcode || '—'}`;
-        document.getElementById('modalCategory').textContent = data.category;
-        document.getElementById('modalBrand').textContent = data.brand;
-        document.getElementById('modalUnit').textContent = data.unit;
-        document.getElementById('modalHsn').textContent = data.hsn;
-
-        document.getElementById('modalProductId').value = data.id;
-        document.getElementById('modalPurchasePrice').value = data.purchasePrice;
-        document.getElementById('modalSellingPrice').value = data.sellingPrice;
-        document.getElementById('modalMrp').value = data.mrp;
-        document.getElementById('modalGst').value = data.gst;
-        document.getElementById('modalCurrentStock').value = data.currentStock;
-        document.getElementById('modalMinimumStock').value = data.minimumStock;
-        document.getElementById('modalIsActive').value = data.isActive ? 'true' : 'false';
-
-        const toggle = document.getElementById('statusToggle');
-        const label = document.getElementById('statusToggleLabel');
-        if (data.isActive) {
-            toggle.classList.add('active');
-            label.textContent = 'Active';
-        } else {
-            toggle.classList.remove('active');
-            label.textContent = 'Inactive';
-        }
-
-        disableEditMode();
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    };
-
-    window.closeModal = function() {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-        setTimeout(disableEditMode, 300);
-    };
-
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) closeModal();
-    });
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
-    });
-
-    // Toggle status
-    window.toggleModalStatus = function() {
-        if (!isEditMode) return;
-        const toggle = document.getElementById('statusToggle');
-        const label = document.getElementById('statusToggleLabel');
-        const isActive = toggle.classList.toggle('active');
-        label.textContent = isActive ? 'Active' : 'Inactive';
-        document.getElementById('modalIsActive').value = isActive ? 'true' : 'false';
-    };
-
-    // Enable edit
-    window.enableEditMode = function() {
-        isEditMode = true;
-        editableInputs.forEach(input => input.removeAttribute('readonly'));
-        document.getElementById('statusToggle').classList.remove('disabled');
-        editPanel.classList.add('editing');
-        editBtn.style.display = 'none';
-        saveBtn.style.display = 'inline-flex';
-        editableInputs[0].focus();
-    };
-
-    function disableEditMode() {
-        isEditMode = false;
-        editableInputs.forEach(input => input.setAttribute('readonly', true));
-        document.getElementById('statusToggle').classList.add('disabled');
-        editPanel.classList.remove('editing');
-        editBtn.style.display = 'inline-flex';
-        saveBtn.style.display = 'none';
-    }
-
-    function showToast(msg) {
-        toastMsg.textContent = msg;
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-
-    // Save
-    window.saveProduct = function() {
-        const pPrice = parseFloat(document.getElementById('modalPurchasePrice').value);
-        const sPrice = parseFloat(document.getElementById('modalSellingPrice').value);
-        const mrp = parseFloat(document.getElementById('modalMrp').value);
-        const gst = parseFloat(document.getElementById('modalGst').value);
-        const cStock = parseInt(document.getElementById('modalCurrentStock').value);
-        const mStock = parseInt(document.getElementById('modalMinimumStock').value);
-
-        // Validation
-        if (isNaN(pPrice) || pPrice <= 0) { alert('Purchase price must be greater than 0'); return; }
-        if (isNaN(sPrice) || sPrice <= 0) { alert('Selling price must be greater than 0'); return; }
-        if (sPrice < pPrice) { alert('Selling price must be >= Purchase price'); return; }
-        if (isNaN(mrp) || mrp <= 0) { alert('MRP must be greater than 0'); return; }
-        if (mrp < sPrice) { alert('MRP must be >= Selling price'); return; }
-        if (isNaN(gst) || gst < 0 || gst > 100) { alert('GST must be between 0 and 100'); return; }
-        if (isNaN(cStock) || cStock < 0) { alert('Current stock must be >= 0'); return; }
-        if (isNaN(mStock) || mStock < 0) { alert('Minimum stock must be >= 0'); return; }
-
-        const form = document.getElementById('productEditForm');
-        const formData = new FormData(form);
-
-        saveBtn.disabled = true;
-        const originalHTML = saveBtn.innerHTML;
-        saveBtn.innerHTML = `
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="animation: spin 1s linear infinite;">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-            </svg>
-            Saving...
-        `;
-
-        fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => {
-            if (response.ok) {
-                showToast('Product updated successfully!');
-                setTimeout(() => window.location.reload(), 800);
-            } else {
-                throw new Error('Server error');
-            }
-        })
-        .catch(() => {
-            form.submit();
-        })
-        .finally(() => {
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = originalHTML;
-        });
-    };
-})();
-
 </script>
 {% endblock %}

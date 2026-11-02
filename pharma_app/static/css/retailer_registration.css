@@ -288,3 +288,12 @@ select.form-control {
         background-color: #3b82f6;
     }
 }
+
+/* Shop type hint under the dropdown */
+.shop-type-hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text-muted);
+}

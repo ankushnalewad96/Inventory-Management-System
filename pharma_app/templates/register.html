@@ -1,16 +1,23 @@
 {% extends "base.html" %}
+{% load i18n i18n_extras %}
 {% load static %}
-{% block title %}Add Retailer - My Django Site{% endblock %}
+{% block title %}{% translate "Add Retailer" %} - {{ app_name }}{% endblock %}
 
 {% block css %}
-<!-- <link rel="stylesheet" href="{% static 'css/add_order.css' %}"> -->
 <link rel="stylesheet" href="{% static 'css/retailer_registration.css' %}">
 <link rel="stylesheet" href="{% static 'css/error_message.css' %}">
 {% endblock %}
 
 {% block page_title %}
-    <h1>Add Retailer</h1>
-    <!-- <p>A quick pulse on your cash position</p> -->
+    <div class="page-title-row">
+        <a href="{% url 'retailer_list' %}" class="page-back-btn" title="{% translate "Back to Retailers" %}" aria-label="{% translate "Back to Retailers" %}">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            <h1>{% translate "Add Retailer" %}</h1>
+            <p>{% translate "Create a login and shop profile for a new retailer" %}</p>
+        </div>
+    </div>
 {% endblock %}
 
 {% block body %}
@@ -18,7 +25,7 @@
         {% csrf_token %}
         <div class="form-card">
             <div class="form-header">
-                <h2><i class="fas fa-store" style="color:var(--primary);margin-right:8px;"></i>New Retailer Account</h2>
+                <h2><i class="fas fa-store" style="color:var(--primary);margin-right:8px;"></i>{% translate "New Retailer Account" %}</h2>
             </div>
 
             <div class="form-body">
@@ -27,29 +34,29 @@
                     <div class="section-header">
                         <div class="section-icon blue"><i class="fas fa-user-shield"></i></div>
                         <div>
-                            <div class="section-title">Account Information</div>
-                            <div class="section-subtitle">Login credentials for the retailer</div>
+                            <div class="section-title">{% translate "Account Information" %}</div>
+                            <div class="section-subtitle">{% translate "Login credentials for the retailer" %}</div>
                         </div>
                     </div>
 
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="username">Username <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="username" id="username" placeholder="e.g. rajesh_store" autocomplete="username" required>
-                            <span class="error-msg" id="usernameError"><i class="fas fa-circle-exclamation"></i> Username is required</span>
+                            <label for="username">{% translate "Username" %} <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="username" id="username" placeholder="{% translate "e.g. rajesh_store" %}" autocomplete="username" required>
+                            <span class="error-msg" id="usernameError"><i class="fas fa-circle-exclamation"></i> {% translate "Username is required" %}</span>
                         </div>
 
                         <div class="form-group">
-                            <label for="email">Email Address <span class="required">*</span></label>
-                            <input type="email" class="form-control" name="email" id="email" placeholder="e.g. rajesh@store.com" autocomplete="email" required>
-                            <span class="error-msg" id="emailError"><i class="fas fa-circle-exclamation"></i> Enter a valid email address</span>
+                            <label for="email">{% translate "Email Address" %} <span class="required">*</span></label>
+                            <input type="email" class="form-control" name="email" id="email" placeholder="{% translate "e.g. rajesh@store.com" %}" autocomplete="email" required>
+                            <span class="error-msg" id="emailError"><i class="fas fa-circle-exclamation"></i> {% translate "Enter a valid email address" %}</span>
                         </div>
 
                         <div class="form-group">
-                            <label for="password">Password <span class="required">*</span></label>
+                            <label for="password">{% translate "Password" %} <span class="required">*</span></label>
                             <div class="password-wrap">
-                                <input type="password" class="form-control" name="password" id="password" placeholder="Min 8 characters" autocomplete="new-password" required oninput="checkStrength(this.value)">
-                                <button type="button" class="toggle-password" onclick="togglePassword()" aria-label="Show password">
+                                <input type="password" class="form-control" name="password" id="password" placeholder="{% translate "Min 8 characters" %}" autocomplete="new-password" required oninput="checkStrength(this.value)">
+                                <button type="button" class="toggle-password" onclick="togglePassword()" aria-label="{% translate "Show password" %}">
                                     <i class="fas fa-eye" id="eyeIcon"></i>
                                 </button>
                             </div>
@@ -59,18 +66,18 @@
                                 </div>
                                 <div class="strength-text" id="strengthText"></div>
                             </div>
-                            <span class="error-msg" id="passwordError"><i class="fas fa-circle-exclamation"></i> Password must be at least 8 characters</span>
+                            <span class="error-msg" id="passwordError"><i class="fas fa-circle-exclamation"></i> {% translate "Password must be at least 8 characters" %}</span>
                         </div>
 
                         <div class="form-group">
-                            <label for="confirmPassword">Confirm Password <span class="required">*</span></label>
+                            <label for="confirmPassword">{% translate "Confirm Password" %} <span class="required">*</span></label>
                             <div class="password-wrap">
-                                <input type="password" class="form-control" id="confirmPassword" placeholder="Re-enter password" autocomplete="new-password" required oninput="checkMatch()">
-                                <button type="button" class="toggle-password" onclick="toggleConfirmPassword()" aria-label="Show password">
+                                <input type="password" class="form-control" id="confirmPassword" placeholder="{% translate "Re-enter password" %}" autocomplete="new-password" required oninput="checkMatch()">
+                                <button type="button" class="toggle-password" onclick="toggleConfirmPassword()" aria-label="{% translate "Show password" %}">
                                     <i class="fas fa-eye" id="eyeIcon2"></i>
                                 </button>
                             </div>
-                            <span class="error-msg" id="matchError"><i class="fas fa-circle-exclamation"></i> Passwords do not match</span>
+                            <span class="error-msg" id="matchError"><i class="fas fa-circle-exclamation"></i> {% translate "Passwords do not match" %}</span>
                         </div>
                     </div>
                 </div>
@@ -80,28 +87,51 @@
                     <div class="section-header">
                         <div class="section-icon green"><i class="fas fa-store"></i></div>
                         <div>
-                            <div class="section-title">Shop Details</div>
-                            <div class="section-subtitle">Business information of the retailer</div>
+                            <div class="section-title">{% translate "Shop Details" %}</div>
+                            <div class="section-subtitle">{% translate "Business information of the retailer" %}</div>
                         </div>
                     </div>
 
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="shop_name">Shop Name <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="shop_name" id="shop_name" placeholder="e.g. Rajesh General Store" required>
-                            <span class="error-msg" id="shopError"><i class="fas fa-circle-exclamation"></i> Shop name is required</span>
+                            <label for="shop_name">{% translate "Shop Name" %} <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="shop_name" id="shop_name" placeholder="{% translate "e.g. Rajesh General Store" %}" required>
+                            <span class="error-msg" id="shopError"><i class="fas fa-circle-exclamation"></i> {% translate "Shop name is required" %}</span>
                         </div>
 
                         <div class="form-group">
-                            <label for="owner_name">Owner Name <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="owner_name" id="owner_name" placeholder="e.g. Rajesh Kumar Sharma" required>
-                            <span class="error-msg" id="ownerError"><i class="fas fa-circle-exclamation"></i> Owner name is required</span>
+                            <label for="owner_name">{% translate "Owner Name" %} <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="owner_name" id="owner_name" placeholder="{% translate "e.g. Rajesh Kumar Sharma" %}" required>
+                            <span class="error-msg" id="ownerError"><i class="fas fa-circle-exclamation"></i> {% translate "Owner name is required" %}</span>
                         </div>
 
                         <div class="form-group">
-                            <label for="mobile">Mobile Number <span class="required">*</span></label>
-                            <input type="tel" class="form-control" name="mobile" id="mobile" placeholder="e.g. 9876543210" maxlength="10" inputmode="numeric" autocomplete="tel" required oninput="this.value = this.value.replace(/\D/g,'')">
-                            <span class="error-msg" id="mobileError"><i class="fas fa-circle-exclamation"></i> Enter a valid 10-digit mobile number</span>
+                            <label for="shop_type">{% translate "Shop Type" %} <span class="required">*</span></label>
+                            <select class="form-control" name="shop_type" id="shop_type" required>
+                                <option value="">{% translate "Select shop type" %}</option>
+                                {% for value, label in shop_type_choices %}
+                                    <option value="{{ value }}">{{ label|tr }}</option>
+                                {% endfor %}
+                            </select>
+                            <span class="error-msg" id="shopTypeError"><i class="fas fa-circle-exclamation"></i> {% translate "Please select the shop type" %}</span>
+                            <small class="shop-type-hint" id="shopTypeHint">{% translate "The shop type decides which features (batches, expiry, loose quantities, quotations...) the shop gets." %}</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mobile">{% translate "Mobile Number" %} <span class="required">*</span></label>
+                            <input type="tel" class="form-control" name="mobile" id="mobile" placeholder="{% translate "e.g. 9876543210" %}" maxlength="10" inputmode="numeric" autocomplete="tel" required oninput="this.value = this.value.replace(/\D/g,'')">
+                            <span class="error-msg" id="mobileError"><i class="fas fa-circle-exclamation"></i> {% translate "Enter a valid 10-digit mobile number" %}</span>
+                        </div>
+
+                        <!-- Drug licence numbers: only for shop types with that feature -->
+                        <div class="form-group drug-licence-field" hidden>
+                            <label for="drug_licence_number">{% translate "Drug Licence No." %} <span class="optional-note">{% translate "(printed on bills)" %}</span></label>
+                            <input type="text" class="form-control" name="drug_licence_number" id="drug_licence_number" maxlength="50" placeholder="{% translate "e.g. 20B-MH-12345" %}" disabled>
+                        </div>
+
+                        <div class="form-group drug-licence-field" hidden>
+                            <label for="drug_licence_number_2">{% translate "Second Licence No." %} <span class="optional-note">{% translate "(optional)" %}</span></label>
+                            <input type="text" class="form-control" name="drug_licence_number_2" id="drug_licence_number_2" maxlength="50" placeholder="{% translate "e.g. 21B-MH-12345" %}" disabled>
                         </div>
                     </div>
                 </div>
@@ -111,50 +141,56 @@
                     <div class="section-header">
                         <div class="section-icon orange"><i class="fas fa-map-marker-alt"></i></div>
                         <div>
-                            <div class="section-title">Address</div>
-                            <div class="section-subtitle">Location details of the shop</div>
+                            <div class="section-title">{% translate "Address" %}</div>
+                            <div class="section-subtitle">{% translate "Location details of the shop" %}</div>
                         </div>
                     </div>
 
                     <div class="form-grid">
-                        <div class="form-group">
-                            <label for="city">City <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="city" id="city" placeholder="e.g. Mumbai" required>
-                            <span class="error-msg" id="cityError"><i class="fas fa-circle-exclamation"></i> City is required</span>
+                        <div class="form-group full-width">
+                            <label for="address">{% translate "Shop Address" %} <span class="required">*</span></label>
+                            <textarea class="form-control" name="address" id="address" rows="2" placeholder="{% translate "e.g. 12, MG Road, Near City Mall" %}" required></textarea>
+                            <span class="error-msg" id="addressError"><i class="fas fa-circle-exclamation"></i> {% translate "Address is required" %}</span>
                         </div>
 
                         <div class="form-group">
-                            <label for="state">State <span class="required">*</span></label>
+                            <label for="city">{% translate "City" %} <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="city" id="city" placeholder="{% translate "e.g. Mumbai" %}" required>
+                            <span class="error-msg" id="cityError"><i class="fas fa-circle-exclamation"></i> {% translate "City is required" %}</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="state">{% translate "State" %} <span class="required">*</span></label>
                             <select class="form-control" name="state" id="state" required>
-                                <option value="">Select State</option>
-                                <option value="maharashtra">Maharashtra</option>
-                                <option value="gujarat">Gujarat</option>
-                                <option value="karnataka">Karnataka</option>
-                                <option value="tamilnadu">Tamil Nadu</option>
-                                <option value="delhi">Delhi</option>
-                                <option value="rajasthan">Rajasthan</option>
-                                <option value="telangana">Telangana</option>
-                                <option value="westbengal">West Bengal</option>
-                                <option value="punjab">Punjab</option>
-                                <option value="haryana">Haryana</option>
-                                <option value="up">Uttar Pradesh</option>
-                                <option value="mp">Madhya Pradesh</option>
-                                <option value="kerala">Kerala</option>
-                                <option value="andhra">Andhra Pradesh</option>
-                                <option value="bihar">Bihar</option>
-                                <option value="odisha">Odisha</option>
-                                <option value="assam">Assam</option>
-                                <option value="jharkhand">Jharkhand</option>
-                                <option value="chhattisgarh">Chhattisgarh</option>
-                                <option value="goa">Goa</option>
+                                <option value="">{% translate "Select State" %}</option>
+                                <option value="maharashtra">{% translate "Maharashtra" %}</option>
+                                <option value="gujarat">{% translate "Gujarat" %}</option>
+                                <option value="karnataka">{% translate "Karnataka" %}</option>
+                                <option value="tamilnadu">{% translate "Tamil Nadu" %}</option>
+                                <option value="delhi">{% translate "Delhi" %}</option>
+                                <option value="rajasthan">{% translate "Rajasthan" %}</option>
+                                <option value="telangana">{% translate "Telangana" %}</option>
+                                <option value="westbengal">{% translate "West Bengal" %}</option>
+                                <option value="punjab">{% translate "Punjab" %}</option>
+                                <option value="haryana">{% translate "Haryana" %}</option>
+                                <option value="up">{% translate "Uttar Pradesh" %}</option>
+                                <option value="mp">{% translate "Madhya Pradesh" %}</option>
+                                <option value="kerala">{% translate "Kerala" %}</option>
+                                <option value="andhra">{% translate "Andhra Pradesh" %}</option>
+                                <option value="bihar">{% translate "Bihar" %}</option>
+                                <option value="odisha">{% translate "Odisha" %}</option>
+                                <option value="assam">{% translate "Assam" %}</option>
+                                <option value="jharkhand">{% translate "Jharkhand" %}</option>
+                                <option value="chhattisgarh">{% translate "Chhattisgarh" %}</option>
+                                <option value="goa">{% translate "Goa" %}</option>
                             </select>
-                            <span class="error-msg" id="stateError"><i class="fas fa-circle-exclamation"></i> Please select a state</span>
+                            <span class="error-msg" id="stateError"><i class="fas fa-circle-exclamation"></i> {% translate "Please select a state" %}</span>
                         </div>
 
                         <div class="form-group">
-                            <label for="pincode">PIN Code <span class="required">*</span></label>
-                            <input type="text" class="form-control" name="pincode" id="pincode" placeholder="e.g. 400001" maxlength="6" inputmode="numeric" required oninput="this.value = this.value.replace(/\D/g,'')">
-                            <span class="error-msg" id="pincodeError"><i class="fas fa-circle-exclamation"></i> Enter a valid 6-digit PIN code</span>
+                            <label for="pincode">{% translate "PIN Code" %} <span class="required">*</span></label>
+                            <input type="text" class="form-control" name="pincode" id="pincode" placeholder="{% translate "e.g. 400001" %}" maxlength="6" inputmode="numeric" required oninput="this.value = this.value.replace(/\D/g,'')">
+                            <span class="error-msg" id="pincodeError"><i class="fas fa-circle-exclamation"></i> {% translate "Enter a valid 6-digit PIN code" %}</span>
                         </div>
                     </div>
                 </div>
@@ -163,15 +199,47 @@
             <!-- Form Footer -->
             <div class="form-footer">
                 <button type="submit" class="btn btn-primary" id="submitBtn">
-                    <i class="fas fa-check"></i> Register Retailer
+                    <i class="fas fa-check"></i> {% translate "Register Retailer" %}
                 </button>
             </div>
         </div>
     </form>
+    {{ shop_type_feature_labels|json_script:"shopTypeFeatures" }}
+    {{ drug_licence_types|json_script:"drugLicenceTypes" }}
 {% endblock %}
 
 {% block js %}
 <script>
+    // ===== SHOP TYPE: show what the chosen type gets =====
+    (function () {
+        var select = document.getElementById('shop_type');
+        var hint = document.getElementById('shopTypeHint');
+        var data = document.getElementById('shopTypeFeatures');
+        if (!select || !hint || !data) return;
+
+        var featuresByType = JSON.parse(data.textContent) || {};
+        var defaultText = hint.textContent;
+
+        select.addEventListener('change', function () {
+            var list = featuresByType[select.value];
+            hint.textContent = list && list.length
+                ? gettext('Includes: ') + list.join(' · ')
+                : defaultText;
+        });
+
+        // Drug licence fields only for shop types with that feature
+        var licenceTypes = JSON.parse((document.getElementById('drugLicenceTypes') || {}).textContent || '[]');
+        function toggleLicenceFields() {
+            var on = licenceTypes.indexOf(select.value) !== -1;
+            document.querySelectorAll('.drug-licence-field').forEach(function (group) {
+                group.hidden = !on;
+                group.querySelectorAll('input').forEach(function (input) { input.disabled = !on; });
+            });
+        }
+        select.addEventListener('change', toggleLicenceFields);
+        toggleLicenceFields();
+    })();
+
     // ===== SIDEBAR TOGGLE =====
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -299,15 +367,15 @@
             if (score <= 2) {
                 fill.classList.add('weak');
                 text.classList.add('weak');
-                text.textContent = 'Weak password';
+                text.textContent = gettext('Weak password');
             } else if (score <= 4) {
                 fill.classList.add('medium');
                 text.classList.add('medium');
-                text.textContent = 'Medium strength';
+                text.textContent = gettext('Medium strength');
             } else {
                 fill.classList.add('strong');
                 text.classList.add('strong');
-                text.textContent = 'Strong password';
+                text.textContent = gettext('Strong password');
             }
 
             if (password.length >= 8) {
@@ -378,7 +446,9 @@
 
             if (!validateField('shop_name', 'shopError', v => v.length > 0)) valid = false;
             if (!validateField('owner_name', 'ownerError', v => v.length > 0)) valid = false;
+            if (!validateField('shop_type', 'shopTypeError', v => v.length > 0)) valid = false;
             if (!validateField('mobile', 'mobileError', v => /^\d{10}$/.test(v))) valid = false;
+            if (!validateField('address', 'addressError', v => v.length > 0)) valid = false;
             if (!validateField('city', 'cityError', v => v.length > 0)) valid = false;
             if (!validateField('state', 'stateError', v => v.length > 0)) valid = false;
             if (!validateField('pincode', 'pincodeError', v => /^\d{6}$/.test(v))) valid = false;
@@ -415,7 +485,7 @@
 
         // Reset form
         function resetForm() {
-            if (confirm('Are you sure you want to reset the form?')) {
+            if (confirm(gettext('Are you sure you want to reset the form?'))) {
                 document.getElementById('retailerForm').reset();
                 document.querySelectorAll('.form-control').forEach(el => {
                     el.classList.remove('error');

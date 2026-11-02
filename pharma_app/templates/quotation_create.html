@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% translate "New Quotation" %} - {{ app_name }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/list_pages.css' %}">
+<link rel="stylesheet" href="{% static 'css/quotation.css' %}">
+{% endblock %}
+
+{% block page_title %}
+    <div class="page-title-row">
+        <a href="{% url 'quotation_list' %}" class="page-back-btn" title="{% translate "Back to Quotations" %}" aria-label="{% translate "Back to Quotations" %}">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            <h1>{% translate "New Quotation" %}</h1>
+            <p>{% translate "An estimate only: stock and the customer's account do not change" %}</p>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+<form method="post" action="{% url 'quotation_create' %}" id="quotationForm" class="qt-form">
+    {% csrf_token %}
+
+    <section class="qt-card">
+        <div class="qt-grid">
+            {% if is_admin %}
+            <div class="qt-field">
+                <label for="qtShop">{% translate "Shop" %} <span class="required">*</span></label>
+                <select id="qtShop" name="retailer" class="qt-input" required>
+                    <option value="">{% translate "Select shop" %}</option>
+                    {% for shop in shops %}
+                        <option value="{{ shop.id }}">{{ shop.shop_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% else %}
+                <input type="hidden" id="qtShop" value="{{ shops.0.id }}">
+            {% endif %}
+
+            <div class="qt-field">
+                <label for="qtCustomer">{% translate "Customer" %} <span class="required">*</span></label>
+                <select id="qtCustomer" name="customer" class="qt-input" required>
+                    <option value="">{% translate "Select customer" %}</option>
+                    {% for customer in customers %}
+                        <option value="{{ customer.id }}" data-shop="{{ customer.retailer_id }}" data-level="{{ customer.price_level }}">
+                            {{ customer.customer_name }} - {{ customer.mobile }}{% if customer.price_level == "wholesale" %} {% translate "(Wholesale)" %}{% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+                <small class="qt-help">{% translate "New customer? Add them from the sales screen first." %}</small>
+            </div>
+
+            <div class="qt-field">
+                <label for="qtValidUntil">{% translate "Valid until" %}</label>
+                <input type="date" id="qtValidUntil" name="valid_until" class="qt-input"
+                       value="{{ default_valid_until|date:'Y-m-d' }}" min="{{ today|date:'Y-m-d' }}">
+            </div>
+        </div>
+    </section>
+
+    <section class="qt-card">
+        <div class="qt-card-head">
+            <h2>{% translate "Items" %}</h2>
+            <button type="button" class="export-btn primary" id="qtAddRow"><i class="fas fa-plus"></i> {% translate "Add item" %}</button>
+        </div>
+
+        <div class="qt-table-wrap">
+            <table class="qt-table">
+                <thead>
+                    <tr>
+                        <th>{% translate "Product" %}</th>
+                        <th class="num">{% translate "Qty" %}</th>
+                        <th class="num">{% translate "Price (₹)" %}</th>
+                        <th class="num">{% translate "Discount (₹)" %}</th>
+                        <th class="num">GST</th>
+                        <th class="num">{% translate "Amount" %}</th>
+                        <th><span class="sr-only">{% translate "Remove" %}</span></th>
+                    </tr>
+                </thead>
+                <tbody id="qtRows"></tbody>
+            </table>
+        </div>
+        <p class="qt-empty" id="qtEmpty">{% translate "Pick the shop and customer, then add items." %}</p>
+    </section>
+
+    <section class="qt-card qt-bottom">
+        <div class="qt-field">
+            <label for="qtRemarks">{% translate "Remarks / terms" %}</label>
+            <textarea id="qtRemarks" name="remarks" class="qt-input" rows="3" placeholder="{% translate "e.g. Delivery in 3 days, prices include loading" %}"></textarea>
+        </div>
+        <table class="qt-totals">
+            <tr><td>{% translate "Subtotal" %}</td><td id="qtSubtotal">₹0.00</td></tr>
+            <tr><td>{% translate "Discount" %}</td><td id="qtDiscount">- ₹0.00</td></tr>
+            <tr><td>GST</td><td id="qtGst">+ ₹0.00</td></tr>
+            <tr class="grand"><td>{% translate "Total" %}</td><td id="qtTotal">₹0.00</td></tr>
+        </table>
+    </section>
+
+    <div class="qt-actions">
+        <a href="{% url 'quotation_list' %}" class="export-btn">{% translate "Cancel" %}</a>
+        <button type="submit" name="action" value="save" class="export-btn">{% translate "Save" %}</button>
+        <button type="submit" name="action" value="save_print" class="export-btn primary"><i class="fas fa-print"></i> {% translate "Save & Print" %}</button>
+    </div>
+</form>
+
+{{ products_data|json_script:"qtProducts" }}
+{{ shop_rules|json_script:"qtShopRules" }}
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'jss/dashboard.js' %}"></script>
+<script>
+(function () {
+    'use strict';
+
+    var products = JSON.parse(document.getElementById('qtProducts').textContent || '[]');
+    var shopRules = JSON.parse(document.getElementById('qtShopRules').textContent || '{}');
+    var shopInput = document.getElementById('qtShop');
+    var customerSelect = document.getElementById('qtCustomer');
+    var rowsBody = document.getElementById('qtRows');
+    var emptyNote = document.getElementById('qtEmpty');
+    var rowCounter = 0;
+
+    function shopId() { return shopInput ? String(shopInput.value || '') : ''; }
+    function rules() { return shopRules[shopId()] || {}; }
+
+    function money(value) { return (Math.round(value * 100) / 100).toFixed(2); }
+
+    function customerLevel() {
+        var option = customerSelect.options[customerSelect.selectedIndex];
+        return option ? (option.getAttribute('data-level') || 'retail') : 'retail';
+    }
+
+    // Default quoted price: wholesale for wholesale customers (price-level shops)
+    function defaultPrice(product) {
+        if (rules().price_levels && customerLevel() === 'wholesale' && product.wholesale_price) {
+            return product.wholesale_price;
+        }
+        return product.price;
+    }
+
+    function productById(id) {
+        for (var i = 0; i < products.length; i++) {
+            if (String(products[i].id) === String(id)) return products[i];
+        }
+        return null;
+    }
+
+    function filterCustomers() {
+        var id = shopId();
+        Array.prototype.forEach.call(customerSelect.options, function (option) {
+            if (!option.value) return;
+            option.hidden = option.getAttribute('data-shop') !== id;
+        });
+        var current = customerSelect.options[customerSelect.selectedIndex];
+        if (current && current.hidden) customerSelect.value = '';
+    }
+
+    function addRow() {
+        if (!shopId()) { alert(gettext('Please select the shop first.')); return; }
+        rowCounter++;
+        var n = rowCounter;
+        var step = rules().decimal_quantity ? '0.001' : '1';
+        var options = '<option value="">Select product</option>';
+        products.forEach(function (p) {
+            if (String(p.shop) !== shopId()) return;
+            var label = p.name + (p.specification ? ' · ' + p.specification : '') + gettext(' · Stock ') + p.stock + ' ' + p.unit;
+            var option = document.createElement('option');
+            option.value = p.id;
+            option.textContent = label;
+            options += option.outerHTML;
+        });
+
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td><select class="qt-input qt-product" name="items[' + n + '][product]" required>' + options + '</select></td>' +
+            '<td class="num"><input type="number" class="qt-input qt-qty" name="items[' + n + '][quantity]" min="' + step + '" step="' + step + '" value="1" required></td>' +
+            '<td class="num"><input type="number" class="qt-input qt-price" name="items[' + n + '][selling_price]" min="0" step="0.01"></td>' +
+            '<td class="num"><input type="number" class="qt-input qt-discount" name="items[' + n + '][discount]" min="0" step="0.01" value="0"></td>' +
+            '<td class="num qt-gst">0%</td>' +
+            '<td class="num qt-amount">₹0.00</td>' +
+            '<td><button type="button" class="qt-remove" title="Remove item" aria-label="Remove item"><i class="fas fa-trash-alt"></i></button></td>';
+        rowsBody.appendChild(tr);
+
+        tr.querySelector('.qt-product').addEventListener('change', function () {
+            var product = productById(this.value);
+            tr.querySelector('.qt-price').value = product ? defaultPrice(product) : '';
+            tr.querySelector('.qt-gst').textContent = product ? (parseFloat(product.gst) + '%') : '0%';
+            recalc();
+        });
+        tr.querySelectorAll('input').forEach(function (input) { input.addEventListener('input', recalc); });
+        tr.querySelector('.qt-remove').addEventListener('click', function () { tr.remove(); recalc(); });
+        recalc();
+    }
+
+    function recalc() {
+        var subtotal = 0, discount = 0, gst = 0;
+        rowsBody.querySelectorAll('tr').forEach(function (tr) {
+            var product = productById(tr.querySelector('.qt-product').value);
+            var qty = parseFloat(tr.querySelector('.qt-qty').value) || 0;
+            var price = parseFloat(tr.querySelector('.qt-price').value) || 0;
+            var disc = parseFloat(tr.querySelector('.qt-discount').value) || 0;
+            var rate = product ? (parseFloat(product.gst) || 0) : 0;
+            var gross = qty * price;
+            var taxable = Math.max(gross - disc, 0);
+            var tax = taxable * rate / 100;
+            tr.querySelector('.qt-amount').textContent = '₹' + money(taxable + tax);
+            subtotal += gross; discount += disc; gst += tax;
+        });
+        document.getElementById('qtSubtotal').textContent = '₹' + money(subtotal);
+        document.getElementById('qtDiscount').textContent = '- ₹' + money(discount);
+        document.getElementById('qtGst').textContent = '+ ₹' + money(gst);
+        document.getElementById('qtTotal').textContent = '₹' + money(subtotal - discount + gst);
+        emptyNote.hidden = rowsBody.children.length > 0;
+    }
+
+    // Customer changed: quoted prices follow their price level.
+    customerSelect.addEventListener('change', function () {
+        rowsBody.querySelectorAll('tr').forEach(function (tr) {
+            var product = productById(tr.querySelector('.qt-product').value);
+            if (product) tr.querySelector('.qt-price').value = defaultPrice(product);
+        });
+        recalc();
+    });
+
+    if (shopInput && shopInput.tagName === 'SELECT') {
+        shopInput.addEventListener('change', function () {
+            rowsBody.innerHTML = '';
+            filterCustomers();
+            recalc();
+            if (shopId()) addRow();
+        });
+    }
+
+    document.getElementById('qtAddRow').addEventListener('click', addRow);
+
+    document.getElementById('quotationForm').addEventListener('submit', function (event) {
+        if (!rowsBody.querySelector('.qt-product option:checked[value]:not([value=""])')) {
+            event.preventDefault();
+            alert(gettext('Please add at least one product.'));
+        }
+    });
+
+    filterCustomers();
+    if (shopId()) addRow();
+})();
+</script>
+{% endblock %}

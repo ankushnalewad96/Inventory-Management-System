@@ -1,0 +1,225 @@
+{% load i18n %}{% load qty %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if kind == "sale" %}{% translate "Credit Note" %} {{ note.credit_note_number }}{% else %}{% translate "Debit Note" %} {{ note.debit_note_number }}{% endif %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { --ink: #1e293b; --muted: #64748b; --line: #e2e8f0; --soft: #f8fafc; --primary: #2563eb; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: "Inter", "Segoe UI", Arial, sans-serif; background: #e2e8f0; color: var(--ink); font-size: 13px; line-height: 1.5; padding: 24px 16px 48px; }
+        .toolbar { max-width: 820px; margin: 0 auto 16px; display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap; }
+        .tool-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 10px; border: 1px solid #cbd5e1; background: #fff; color: var(--ink); font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; }
+        .tool-btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .sheet { max-width: 820px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); padding: 36px 40px; }
+        .head { display: flex; justify-content: space-between; gap: 24px; padding-bottom: 20px; border-bottom: 2px solid var(--ink); }
+        .shop-name { font-size: 22px; font-weight: 800; }
+        .meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+        .meta strong { color: var(--ink); }
+        .title { text-align: right; }
+        .title h1 { font-size: 20px; letter-spacing: 2px; color: var(--primary); }
+        .party { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 22px 0; }
+        .label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 6px; }
+        .party-name { font-size: 15px; font-weight: 700; }
+        table { width: 100%; border-collapse: collapse; }
+        .items th, .gst th { background: var(--soft); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 8px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); text-align: left; }
+        .items td, .gst td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+        .num { text-align: right !important; white-space: nowrap; }
+        .small { font-size: 11px; color: var(--muted); }
+        .bottom { display: grid; grid-template-columns: 1fr 300px; gap: 24px; margin-top: 20px; }
+        .totals td { padding: 6px 0; }
+        .totals td:last-child { text-align: right; font-weight: 600; }
+        .totals .grand td { border-top: 2px solid var(--ink); padding-top: 10px; font-size: 16px; font-weight: 800; }
+        .gst { margin-top: 18px; }
+        .settle { margin-top: 14px; font-size: 12px; }
+        .settle td { padding: 3px 0; }
+        .settle td:last-child { text-align: right; font-weight: 600; }
+        .foot { margin-top: 32px; padding-top: 14px; border-top: 1px dashed var(--line); display: flex; justify-content: space-between; align-items: flex-end; font-size: 11px; color: var(--muted); }
+        .sign { width: 180px; border-top: 1px solid var(--ink); margin: 36px 0 4px auto; }
+        .wrap { overflow-x: auto; }
+        @media (max-width: 640px) {
+            .sheet { padding: 22px 16px; }
+            .head, .foot { flex-direction: column; align-items: flex-start; }
+            .title { text-align: left; }
+            .party, .bottom { grid-template-columns: 1fr; }
+        }
+        @media print {
+            body { background: #fff; padding: 0; }
+            .toolbar { display: none; }
+            .sheet { box-shadow: none; border-radius: 0; max-width: none; padding: 0; }
+            @page { size: A4; margin: 14mm; }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        {% if kind == "sale" %}
+            <a href="{% url 'sale_detail' note.sale_id %}" class="tool-btn"><i class="fas fa-arrow-left"></i> {% translate "Back to sale" %}</a>
+        {% else %}
+            <a href="{% url 'purchase_detail' note.purchase_id %}" class="tool-btn"><i class="fas fa-arrow-left"></i> {% translate "Back to purchase" %}</a>
+        {% endif %}
+        <button type="button" class="tool-btn primary" onclick="window.print()"><i class="fas fa-print"></i> {% translate "Print" %}</button>
+    </div>
+
+    <div class="sheet">
+        <div class="head">
+            <div>
+                <div class="shop-name">{{ note.retailer.shop_name }}</div>
+                <div class="meta">
+                    {{ note.retailer.address }}<br>
+                    {{ note.retailer.city }} - {{ note.retailer.pincode }}<br>
+                    {% translate "Phone:" %} {{ note.retailer.mobile }}
+                    {% if note.retailer.gst_number %}<br>GSTIN: <strong>{{ note.retailer.gst_number }}</strong>{% endif %}
+                    {% if features.drug_licence and note.retailer.drug_licence_number %}<br>{% translate "D.L. No:" %} <strong>{{ note.retailer.drug_licence_number }}</strong>{% endif %}
+                </div>
+            </div>
+            <div class="title">
+                {% if kind == "sale" %}
+                    <h1>{% translate "CREDIT NOTE" %}</h1>
+                    <div class="meta">
+                        {% translate "No:" %} <strong>{{ note.credit_note_number }}</strong><br>
+                        {% translate "Date:" %} <strong>{{ note.return_date|date:"d M Y" }}</strong><br>
+                        {% translate "Against invoice:" %} <strong>{{ note.sale.invoice_number }}</strong> ({{ note.sale.invoice_date|date:"d M Y" }})
+                    </div>
+                {% else %}
+                    <h1>{% translate "DEBIT NOTE" %}</h1>
+                    <div class="meta">
+                        {% translate "No:" %} <strong>{{ note.debit_note_number }}</strong><br>
+                        {% translate "Date:" %} <strong>{{ note.return_date|date:"d M Y" }}</strong><br>
+                        {% translate "Against bill:" %} <strong>{{ note.purchase.bill_number }}</strong> ({{ note.purchase.bill_date|date:"d M Y" }})
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="party">
+            <div>
+                {% if kind == "sale" %}
+                    <div class="label">{% translate "Customer" %}</div>
+                    <div class="party-name">{{ note.customer.customer_name }}</div>
+                    <div class="small">
+                        {% translate "Mobile:" %} {{ note.customer.mobile }}
+                        {% if note.customer.gst_number %}<br>GSTIN: {{ note.customer.gst_number }}{% endif %}
+                    </div>
+                {% else %}
+                    <div class="label">{% translate "Supplier" %}</div>
+                    <div class="party-name">{{ note.supplier.supplier_name }}</div>
+                    <div class="small">
+                        {{ note.supplier.city }}{% if note.supplier.state %}, {{ note.supplier.state }}{% endif %}
+                        {% if note.supplier.gst_number %}<br>GSTIN: {{ note.supplier.gst_number }}{% endif %}
+                    </div>
+                {% endif %}
+            </div>
+            <div>
+                <div class="label">{% translate "Reason" %}</div>
+                <div class="small">{{ note.reason|default:"—" }}</div>
+            </div>
+        </div>
+
+        <div class="wrap">
+            <table class="items">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>{% translate "Item" %}</th>
+                        <th class="num">{% translate "Qty" %}</th>
+                        <th class="num">{% translate "Rate" %}</th>
+                        <th class="num">{% translate "Disc." %}</th>
+                        <th class="num">{% translate "Taxable" %}</th>
+                        <th class="num">GST</th>
+                        <th class="num">{% translate "Amount" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <strong>{{ item.product.product_name }}</strong>
+                            {% if item.batch %}<div class="small">{% translate "Batch" %} {{ item.batch.batch_number }} · {% translate "Exp" %} {{ item.batch.expiry_date|date:"m/Y" }}</div>{% endif %}
+                            {% if item.product.hsn_code %}<div class="small">{% translate "HSN" %} {{ item.product.hsn_code }}</div>{% endif %}
+                        </td>
+                        {% if kind == "sale" %}
+                            <td class="num">{{ item.quantity|qty_unit:item.sale_item.unit.short_name }}</td>
+                            <td class="num">₹{{ item.selling_price }}</td>
+                        {% else %}
+                            <td class="num">{{ item.quantity|qty_unit:item.purchase_item.unit.short_name }}</td>
+                            <td class="num">₹{{ item.purchase_price }}</td>
+                        {% endif %}
+                        <td class="num">₹{{ item.discount }}</td>
+                        <td class="num">₹{{ item.taxable_amount }}</td>
+                        <td class="num">₹{{ item.gst_amount }} <span class="small">({{ item.gst|floatformat:"-2" }}%)</span></td>
+                        <td class="num"><strong>₹{{ item.amount }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if note.tax_type and gst_summary %}
+        <table class="gst">
+            <thead>
+                <tr>
+                    <th>{% translate "GST rate" %}</th>
+                    <th class="num">{% translate "Taxable" %}</th>
+                    {% if note.tax_type == "inter" %}
+                        <th class="num">IGST</th>
+                    {% else %}
+                        <th class="num">CGST</th>
+                        <th class="num">SGST</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in gst_summary %}
+                <tr>
+                    <td>{{ row.rate|floatformat:"-2" }}%</td>
+                    <td class="num">₹{{ row.taxable }}</td>
+                    {% if note.tax_type == "inter" %}
+                        <td class="num">₹{{ row.igst }}</td>
+                    {% else %}
+                        <td class="num">₹{{ row.cgst }}</td>
+                        <td class="num">₹{{ row.sgst }}</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <div class="bottom">
+            <div>
+                <div class="label">{% translate "How it was settled" %}</div>
+                <table class="settle">
+                    <tr><td>{% translate "Reduced the bill's balance due" %}</td><td>₹{{ note.applied_to_bill }}</td></tr>
+                    {% if kind == "sale" %}
+                        <tr><td>{% translate "Cash refunded" %}</td><td>₹{{ note.refund_amount }}</td></tr>
+                        <tr><td>{% translate "Kept as credit on account" %}</td><td>₹{{ note.kept_on_account }}</td></tr>
+                    {% else %}
+                        <tr><td>{% translate "Refund due from supplier" %}</td><td>₹{{ note.refund_amount }}</td></tr>
+                    {% endif %}
+                </table>
+            </div>
+            <table class="totals">
+                <tr><td>{% translate "Gross" %}</td><td>₹{{ note.subtotal }}</td></tr>
+                <tr><td>{% translate "Discount" %}</td><td>- ₹{{ note.discount }}</td></tr>
+                {% if note.tax_type == "inter" %}
+                    <tr><td>IGST</td><td>+ ₹{{ note.igst }}</td></tr>
+                {% elif note.tax_type == "intra" %}
+                    <tr><td>CGST</td><td>+ ₹{{ note.cgst }}</td></tr>
+                    <tr><td>SGST</td><td>+ ₹{{ note.sgst }}</td></tr>
+                {% else %}
+                    <tr><td>GST</td><td>+ ₹{{ note.gst }}</td></tr>
+                {% endif %}
+                <tr class="grand"><td>{% if kind == "sale" %}{% translate "Credit total" %}{% else %}{% translate "Debit total" %}{% endif %}</td><td>₹{{ note.total }}</td></tr>
+            </table>
+        </div>
+
+        <div class="foot">
+            <div>{% if kind == "sale" %}{% translate "This is a computer-generated credit note." %}{% else %}{% translate "This is a computer-generated debit note." %}{% endif %}</div>
+            <div><div class="sign"></div>{% translate "For" %} {{ note.retailer.shop_name }}</div>
+        </div>
+    </div>
+</body>
+</html>
