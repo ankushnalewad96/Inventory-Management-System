@@ -192,8 +192,6 @@
                 <thead>
                     <tr>
                         <th>{% translate "Date" %}</th>
-                        <th>{% translate "Mode" %}</th>
-                        <th>{% translate "Reference" %}</th>
                         <th>{% translate "Remarks" %}</th>
                         <th class="num">{% translate "Amount" %}</th>
                     </tr>
@@ -202,19 +200,17 @@
                     {% for payment in payments %}
                     <tr>
                         <td>{{ payment.payment_date|date:"d M Y" }}</td>
-                        <td>{{ payment.payment_type|tr }}</td>
-                        <td>{{ payment.reference|default:"—" }}</td>
                         <td>{{ payment.remarks|default:"—" }}</td>
                         <td class="num credit strong">₹{{ payment.amount }}</td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="5" class="empty">{% translate "No payment made yet." %}</td></tr>
+                    <tr><td colspan="3" class="empty">{% translate "No payment made yet." %}</td></tr>
                     {% endfor %}
                 </tbody>
                 {% if payments %}
                 <tfoot>
                     <tr>
-                        <td colspan="4">{% translate "Total paid" %}</td>
+                        <td colspan="2">{% translate "Total paid" %}</td>
                         <td class="num">₹{{ purchase.paid_amount }}</td>
                     </tr>
                 </tfoot>

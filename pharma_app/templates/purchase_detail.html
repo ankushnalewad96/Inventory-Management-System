@@ -265,8 +265,6 @@
             <thead>
                 <tr>
                     <th>{% translate "Date" %}</th>
-                    <th>{% translate "Mode" %}</th>
-                    <th>{% translate "Reference" %}</th>
                     <th>{% translate "Remarks" %}</th>
                     <th>{% translate "Recorded by" %}</th>
                     <th class="numeric">{% translate "Amount" %}</th>
@@ -281,15 +279,13 @@
                             <span class="overdue-tag">{% translate "After due date" %}</span>
                         {% endif %}
                     </td>
-                    <td>{{ payment.payment_type|tr }}</td>
-                    <td>{{ payment.reference|default:"—" }}</td>
                     <td>{{ payment.remarks|default:"—" }}</td>
                     <td>{{ payment.created_by|default:"—" }}</td>
                     <td class="numeric money-in">₹{{ payment.amount }}</td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="table-empty">
+                    <td colspan="4" class="table-empty">
                         <i class="fas fa-receipt"></i>
                         {% translate 'No payment made yet. Use "Record payment" when you pay the supplier.' %}
                     </td>
@@ -399,28 +395,16 @@
                         <input type="number" class="pm-input" id="payAmount" name="amount" step="0.01" min="0.01" max="{{ purchase.due_amount }}" required>
                     </div>
                     <div class="pm-field">
-                        <label for="payType">{% translate "Payment mode" %} <span class="required">*</span></label>
-                        <select class="pm-input" id="payType" name="payment_type" required>
-                            {% for value, label in payment_types %}
-                                <option value="{{ value }}">{{ label|tr }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="pm-field">
                         <label for="payDate">{% translate "Payment date" %}</label>
                         <input type="date" class="pm-input" id="payDate" name="payment_date"
                                value="{{ today|date:'Y-m-d' }}" min="{{ purchase.bill_date|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}">
-                    </div>
-                    <div class="pm-field">
-                        <label for="payReference">{% translate "Reference" %}</label>
-                        <input type="text" class="pm-input" id="payReference" name="reference" maxlength="100" placeholder="{% translate "UPI / cheque no." %}">
                     </div>
                     <div class="pm-field full">
                         <label for="payRemarks">{% translate "Remarks" %}</label>
                         <textarea class="pm-input" id="payRemarks" name="remarks" rows="2" placeholder="{% translate "Optional note" %}"></textarea>
                     </div>
                 </div>
-                <p class="pm-note"><i class="fas fa-circle-info"></i> {% translate "When the full balance is paid, the bill is closed automatically." %}</p>
+                <p class="pm-note"><i class="fas fa-circle-info"></i> {% translate "Paid in cash. When the full balance is paid, the bill is closed automatically." %}</p>
             </form>
         </div>
         <div class="pay-modal-footer">

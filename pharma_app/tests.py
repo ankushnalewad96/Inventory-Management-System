@@ -1278,17 +1278,17 @@ class SaleCreatePageTests(BaseTestData):
         self.assertContains(response, f'<input type="hidden" name="retailer" value="{self.retailer_a.id}">')
         self.assertNotContains(response, "Ibuprofen")
 
-    def test_page_has_progress_steps_payment_pills_and_pay_full(self):
+    def test_page_has_progress_steps_cash_only_and_pay_full(self):
         self.login_retailer_a()
 
         response = self.client.get(self.url)
 
         self.assertContains(response, 'id="saleSteps"')
-        self.assertContains(response, 'name="payment_type" value="UPI"')
+        self.assertContains(response, 'class="cash-only-note"')
+        self.assertNotContains(response, 'name="payment_type"')
         self.assertContains(response, 'id="btnPayFull"')
         self.assertContains(response, 'id="creditMeter"')
         self.assertContains(response, 'id="summaryItemsLine"')
-        self.assertNotContains(response, '<select id="payment_type"')
 
     def test_page_links_its_stylesheet(self):
         self.login_retailer_a()
@@ -1302,7 +1302,7 @@ class SaleCreatePageTests(BaseTestData):
         with open(css, encoding="utf-8") as handle:
             content = handle.read()
 
-        for selector in (".sale-layout", ".sale-card", ".customer-strip", ".sale-modal-overlay", ".sale-steps", ".pay-option"):
+        for selector in (".sale-layout", ".sale-card", ".customer-strip", ".sale-modal-overlay", ".sale-steps", ".cash-only-note"):
             self.assertIn(selector, content)
 
     def test_admin_sale_is_saved_for_selected_retailer(self):
@@ -1841,12 +1841,14 @@ class PurchasePaymentTests(BaseTestData):
 
         self.assertFalse(self.bill.payments.exists())
 
-    def test_invalid_payment_mode_is_rejected(self):
+    def test_other_payment_modes_are_saved_as_cash(self):
         self.login_retailer_a()
 
-        self.pay("10.00", payment_type="Credit")
+        self.pay("10.00", payment_type="UPI", reference="UPI-123")
 
-        self.assertFalse(self.bill.payments.exists())
+        payment = self.bill.payments.get()
+        self.assertEqual(payment.payment_type, "Cash")
+        self.assertIsNone(payment.reference)
 
     def test_retailer_cannot_pay_another_shops_bill(self):
         self.login_retailer_b()
@@ -1888,12 +1890,12 @@ class PurchasePaymentTests(BaseTestData):
 
     def test_printable_bill_includes_payment_history(self):
         self.login_retailer_a()
-        self.pay("40.00", reference="UPI-123")
+        self.pay("40.00", remarks="Part payment by hand")
 
         response = self.client.get(reverse("purchase_invoice", args=[self.bill.id]), {"download": "1"})
 
         self.assertContains(response, "Purchase Bill")
-        self.assertContains(response, "UPI-123")
+        self.assertContains(response, "Part payment by hand")
         self.assertContains(response, "Paracetamol")
         self.assertTrue(response.context["auto_download"])
 
@@ -1956,16 +1958,19 @@ class AddOrderSaveAndPrintTests(BaseTestData):
         purchase = Purchase.objects.get(bill_number="BILL-SP")
         payment = purchase.payments.get()
         self.assertEqual(payment.amount, Decimal("15.00"))
-        self.assertEqual(payment.payment_type, "UPI")
+        self.assertEqual(payment.payment_type, "Cash")      # cash only; UPI is ignored
+        self.assertEqual(purchase.payment_type, "Cash")
         self.assertEqual(payment.payment_date, date(2026, 10, 24))
         self.assertEqual(purchase.due_amount, Decimal("25.00"))
 
-    def test_credit_purchase_with_paid_amount_is_rejected(self):
+    def test_nothing_paid_keeps_the_whole_bill_due(self):
         self.login_retailer_a()
 
-        self.client.post(self.url, self.payload(paid_amount="15", payment_type="Credit"))
+        self.client.post(self.url, self.payload(paid_amount="0"))
 
-        self.assertFalse(Purchase.objects.exists())
+        purchase = Purchase.objects.get(bill_number="BILL-SP")
+        self.assertEqual((purchase.paid_amount, purchase.payment_status), (Decimal("0.00"), "Unpaid"))
+        self.assertFalse(purchase.payments.exists())
 
 
 # =====================================================================
@@ -5438,7 +5443,6 @@ class LanguageTests(BaseTestData):
 
         page = self.client.get(reverse("sale_detail", args=[Sale.objects.get().id]))
 
-        self.assertContains(page, "नकद")             # Cash
         self.assertContains(page, "पूरा भुगतान")     # Paid
         self.assertEqual(Sale.objects.get().payment_status, "Paid")   # stored value unchanged
 
@@ -5484,7 +5488,9 @@ class SampleDataTests(TestCase):
             sales = Sale.objects.filter(retailer=shop)
             with self.subTest(shop=shop.shop_type):
                 self.assertGreaterEqual(sales.count(), 10)
-                self.assertTrue(sales.filter(payment_type="Credit").exists())          # udhari
+                # udhari: no cash taken at billing time (paid later by receipts or still due)
+                self.assertTrue(sales.exclude(payments__receipt_number__isnull=True).exists())
+                self.assertFalse(sales.exclude(payment_type="Cash").exists())          # cash only
                 self.assertTrue(sales.filter(payment_status="Partial").exists())       # part paid
                 self.assertTrue(sales.filter(tax_type="inter").exists())               # IGST customer
                 self.assertTrue(sales.filter(tax_type="intra").exists())               # CGST+SGST
@@ -5766,3 +5772,311 @@ class LoginPageMessageTests(BaseTestData):
 
         self.assertNotContains(response, 'class="alert ')
         self.assertContains(response, 'id="loginForm"')
+
+
+# =====================================================================
+# SALES: CASH ONLY + SAVING WITHOUT LOSING THE BILL
+# =====================================================================
+
+class SaleCashOnlyTests(BaseTestData):
+    """Sales and money from customers are cash only."""
+
+    AJAX = {"HTTP_X_REQUESTED_WITH": "XMLHttpRequest"}
+
+    def setUp(self):
+        self.customer = Customer.objects.create(
+            retailer=self.retailer_a, customer_name="Ramesh", mobile="9000000301",
+        )
+
+    def sale_data(self, qty="2", paid="25.20", **extra):
+        # 2 x 12.00 = 24.00 + 5% GST = 25.20
+        data = {
+            "customer": self.customer.id,
+            "items[1][product]": self.product_a.id, "items[1][unit]": self.unit.id,
+            "items[1][quantity]": qty, "items[1][discount]": "0",
+            "paid_amount": paid, "action": "save",
+        }
+        data.update(extra)
+        return data
+
+    def test_sale_without_payment_type_is_saved_as_cash(self):
+        self.login_retailer_a()
+
+        self.client.post(reverse("sale_create"), self.sale_data())
+
+        sale = Sale.objects.get()
+        self.assertEqual(sale.payment_type, "Cash")
+        self.assertEqual(sale.payments.get().payment_type, "Cash")
+
+    def test_other_payment_types_sent_by_a_form_are_ignored(self):
+        self.login_retailer_a()
+
+        for mode in ("UPI", "Cheque", "Bank Transfer", "Credit"):
+            self.client.post(reverse("sale_create"), self.sale_data(qty="1", paid="12.60", payment_type=mode))
+
+        self.assertEqual(Sale.objects.count(), 4)
+        self.assertFalse(Sale.objects.exclude(payment_type="Cash").exists())
+        self.assertFalse(Payment.objects.exclude(payment_type="Cash").exists())
+
+    def test_nothing_paid_keeps_the_whole_bill_due(self):
+        self.login_retailer_a()
+
+        self.client.post(reverse("sale_create"), self.sale_data(paid="0"))
+
+        sale = Sale.objects.get()
+        self.assertEqual((sale.due_amount, sale.payment_status), (Decimal("25.20"), "Unpaid"))
+        self.assertFalse(sale.payments.exists())
+
+    def test_part_paid_sale(self):
+        self.login_retailer_a()
+
+        self.client.post(reverse("sale_create"), self.sale_data(paid="10"))
+
+        sale = Sale.objects.get()
+        self.assertEqual((sale.due_amount, sale.payment_status), (Decimal("15.20"), "Partial"))
+
+    def test_sale_pages_do_not_show_a_payment_type(self):
+        self.login_retailer_a()
+        self.client.post(reverse("sale_create"), self.sale_data())
+        sale = Sale.objects.get()
+
+        for url in (reverse("sales_list"), reverse("sale_detail", args=[sale.id]), reverse("sale_invoice", args=[sale.id])):
+            with self.subTest(url=url):
+                page = self.client.get(url)
+                self.assertNotContains(page, "Payment Type")
+                self.assertNotContains(page, "Type:")
+
+    def test_customer_due_is_received_in_cash_only(self):
+        self.login_retailer_a()
+        self.client.post(reverse("sale_create"), self.sale_data(paid="0"))
+
+        self.client.post(reverse("customer_receive_payment", args=[self.customer.id]), {
+            "amount": "5", "payment_type": "UPI", "reference": "UPI 123",
+        })
+
+        payment = Payment.objects.get(receipt_number__isnull=False)
+        self.assertEqual(payment.payment_type, "Cash")
+        self.assertIsNone(payment.payment_reference)
+
+    def test_customer_account_has_no_payment_mode_field(self):
+        self.login_retailer_a()
+
+        page = self.client.get(reverse("customer_account", args=[self.customer.id]))
+
+        self.assertNotContains(page, 'name="payment_type"')
+        self.assertNotContains(page, 'name="reference"')
+
+    # ---------------------------------------------------- background save
+
+    def test_page_save_success_answers_with_the_next_page(self):
+        self.login_retailer_a()
+
+        response = self.client.post(reverse("sale_create"), self.sale_data(action="save_print"), **self.AJAX)
+
+        sale = Sale.objects.get()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"success": True, "redirect": reverse("sale_invoice", args=[sale.id])})
+
+    def test_page_save_error_answers_with_the_message_and_saves_nothing(self):
+        self.login_retailer_a()
+
+        # More than in stock (10): the page gets the message as JSON and
+        # keeps the bill on screen instead of reloading an empty form.
+        response = self.client.post(reverse("sale_create"), self.sale_data(qty="50", paid="0"), **self.AJAX)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(response.json()["success"])
+        self.assertTrue(response.json()["error"])
+        self.assertFalse(Sale.objects.exists())
+        self.product_a.refresh_from_db()
+        self.assertEqual(self.product_a.current_stock, Decimal("10"))
+
+    def test_paid_more_than_total_is_an_error_message(self):
+        self.login_retailer_a()
+
+        response = self.client.post(reverse("sale_create"), self.sale_data(paid="100"), **self.AJAX)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Paid amount cannot exceed grand total", response.json()["error"])
+
+    def test_plain_form_post_still_redirects(self):
+        self.login_retailer_a()
+
+        response = self.client.post(reverse("sale_create"), self.sale_data(qty="50"))
+
+        self.assertRedirects(response, reverse("sale_create"), fetch_redirect_response=False)
+
+    def test_page_saves_in_the_background(self):
+        self.login_retailer_a()
+
+        page = self.client.get(reverse("sale_create"))
+
+        self.assertContains(page, "function submitSale(")
+        self.assertContains(page, "'X-Requested-With': 'XMLHttpRequest'")
+        # The Save buttons are named "action", so saleForm.action is not the URL.
+        self.assertContains(page, "fetch(saleForm.getAttribute('action')")
+        self.assertNotContains(page, "fetch(saleForm.action")
+
+    def test_old_due_from_the_sale_page_answers_with_json(self):
+        self.login_retailer_a()
+        self.client.post(reverse("sale_create"), self.sale_data(paid="0"))
+
+        response = self.client.post(
+            reverse("customer_receive_payment", args=[self.customer.id]),
+            {"amount": "5.20", "next": "sale_create"}, **self.AJAX,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["success"])
+        self.assertEqual(Decimal(response.json()["balance"]), Decimal("20.00"))
+
+        bad = self.client.post(
+            reverse("customer_receive_payment", args=[self.customer.id]),
+            {"amount": "999"}, **self.AJAX,
+        )
+        self.assertEqual(bad.status_code, 400)
+        self.assertFalse(bad.json()["success"])
+
+
+# =====================================================================
+# PURCHASES: CASH ONLY + SAVING WITHOUT LOSING THE BILL
+# =====================================================================
+
+from .models import PurchasePayment  # noqa: E402
+
+
+class PurchaseCashOnlyTests(BaseTestData):
+    """Purchases and payments to suppliers are cash only."""
+
+    url = reverse("add_new_order")
+    AJAX = {"HTTP_X_REQUESTED_WITH": "XMLHttpRequest"}
+
+    def payload(self, **overrides):
+        # 4 x 10.00, no tax = 40.00
+        data = {
+            "supplier": self.supplier_a1.id, "bill_number": "BILL-CASH", "bill_date": "2026-10-24",
+            "payment_terms": "net15", "item_name_1": "Paracetamol", "item_unit_1": self.unit.id,
+            "item_qty_1": "4", "item_free_qty_1": "0", "item_price_1": "10",
+            "item_tax_1": "none", "item_mrp_1": "15", "paid_amount": "40", "action": "save",
+        }
+        data.update(overrides)
+        return data
+
+    def test_purchase_without_payment_type_is_saved_as_cash(self):
+        self.login_retailer_a()
+
+        self.client.post(self.url, self.payload())
+
+        purchase = Purchase.objects.get(bill_number="BILL-CASH")
+        self.assertEqual(purchase.payment_type, "Cash")
+        self.assertEqual(purchase.payment_status, "Paid")
+        self.assertEqual(purchase.payments.get().payment_type, "Cash")
+
+    def test_other_payment_types_sent_by_a_form_are_ignored(self):
+        self.login_retailer_a()
+
+        for n, mode in enumerate(("UPI", "Cheque", "Bank Transfer", "Credit"), start=1):
+            self.client.post(self.url, self.payload(bill_number=f"BILL-{n}", paid_amount="15", payment_type=mode))
+
+        self.assertEqual(Purchase.objects.count(), 4)
+        self.assertFalse(Purchase.objects.exclude(payment_type="Cash").exists())
+        self.assertFalse(PurchasePayment.objects.exclude(payment_type="Cash").exists())
+
+    def test_purchase_page_has_no_payment_type_field(self):
+        self.login_retailer_a()
+
+        page = self.client.get(self.url)
+
+        self.assertNotContains(page, 'name="payment_type"')
+        self.assertContains(page, 'class="cash-only-note"')
+
+    def test_purchase_pages_do_not_show_a_payment_mode(self):
+        self.login_retailer_a()
+        self.client.post(self.url, self.payload(paid_amount="15"))
+        purchase = Purchase.objects.get(bill_number="BILL-CASH")
+
+        for url in (reverse("purchase_product_list"), reverse("purchase_detail", args=[purchase.id]),
+                    reverse("purchase_invoice", args=[purchase.id])):
+            with self.subTest(url=url):
+                page = self.client.get(url)
+                self.assertNotContains(page, "Payment Type")
+                self.assertNotContains(page, "Payment mode")
+                self.assertNotContains(page, "<th>Mode</th>")
+                self.assertNotContains(page, 'name="payment_type"')
+                self.assertNotContains(page, 'name="reference"')
+
+    def test_supplier_statement_does_not_name_a_payment_mode(self):
+        self.login_retailer_a()
+        self.client.post(self.url, self.payload(paid_amount="15"))
+
+        statement = accounts_module.supplier_statement(self.supplier_a1)
+
+        payment_rows = [row for row in statement if row["kind"] == "payment"]
+        self.assertEqual(payment_rows[0]["particulars"], "Payment for bill BILL-CASH")
+
+    # ---------------------------------------------------- background save
+
+    def test_page_save_success_answers_with_the_next_page(self):
+        self.login_retailer_a()
+
+        response = self.client.post(self.url, self.payload(action="save_print"), **self.AJAX)
+
+        purchase = Purchase.objects.get(bill_number="BILL-CASH")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {
+            "success": True,
+            "redirect": reverse("purchase_invoice", args=[purchase.id]) + "?print=1",
+        })
+
+    def test_page_save_error_answers_with_the_message_and_saves_nothing(self):
+        self.login_retailer_a()
+
+        # Paid more than the bill: the page gets the message as JSON and
+        # keeps everything on screen instead of reloading an empty form.
+        response = self.client.post(self.url, self.payload(paid_amount="500"), **self.AJAX)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(response.json()["success"])
+        self.assertTrue(response.json()["error"])
+        self.assertFalse(Purchase.objects.exists())
+        self.product_a.refresh_from_db()
+        self.assertEqual(self.product_a.current_stock, Decimal("10"))
+
+    def test_same_bill_number_twice_is_an_error_message(self):
+        self.login_retailer_a()
+        self.client.post(self.url, self.payload())
+
+        response = self.client.post(self.url, self.payload(), **self.AJAX)
+
+        self.assertIn(response.status_code, (400, 409))
+        self.assertFalse(response.json()["success"])
+        self.assertEqual(Purchase.objects.filter(bill_number="BILL-CASH").count(), 1)
+
+    def test_plain_form_post_still_redirects(self):
+        self.login_retailer_a()
+
+        response = self.client.post(self.url, self.payload(paid_amount="500"))
+
+        self.assertRedirects(response, self.url, fetch_redirect_response=False)
+
+    def test_page_saves_in_the_background(self):
+        self.login_retailer_a()
+
+        page = self.client.get(self.url)
+
+        self.assertContains(page, "function submitPurchase(")
+        self.assertContains(page, "'X-Requested-With': 'XMLHttpRequest'")
+        # The Save buttons are named "action", so form.action is not the URL.
+        self.assertContains(page, "fetch(form.getAttribute('action')")
+
+    def test_bill_payment_is_cash_only(self):
+        self.login_retailer_a()
+        self.client.post(self.url, self.payload(paid_amount="0"))
+        purchase = Purchase.objects.get(bill_number="BILL-CASH")
+
+        self.client.post(reverse("purchase_add_payment", args=[purchase.id]), {
+            "amount": "10", "payment_type": "Cheque", "reference": "CHQ 1", "payment_date": "2026-10-25",
+        })
+
+        payment = purchase.payments.get()
+        self.assertEqual((payment.amount, payment.payment_type, payment.reference), (Decimal("10.00"), "Cash", None))

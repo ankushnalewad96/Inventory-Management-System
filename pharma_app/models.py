@@ -425,12 +425,10 @@ class Purchase(models.Model):
         ("Unpaid", "Unpaid"),
     )
 
+    # Suppliers are paid in cash only. Older bills may still hold
+    # another stored value; it is kept as it was.
     PAYMENT_TYPE = (
         ("Cash", "Cash"),
-        ("UPI", "UPI"),
-        ("Bank Transfer", "Bank Transfer"),
-        ("Cheque", "Cheque"),
-        ("Credit", "Credit"),
     )
 
     retailer = models.ForeignKey(
@@ -847,18 +845,12 @@ class Sale(models.Model):
     objects = ShopScopedManager("retailer__shop_type")
     all_objects = models.Manager()
 
+    # Sales and money from customers are cash only. Older rows may
+    # still hold another stored value; it is kept as it was.
     PAYMENT_TYPE_CASH = "Cash"
-    PAYMENT_TYPE_UPI = "UPI"
-    PAYMENT_TYPE_BANK = "Bank Transfer"
-    PAYMENT_TYPE_CHEQUE = "Cheque"
-    PAYMENT_TYPE_CREDIT = "Credit"
 
     PAYMENT_TYPE_CHOICES = [
         (PAYMENT_TYPE_CASH, "Cash"),
-        (PAYMENT_TYPE_UPI, "UPI"),
-        (PAYMENT_TYPE_BANK, "Bank Transfer"),
-        (PAYMENT_TYPE_CHEQUE, "Cheque"),
-        (PAYMENT_TYPE_CREDIT, "Credit"),
     ]
 
     PAYMENT_STATUS_PAID = "Paid"
@@ -1674,16 +1666,12 @@ class Payment(models.Model):
     objects = ShopScopedManager("retailer__shop_type")
     all_objects = models.Manager()
 
+    # Sales and money from customers are cash only. Older rows may
+    # still hold another stored value; it is kept as it was.
     PAYMENT_TYPE_CASH = "Cash"
-    PAYMENT_TYPE_UPI = "UPI"
-    PAYMENT_TYPE_BANK = "Bank Transfer"
-    PAYMENT_TYPE_CHEQUE = "Cheque"
 
     PAYMENT_TYPE_CHOICES = [
         (PAYMENT_TYPE_CASH, "Cash"),
-        (PAYMENT_TYPE_UPI, "UPI"),
-        (PAYMENT_TYPE_BANK, "Bank Transfer"),
-        (PAYMENT_TYPE_CHEQUE, "Cheque"),
     ]
 
     retailer = models.ForeignKey(
@@ -1726,7 +1714,7 @@ class Payment(models.Model):
         max_length=100,
         blank=True,
         null=True,
-        help_text="UPI transaction ID, cheque number, bank reference, etc.",
+        help_text="Not used for new payments (customers pay in cash).",
     )
 
     receipt_number = models.CharField(
@@ -1973,11 +1961,12 @@ class PurchasePayment(models.Model):
     objects = ShopScopedManager("retailer__shop_type")
     all_objects = models.Manager()
 
+    # Suppliers are paid in cash only. Older rows may still hold
+    # another stored value; it is kept as it was.
+    PAYMENT_TYPE_CASH = "Cash"
+
     PAYMENT_TYPE_CHOICES = [
-        ("Cash", "Cash"),
-        ("UPI", "UPI"),
-        ("Bank Transfer", "Bank Transfer"),
-        ("Cheque", "Cheque"),
+        (PAYMENT_TYPE_CASH, "Cash"),
     ]
 
     retailer = models.ForeignKey(
@@ -2014,7 +2003,7 @@ class PurchasePayment(models.Model):
         max_length=100,
         blank=True,
         null=True,
-        help_text="UPI transaction ID, cheque number, bank reference, etc.",
+        help_text="Not used for new payments (suppliers are paid in cash).",
     )
 
     remarks = models.TextField(

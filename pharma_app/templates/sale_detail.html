@@ -138,10 +138,6 @@
             <span class="info-card-title">{% translate "Payment Summary" %}</span>
         </div>
         <div class="info-row">
-            <span class="info-label">{% translate "Payment Type" %}</span>
-            <span class="info-value">{{ sale.get_payment_type_display|tr|default:"—" }}</span>
-        </div>
-        <div class="info-row">
             <span class="info-label">{% translate "Payment Status" %}</span>
             <span class="info-value {% if sale.payment_status == 'Paid' %}success{% elif sale.payment_status == 'Unpaid' %}danger{% endif %}">{{ sale.payment_status|tr }}</span>
         </div>
@@ -227,8 +223,6 @@
             <thead>
                 <tr>
                     <th>{% translate "Date" %}</th>
-                    <th>{% translate "Type" %}</th>
-                    <th>{% translate "Reference" %}</th>
                     <th>{% translate "Receipt No." %}</th>
                     <th class="numeric">{% translate "Amount" %}</th>
                 </tr>
@@ -237,8 +231,6 @@
                 {% for payment in payments %}
                 <tr>
                     <td>{{ payment.payment_date|date:"d M Y" }}</td>
-                    <td>{{ payment.get_payment_type_display|tr }}</td>
-                    <td>{{ payment.payment_reference|default:"—" }}</td>
                     <td>{{ payment.receipt_number|default:"—" }}</td>
                     <td class="numeric" style="font-weight: 700; color: var(--success);">₹{{ payment.amount }}</td>
                 </tr>

@@ -67,16 +67,6 @@ def _error_text(exc):
     return " ".join(str(message) for message in exc.messages)
 
 
-def _payment_form_data(request):
-    return {
-        "amount": request.POST.get("amount", ""),
-        "payment_type": request.POST.get("payment_type", ""),
-        "payment_date": request.POST.get("payment_date", ""),
-        "reference": request.POST.get("reference", ""),
-        "remarks": request.POST.get("remarks", ""),
-    }
-
-
 # ================================================================ RETAILERS
 
 @login_required(login_url=LOGIN_URL)
@@ -162,9 +152,7 @@ def purchase_add_payment(request, purchase_id):
         payment = accounts.record_purchase_payment(
             purchase,
             amount=request.POST.get("amount"),
-            payment_type=request.POST.get("payment_type", ""),
             payment_date=request.POST.get("payment_date"),
-            reference=request.POST.get("reference", ""),
             remarks=request.POST.get("remarks", ""),
             user=request.user,
         )
@@ -423,7 +411,6 @@ def customer_account(request, customer_id):
     context = _customer_context(customer)
     context.update({
         "is_admin": _is_admin(request.user),
-        "payment_types": accounts.PAYMENT_TYPES,
         "today": timezone.localdate(),
         "open_payment": request.GET.get("pay") == "1",
         # Features of the customer's own shop (price levels, ...).
@@ -501,17 +488,21 @@ def customer_set_price_level(request, customer_id):
 def customer_receive_payment(request, customer_id):
     customer = _get_scoped(Customer.objects.select_related("retailer"), request.user, customer_id)
 
+    # The New Sale page records old dues in the background (JSON) so the
+    # bill being typed is not lost.
+    wants_json = request.headers.get("x-requested-with") == "XMLHttpRequest"
+
     try:
         receipt, settled = accounts.receive_customer_payment(
             customer,
             amount=request.POST.get("amount"),
-            payment_type=request.POST.get("payment_type", ""),
             payment_date=request.POST.get("payment_date"),
-            reference=request.POST.get("reference", ""),
             remarks=request.POST.get("remarks", ""),
         )
 
     except ValidationError as exc:
+        if wants_json:
+            return JsonResponse({"success": False, "error": _error_text(exc)}, status=400)
         messages.error(request, _error_text(exc))
         return redirect(reverse("customer_account", args=[customer.id]) + "?pay=1")
 
@@ -523,10 +514,12 @@ def customer_receive_payment(request, customer_id):
     total = sum((amount for _, amount in settled), accounts.ZERO)
     balance = accounts.customer_balance(customer)
 
-    messages.success(
-        request,
-        (gettext('₹%(total)s received from %(customer_name)s (receipt %(receipt)s). %(balance)s') % {'total': total, 'customer_name': customer.customer_name, 'receipt': receipt, 'balance': gettext("All dues are cleared.") if balance <= 0 else (gettext("Still due: ₹%(balance)s.") % {'balance': balance})}),
-    )
+    message = gettext('₹%(total)s received from %(customer_name)s (receipt %(receipt)s). %(balance)s') % {'total': total, 'customer_name': customer.customer_name, 'receipt': receipt, 'balance': gettext("All dues are cleared.") if balance <= 0 else (gettext("Still due: ₹%(balance)s.") % {'balance': balance})}
+
+    if wants_json:
+        return JsonResponse({"success": True, "message": message, "balance": str(balance)})
+
+    messages.success(request, message)
 
     next_url = request.POST.get("next", "")
     if next_url == "sale_create":

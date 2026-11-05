@@ -133,7 +133,6 @@
                     {% if is_admin %}<th>{% translate "Retailer Shop" %}</th>{% endif %}
                     <th>{% translate "Supplier" %}</th>
                     <th>{% translate "Date" %}</th>
-                    <th>{% translate "Payment Type" %}</th>
                     <th>{% translate "Amount" %}</th>
                     <th>{% translate "Paid" %}</th>
                     <th>{% translate "Balance" %}</th>
@@ -155,7 +154,6 @@
                             </div>
                         </td>
                         <td>{{ purchase.bill_date|date:"d M Y" }}</td>
-                        <td>{{ purchase.get_payment_type_display|tr|default:"—" }}</td>
                         <td><strong>₹{{ purchase.grand_total|floatformat:2 }}</strong></td>
                         <td class="amount-paid">₹{{ purchase.paid_amount|floatformat:2 }}</td>
                         <td class="{% if purchase.due_amount > 0 %}amount-due{% endif %}">₹{{ purchase.due_amount|floatformat:2 }}</td>
@@ -203,7 +201,7 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="{% if is_admin %}11{% else %}10{% endif %}" style="text-align:center;padding:40px;color:#999;">
+                        <td colspan="{% if is_admin %}10{% else %}9{% endif %}" style="text-align:center;padding:40px;color:#999;">
                             <i class="fas fa-inbox" style="font-size:48px;display:block;margin-bottom:10px;color:#ddd;"></i>
                             {% translate "No purchase orders found" %}
                         </td>

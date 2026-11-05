@@ -42,24 +42,6 @@ const savedTheme = localStorage.getItem('theme') || 'light';
 html.setAttribute('data-theme', savedTheme);
 themeIcon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
 
-// ===== DOWNLOAD CSV =====
-function downloadCSV() {
-    const rows = [
-        ['Order No.', 'Supplier', 'Date', 'Payment Type', 'Amount', 'Balance', 'Due Date', 'Status'],
-        ['BILL-2026-001', 'nova', '27 Jul 2026', 'Cash', '570.78', '320.78', '13 Aug 2026', 'Unpaid'],
-        ['BILL-2026-001', 'orion', '27 Jul 2026', 'Cash', '490.14', '240.14', '11 Aug 2026', 'Unpaid']
-    ];
-    let csv = rows.map(r => r.map(c => '"' + c + '"').join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'purchases_' + new Date().toISOString().split('T')[0] + '.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
-
 /* ============================================================
     USER PROFILE DROPDOWN
     ============================================================ */

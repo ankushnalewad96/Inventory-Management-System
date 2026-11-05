@@ -187,7 +187,6 @@ class PurchaseAdmin(admin.ModelAdmin):
     list_filter = (
         "payment_status",
         "bill_date",
-        "payment_type",
     )
 
     ordering = (
@@ -347,8 +346,6 @@ class PaymentInline(admin.TabularInline):
         "customer",
         "payment_date",
         "amount",
-        "payment_type",
-        "payment_reference",
         "receipt_number",
         "remarks",
     )
@@ -400,14 +397,12 @@ class SaleAdmin(admin.ModelAdmin):
         "grand_total",
         "paid_amount",
         "due_amount",
-        "payment_type",
         "payment_status",
         "created_at",
     )
 
     list_filter = (
         "payment_status",
-        "payment_type",
         "invoice_date",
         "retailer",
     )
@@ -469,7 +464,6 @@ class SaleAdmin(admin.ModelAdmin):
                 "fields": (
                     "paid_amount",
                     "due_amount",
-                    "payment_type",
                     "payment_status",
                 )
             },
@@ -567,20 +561,16 @@ class PaymentAdmin(admin.ModelAdmin):
         "sale",
         "retailer",
         "amount",
-        "payment_type",
-        "payment_reference",
         "created_at",
     )
 
     list_filter = (
-        "payment_type",
         "payment_date",
         "retailer",
     )
 
     search_fields = (
         "receipt_number",
-        "payment_reference",
         "customer__customer_name",
         "customer__mobile",
         "sale__invoice_number",

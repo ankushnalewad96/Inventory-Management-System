@@ -5,5378 +5,3999 @@ msgstr ""
 "Language: hi\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: views.py
 msgid " Note: selling price ₹%(selling_price)s is below the purchase price ₹%(purchase_price)s."
 msgstr " ध्यान दें: बेचने का दाम ₹%(selling_price)s, खरीद दाम ₹%(purchase_price)s से कम है।"
 
-#: views.py
 msgid "\"%(product_name)s\" is used on other records and cannot be deleted. Mark it as inactive instead."
 msgstr "\"%(product_name)s\" दूसरे रिकॉर्ड में इस्तेमाल हुआ है, इसलिए हटाया नहीं जा सकता। इसे बंद (Inactive) कर दें।"
 
-#: views.py
 msgid "\"%(product_name)s\" is used on purchase or sale bills and cannot be deleted. Mark it as inactive instead."
 msgstr "\"%(product_name)s\" खरीद या बिक्री के बिल में है, इसलिए हटाया नहीं जा सकता। इसे बंद (Inactive) कर दें।"
 
-#: views.py
 msgid "\"%(supplier_name)s\" has %(purchase_count)s purchase bill(s) and cannot be deleted. Mark the supplier as inactive instead."
 msgstr "\"%(supplier_name)s\" के %(purchase_count)s खरीद बिल हैं, इसलिए हटाया नहीं जा सकता। सप्लायर को बंद (Inactive) कर दें।"
 
-#: supplier_product_views.py
 msgid "%(chosen)s product(s) added to %(supplier_name)s."
 msgstr "%(chosen)s सामान %(supplier_name)s में जोड़ा गया।"
 
-#: dashboard_views.py
 msgid "%(count)s batch expiring in 90 days"
 msgid_plural "%(count)s batches expiring in 90 days"
 msgstr[0] "%(count)s बैच 90 दिन में एक्सपायर होगा"
 msgstr[1] "%(count)s बैच 90 दिन में एक्सपायर होंगे"
 
-#: dashboard_views.py
 msgid "%(count)s bill due this week"
 msgid_plural "%(count)s bills due this week"
 msgstr[0] "%(count)s बिल इस हफ्ते चुकाना है"
 msgstr[1] "%(count)s बिल इस हफ्ते चुकाने हैं"
 
-#: dashboard_views.py
 msgid "%(count)s customer with dues"
 msgid_plural "%(count)s customers with dues"
 msgstr[0] "%(count)s ग्राहक पर उधारी बाकी है"
 msgstr[1] "%(count)s ग्राहकों पर उधारी बाकी है"
 
-#: dashboard_views.py
 msgid "%(count)s expired batch in stock"
 msgid_plural "%(count)s expired batches in stock"
 msgstr[0] "%(count)s एक्सपायर बैच स्टॉक में है"
 msgstr[1] "%(count)s एक्सपायर बैच स्टॉक में हैं"
 
-#: dashboard_views.py
 msgid "%(count)s product out of stock"
 msgid_plural "%(count)s products out of stock"
 msgstr[0] "%(count)s सामान का स्टॉक खत्म"
 msgstr[1] "%(count)s सामान का स्टॉक खत्म"
 
-#: dashboard_views.py
 msgid "%(count)s product running low"
 msgid_plural "%(count)s products running low"
 msgstr[0] "%(count)s सामान का स्टॉक कम है"
 msgstr[1] "%(count)s सामान का स्टॉक कम है"
 
-#: dashboard_views.py
 msgid "%(count)s supplier bill overdue"
 msgid_plural "%(count)s supplier bills overdue"
 msgstr[0] "सप्लायर का %(count)s बिल समय से बाकी"
 msgstr[1] "सप्लायर के %(count)s बिल समय से बाकी"
 
-#: dashboard.html, near_expiry.html
 msgid "%(counter)s batch"
 msgid_plural "%(counter)s batches"
 msgstr[0] "%(counter)s बैच"
 msgstr[1] "%(counter)s बैच"
 
-#: near_expiry.html
 msgid "%(counter)s batch found"
 msgid_plural "%(counter)s batches found"
 msgstr[0] "%(counter)s बैच मिला"
 msgstr[1] "%(counter)s बैच मिले"
 
-#: customer_account.html, supplier_account.html
 msgid "%(counter)s bill"
 msgid_plural "%(counter)s bills"
 msgstr[0] "%(counter)s बिल"
 msgstr[1] "%(counter)s बिल"
 
-#: supplier_account.html
 msgid "%(counter)s bill past due date"
 msgid_plural "%(counter)s bills past due date"
 msgstr[0] "%(counter)s बिल की तारीख निकल गई"
 msgstr[1] "%(counter)s बिलों की तारीख निकल गई"
 
-#: customer_list.html
 msgid "%(counter)s customer found"
 msgid_plural "%(counter)s customers found"
 msgstr[0] "%(counter)s ग्राहक मिला"
 msgstr[1] "%(counter)s ग्राहक मिले"
 
-#: dashboard.html
 msgid "%(counter)s customer with dues (udhari)"
 msgid_plural "%(counter)s customers with dues (udhari)"
 msgstr[0] "%(counter)s ग्राहक पर उधारी"
 msgstr[1] "%(counter)s ग्राहकों पर उधारी"
 
-#: near_expiry.html, supplier_list.html
 msgid "%(counter)s day"
 msgid_plural "%(counter)s days"
 msgstr[0] "%(counter)s दिन"
 msgstr[1] "%(counter)s दिन"
 
-#: customer_account.html, h1_register.html, supplier_account.html
 msgid "%(counter)s entry"
 msgid_plural "%(counter)s entries"
 msgstr[0] "%(counter)s एंट्री"
 msgstr[1] "%(counter)s एंट्री"
 
-#: dashboard.html
 msgid "%(counter)s invoice"
 msgid_plural "%(counter)s invoices"
 msgstr[0] "%(counter)s बिल"
 msgstr[1] "%(counter)s बिल"
 
-#: sales_list.html
 msgid "%(counter)s invoice found"
 msgid_plural "%(counter)s invoices found"
 msgstr[0] "%(counter)s बिल मिला"
 msgstr[1] "%(counter)s बिल मिले"
 
-#: dashboard.html
 msgid "%(counter)s invoice so far"
 msgid_plural "%(counter)s invoices so far"
 msgstr[0] "अब तक %(counter)s बिल"
 msgstr[1] "अब तक %(counter)s बिल"
 
-#: returns_list.html
 msgid "%(counter)s note"
 msgid_plural "%(counter)s notes"
 msgstr[0] "%(counter)s नोट"
 msgstr[1] "%(counter)s नोट"
 
-#: dashboard.html
 msgid "%(counter)s open bill"
 msgid_plural "%(counter)s open bills"
 msgstr[0] "%(counter)s बिल बाकी"
 msgstr[1] "%(counter)s बिल बाकी"
 
-#: purchase_list.html
 msgid "%(counter)s order found"
 msgid_plural "%(counter)s orders found"
 msgstr[0] "%(counter)s ऑर्डर मिला"
 msgstr[1] "%(counter)s ऑर्डर मिले"
 
-#: purchase_detail.html
 msgid "%(counter)s payment made against this bill."
 msgid_plural "%(counter)s payments made against this bill."
 msgstr[0] "इस बिल पर %(counter)s पेमेंट हुआ।"
 msgstr[1] "इस बिल पर %(counter)s पेमेंट हुए।"
 
-#: low_stock_list.html
 msgid "%(counter)s product found"
 msgid_plural "%(counter)s products found"
 msgstr[0] "%(counter)s सामान मिला"
 msgstr[1] "%(counter)s सामान मिले"
 
-#: supplier_product_list.html
 msgid "%(counter)s product link"
 msgid_plural "%(counter)s product links"
 msgstr[0] "%(counter)s सामान जुड़ा है"
 msgstr[1] "%(counter)s सामान जुड़े हैं"
 
-#: quotation_list.html
 msgid "%(counter)s quotation found"
 msgid_plural "%(counter)s quotations found"
 msgstr[0] "%(counter)s कोटेशन मिला"
 msgstr[1] "%(counter)s कोटेशन मिले"
 
-#: retailer_list.html
 msgid "%(counter)s retailer found"
 msgid_plural "%(counter)s retailers found"
 msgstr[0] "%(counter)s दुकान मिली"
 msgstr[1] "%(counter)s दुकानें मिलीं"
 
-#: supplier_list.html
 msgid "%(counter)s supplier found"
 msgid_plural "%(counter)s suppliers found"
 msgstr[0] "%(counter)s सप्लायर मिला"
 msgstr[1] "%(counter)s सप्लायर मिले"
 
-#: shop_type_services.html
 msgid "%(counter)s type off"
 msgid_plural "%(counter)s types off"
 msgstr[0] "%(counter)s प्रकार बंद"
 msgstr[1] "%(counter)s प्रकार बंद"
 
-#: shop_type_services.html
 msgid "%(counter)s type on"
 msgid_plural "%(counter)s types on"
 msgstr[0] "%(counter)s प्रकार चालू"
 msgstr[1] "%(counter)s प्रकार चालू"
 
-#: customer_account.html, supplier_account.html
 msgid "%(counter)s unpaid bill"
 msgid_plural "%(counter)s unpaid bills"
 msgstr[0] "%(counter)s बिल बाकी"
 msgstr[1] "%(counter)s बिल बाकी"
 
-#: accounts.py
 msgid "%(customer_name)s has no amount due."
 msgstr "%(customer_name)s पर कोई रकम बाकी नहीं है।"
 
-#: account_views.py
 msgid "%(customer_name)s now pays %(get_price_level_display)s prices."
 msgstr "%(customer_name)s अब %(get_price_level_display)s दाम देंगे।"
 
-#: views.py
 msgid "%(field_name)s cannot be negative."
 msgstr "%(field_name)s माइनस में नहीं हो सकता।"
 
-#: views.py
 msgid "%(field_name)s must be a valid number."
 msgstr "%(field_name)s सही नंबर होना चाहिए।"
 
-#: quantities.py
 msgid "%(label)s can have at most %(QUANTITY_PLACES)s decimal places."
 msgstr "%(label)s में दशमलव के बाद ज़्यादा से ज़्यादा %(QUANTITY_PLACES)s अंक हो सकते हैं।"
 
-#: quantities.py
 msgid "%(label)s cannot be negative."
 msgstr "%(label)s माइनस में नहीं हो सकता।"
 
-#: units.py
 msgid "%(label)s gives more than %(QUANTITY_PLACES)s decimal places in base units."
 msgstr "%(label)s छोटी यूनिट में बदलने पर %(QUANTITY_PLACES)s से ज़्यादा दशमलव अंक देता है।"
 
-#: batches.py, quantities.py
 msgid "%(label)s is required."
 msgstr "%(label)s ज़रूरी है।"
 
-#: batches.py
 msgid "%(label)s is too long."
 msgstr "%(label)s बहुत लंबा है।"
 
-#: quantities.py
 msgid "%(label)s must be a valid number."
 msgstr "%(label)s सही नंबर होना चाहिए।"
 
-#: quantities.py
 msgid "%(label)s must be a whole number for this shop."
 msgstr "इस दुकान के लिए %(label)s पूरी संख्या में होना चाहिए।"
 
-#: accounts.py, quantities.py
 msgid "%(label)s must be greater than zero."
 msgstr "%(label)s शून्य से ज़्यादा होना चाहिए।"
 
-#: units.py
 msgid "%(label)s must come to a whole number of base units for this shop."
 msgstr "इस दुकान के लिए %(label)s छोटी यूनिट में पूरी संख्या बनना चाहिए।"
 
-#: customer_account.html
 msgid "%(name)s owes"
 msgstr "%(name)s पर बाकी"
 
-#: pharmacy_views.py
 msgid "%(page_name)s is not used in your shop type."
 msgstr "%(page_name)s आपकी दुकान के प्रकार में इस्तेमाल नहीं होता।"
 
-#: pharmacy_views.py
 msgid "%(page_name)s is used by %(types)s shops. No such shop is registered yet; it will show here as soon as one is."
 msgstr "%(page_name)s %(types)s दुकानों के लिए है। अभी ऐसी कोई दुकान रजिस्टर नहीं है; दुकान जुड़ते ही यह यहाँ दिखेगा।"
 
-#: batches.py
 msgid "%(quantity)s more is expired and cannot be sold"
 msgstr "%(quantity)s और एक्सपायर है, बेच नहीं सकते"
 
-#: quotation_views.py
 msgid "'%(product_name)s' is added more than once."
 msgstr "'%(product_name)s' एक से ज़्यादा बार जोड़ा गया है।"
 
-#: views.py
 msgid "'From' date was after 'To' date, so the dates were swapped."
 msgstr "'से' तारीख 'तक' तारीख के बाद थी, इसलिए दोनों बदल दी गईं।"
 
-#: quotation_views.py
 msgid "'Valid until' cannot be in the past."
 msgstr "'कब तक मान्य' की तारीख बीती हुई नहीं हो सकती।"
 
-#: dashboard.html
 msgid "(all)"
 msgstr "(सब)"
 
-#: add_order.html
 msgid "(auto from payment terms)"
 msgstr "(पेमेंट की शर्त से अपने आप)"
 
-#: sale_create.html
 msgid "(for GST)"
 msgstr "(GST के लिए)"
 
-#: add_order.html, add_product.html, register.html
 msgid "(optional)"
 msgstr "(ज़रूरी नहीं)"
 
-#: register.html
 msgid "(printed on bills)"
 msgstr "(बिल पर छपेगा)"
 
-#: quotation_create.html
 msgid "(Wholesale)"
 msgstr "(होलसेल)"
 
-#: add_order.html
 msgid "(Without Tax)"
 msgstr "(टैक्स के बिना)"
 
-#: add_order.html
 msgid "0 products"
 msgstr "0 सामान"
 
-#: product_list.html
 msgid "1 purchase unit ="
 msgstr "1 खरीद यूनिट ="
 
-#: userlogin.html
 msgid "3 items low on stock"
 msgstr "3 सामान का स्टॉक कम है"
 
-#: views.py
-msgid "A credit purchase cannot have a paid amount. Choose Cash, UPI, Bank Transfer or Cheque for the amount paid now."
-msgstr "उधार खरीद में भुगतान की रकम नहीं हो सकती। अभी दिए पैसों के लिए नकद, UPI, बैंक ट्रांसफर या चेक चुनें।"
-
-#: views.py
 msgid "A customer with this mobile number already exists."
 msgstr "इस मोबाइल नंबर का ग्राहक पहले से है।"
 
-#: models.py
 msgid "A ledger entry cannot have both debit and credit."
 msgstr "एक एंट्री में डेबिट और क्रेडिट दोनों नहीं हो सकते।"
 
-#: views.py
 msgid "A product with this barcode already exists or another database constraint was violated."
 msgstr "इस बारकोड का सामान पहले से है, या कोई और गड़बड़ी है।"
 
-#: views.py
 msgid "A product with this barcode already exists."
 msgstr "इस बारकोड का सामान पहले से है।"
 
-#: views.py
 msgid "A purchase with this bill number may already exist."
 msgstr "इस बिल नंबर की खरीद शायद पहले से है।"
 
-#: supplier_list.html
 msgid "Account & payment history"
 msgstr "खाता और पेमेंट का हिसाब"
 
-#: supplier_list.html
 msgid "Account and payment history"
 msgstr "खाता और पेमेंट का हिसाब"
 
-#: account_statement.html
 msgid "Account history"
 msgstr "खाते का हिसाब"
 
-#: add_order.html, register.html
 msgid "Account Information"
 msgstr "खाते की जानकारी"
 
-#: customer_account.html, supplier_account.html
 msgid "Account Statement"
 msgstr "खाते का विवरण"
 
-#: add_order.html
 msgid "Account with"
 msgstr "खाता:"
 
-#: purchase_list.html
 msgid "Action"
 msgstr "काम"
 
-#: customer_list.html, product_list.html, quotation_list.html, sales_list.html, supplier_list.html
 msgid "Actions"
 msgstr "काम"
 
-#: add_product.html, low_stock_list.html, product_list.html, retailer_list.html, supplier_list.html
 msgid "Active"
 msgstr "चालू"
 
-#: dashboard.html
 msgid "active products"
 msgstr "चालू सामान"
 
-#: product_list.html
 msgid "Active Products"
 msgstr "चालू सामान"
 
-#: dashboard.html
 msgid "active shops"
 msgstr "चालू दुकानें"
 
-#: dashboard.html
 msgid "active suppliers"
 msgstr "चालू सप्लायर"
 
-#: dashboard.html
 msgid "Add"
 msgstr "जोड़ें"
 
-#: customer_list.html
 msgid "Add a customer while creating a sale"
 msgstr "बिक्री करते समय ग्राहक जोड़ें"
 
-#: add_supplier.html
 msgid "Add any special instructions or remarks"
 msgstr "कोई खास निर्देश या टिप्पणी लिखें"
 
-#: quotation_create.html, sale_create.html
 msgid "Add item"
 msgstr "सामान जोड़ें"
 
-#: sale_create.html
 msgid "Add new customer"
 msgstr "नया ग्राहक जोड़ें"
 
-#: sale_create.html
 msgid "Add New Customer"
 msgstr "नया ग्राहक जोड़ें"
 
-#: add_order.html, add_product.html
 msgid "Add New Product"
 msgstr "नया सामान जोड़ें"
 
-#: add_order.html
 msgid "Add New Retailer"
 msgstr "नई दुकान जोड़ें"
 
-#: add_order.html
 msgid "Add New Supplier"
 msgstr "नया सप्लायर जोड़ें"
 
-#: dashboard.html
 msgid "Add one"
 msgstr "एक जोड़ें"
 
-#: purchase_detail.html
 msgid "Add payment"
 msgstr "पेमेंट जोड़ें"
 
-#: add_product.html, product_list.html
 msgid "Add Product"
 msgstr "सामान जोड़ें"
 
-#: dashboard.html
 msgid "Add product"
 msgstr "सामान जोड़ें"
 
-#: supplier_product_list.html
 msgid "Add products you buy from %(name)s"
 msgstr "%(name)s से खरीदा जाने वाला सामान जोड़ें"
 
-#: add_order.html
 msgid "Add remarks"
 msgstr "टिप्पणी लिखें"
 
-#: dashboard.html, retailer_list.html
 msgid "Add retailer"
 msgstr "दुकान जोड़ें"
 
-#: register.html
 msgid "Add Retailer"
 msgstr "दुकान जोड़ें"
 
-#: add_order.html
 msgid "Add Row"
 msgstr "लाइन जोड़ें"
 
-#: sales_list.html
 msgid "Add sale"
 msgstr "बिक्री जोड़ें"
 
-#: add_supplier.html
 msgid "Add Supplier"
 msgstr "सप्लायर जोड़ें"
 
-#: dashboard.html, supplier_list.html
 msgid "Add supplier"
 msgstr "सप्लायर जोड़ें"
 
-#: supplier_product_list.html
 msgid "Add to supplier"
 msgstr "सप्लायर में जोड़ें"
 
-#: supplier_list.html
 msgid "Add your first supplier"
 msgstr "अपना पहला सप्लायर जोड़ें"
 
-#: supplier_product_list.html
 msgid "added automatically when you save a purchase bill"
 msgstr "खरीद बिल सेव करते ही अपने आप जुड़ता है"
 
-#: add_order.html, add_supplier.html, customer_account.html, purchase_detail.html, register.html, sale_create.html, sale_detail.html, supplier_list.html
 msgid "Address"
 msgstr "पता"
 
-#: add_order.html, supplier_list.html
 msgid "Address & Financials"
 msgstr "पता और हिसाब"
 
-#: register.html
 msgid "Address is required"
 msgstr "पता ज़रूरी है"
 
-#: base.html
 msgid "Admin panel"
 msgstr "एडमिन पैनल"
 
-#: base.html
 msgid "Administration"
 msgstr "एडमिन"
 
-#: customer_list.html
 msgid "Advance"
 msgstr "एडवांस"
 
-#: customer_account.html
 msgid "Advance with the shop"
 msgstr "दुकान के पास एडवांस"
 
-#: purchase_detail.html
 msgid "After due date"
 msgstr "आखिरी तारीख के बाद"
 
-#: return_note.html
 msgid "Against bill:"
 msgstr "इस बिल के लिए:"
 
-#: return_note.html
 msgid "Against invoice:"
 msgstr "इस बिल के लिए:"
 
-#: dashboard.html, product_list.html, quotation_list.html
 msgid "All"
 msgstr "सब"
 
-#: customer_account.html
 msgid "All bills of this customer are fully paid."
 msgstr "इस ग्राहक के सब बिलों का पूरा भुगतान हो गया है।"
 
-#: dashboard.html
 msgid "All clear"
 msgstr "सब ठीक है"
 
-#: account_views.py
 msgid "All dues are cleared."
 msgstr "सारी उधारी चुक गई।"
 
-#: userlogin.html
 msgid "All in one place."
 msgstr "सब एक ही जगह।"
 
-#: dashboard.html
 msgid "All products"
 msgstr "सब सामान"
 
-#: quotation_list.html
 msgid "All quotations"
 msgstr "सब कोटेशन"
 
-#: dashboard.html
 msgid "All retailer shops"
 msgstr "सब दुकानें"
 
-#: retailer_list.html
 msgid "All retailer shops registered on the platform"
 msgstr "यहाँ रजिस्टर सब दुकानें"
 
-#: customer_list.html, sales_list.html, supplier_list.html
 msgid "All Retailers"
 msgstr "सब दुकानें"
 
-#: dashboard.html
 msgid "All retailers"
 msgstr "सब दुकानें"
 
-#: return_form.html
 msgid "All returned"
 msgstr "सब वापस हो गया"
 
-#: dashboard.html
 msgid "All sales"
 msgstr "सब बिक्री"
 
-#: base.html, dashboard.html, supplier_product_list.html
 msgid "All shops"
 msgstr "सब दुकानें"
 
-#: purchase_list.html, retailer_list.html, sales_list.html, supplier_list.html
 msgid "All Status"
 msgstr "सब स्थिति"
 
-#: low_stock_list.html
 msgid "All stocked up"
 msgstr "स्टॉक पूरा है"
 
-#: purchase_list.html
 msgid "All Suppliers"
 msgstr "सब सप्लायर"
 
-#: supplier_product_list.html
 msgid "All suppliers"
 msgstr "सब सप्लायर"
 
-#: retailer_list.html, supplier_product_list.html
 msgid "All types"
 msgstr "सब प्रकार"
 
-#: return_form.html
 msgid "Already returned"
 msgstr "पहले वापस हुआ"
 
-#: add_order.html, add_supplier.html, supplier_list.html
 msgid "Alternate Mobile"
 msgstr "दूसरा मोबाइल"
 
-#: add_order.html, dashboard.html, purchase_detail.html, purchase_invoice.html, purchase_list.html, quotation_create.html, quotation_detail.html, quotation_list.html, quotation_print.html, return_note.html, sale_create.html, sale_detail.html, sale_invoice.html, sales_list.html
 msgid "Amount"
 msgstr "रकम"
 
-#: accounts.py
 msgid "Amount cannot be more than the amount due (₹%(outstanding)s)."
 msgstr "रकम बाकी रकम (₹%(outstanding)s) से ज़्यादा नहीं हो सकती।"
 
-#: accounts.py
 msgid "Amount cannot be more than the balance due (₹%(due_amount)s)."
 msgstr "रकम बाकी रकम (₹%(due_amount)s) से ज़्यादा नहीं हो सकती।"
 
-#: purchase_detail.html, sale_detail.html
 msgid "Amount Due"
 msgstr "बाकी रकम"
 
-#: customer_account.html
 msgid "Amount due from %(name)s"
 msgstr "%(name)s पर बाकी रकम"
 
-#: customer_account.html, sale_create.html
 msgid "Amount received"
 msgstr "मिली रकम"
 
-#: quotation_create.html
 msgid "An estimate only: stock and the customer's account do not change"
 msgstr "यह सिर्फ अनुमान है: स्टॉक और ग्राहक का खाता नहीं बदलता"
 
-#: views.py
 msgid "An unexpected error occurred while creating the sale. Please try again."
 msgstr "बिक्री बनाते समय कोई गड़बड़ी हुई। फिर से कोशिश करें।"
 
-#: views.py
 msgid "An unexpected error occurred while deleting the product."
 msgstr "सामान हटाते समय कोई गड़बड़ी हुई।"
 
-#: views.py
 msgid "An unexpected error occurred while updating the product."
 msgstr "सामान बदलते समय कोई गड़बड़ी हुई।"
 
-#: stored values
 msgid "Andaman and Nicobar Islands"
 msgstr "अंडमान और निकोबार"
 
-#: add_order.html, register.html, stored values
 msgid "Andhra Pradesh"
 msgstr "आंध्र प्रदेश"
 
-#: views.py
 msgid "Another supplier with this name already exists for this retailer."
 msgstr "इस दुकान में इस नाम का सप्लायर पहले से है।"
 
-#: return_form.html
 msgid "Anything more is a refund the supplier pays back."
 msgstr "इससे ज़्यादा रकम सप्लायर वापस देगा।"
 
-#: return_form.html
 msgid "Anything more is paid back now, or kept as credit for the next bill."
 msgstr "इससे ज़्यादा रकम अभी वापस दी जाएगी, या अगले बिल के लिए जमा रहेगी।"
 
-#: dashboard.html
 msgid "Apply"
 msgstr "लागू करें"
 
-#: stored values
 msgid "Arunachal Pradesh"
 msgstr "अरुणाचल प्रदेश"
 
-#: userlogin.html
 msgid "Ask the admin to create your account."
 msgstr "अपना खाता बनाने के लिए एडमिन से कहें।"
 
-#: userlogin.html
 msgid "Ask the admin to set a new password for you. Then sign in with the new password."
 msgstr "एडमिन से नया पासवर्ड सेट करने को कहें। फिर नए पासवर्ड से लॉग इन करें।"
 
-#: add_order.html, register.html, stored values
 msgid "Assam"
 msgstr "असम"
 
-#: dashboard_views.py
 msgid "At or below minimum stock"
 msgstr "कम से कम स्टॉक के बराबर या उससे कम"
 
-#: purchase_detail.html
 msgid "Attachment"
 msgstr "अटैचमेंट"
 
-#: sale_create.html
 msgid "Auto-calculated"
 msgstr "अपने आप हिसाब"
 
-#: customer_account.html
 msgid "available"
 msgstr "बाकी"
 
-#: quotation_print.html
 msgid "Back"
 msgstr "वापस"
 
-#: account_statement.html
 msgid "Back to account"
 msgstr "खाते पर वापस"
 
-#: purchase_invoice.html
 msgid "Back to bill"
 msgstr "बिल पर वापस"
 
-#: customer_account.html
 msgid "Back to Customers"
 msgstr "ग्राहकों पर वापस"
 
-#: low_stock_list.html
 msgid "Back to Products"
 msgstr "सामान पर वापस"
 
-#: return_note.html
 msgid "Back to purchase"
 msgstr "खरीद पर वापस"
 
-#: add_order.html, purchase_detail.html
 msgid "Back to Purchases"
 msgstr "खरीद पर वापस"
 
-#: quotation_create.html, quotation_detail.html
 msgid "Back to Quotations"
 msgstr "कोटेशन पर वापस"
 
-#: register.html
 msgid "Back to Retailers"
 msgstr "दुकानों पर वापस"
 
-#: return_note.html, sale_invoice.html
 msgid "Back to sale"
 msgstr "बिक्री पर वापस"
 
-#: sale_create.html
 msgid "Back to Sales"
 msgstr "बिक्री पर वापस"
 
-#: sale_detail.html
 msgid "Back to sales"
 msgstr "बिक्री पर वापस"
 
-#: add_supplier.html, supplier_account.html, supplier_product_list.html
 msgid "Back to Suppliers"
 msgstr "सप्लायर पर वापस"
 
-#: return_form.html
 msgid "Back to the bill"
 msgstr "बिल पर वापस"
 
-#: purchase_list.html
 msgid "Balance"
 msgstr "बाकी"
 
-#: customer_account.html, sale_create.html
 msgid "Balance due"
 msgstr "बाकी रकम"
 
-#: purchase_detail.html, purchase_invoice.html, sale_create.html, sale_invoice.html
 msgid "Balance Due"
 msgstr "बाकी रकम"
 
-#: purchase_detail.html
 msgid "Balance due to %(name)s"
 msgstr "%(name)s को देना बाकी"
 
-#: add_order.html, supplier_account.html
 msgid "Balance payable"
 msgstr "देना बाकी"
 
-#: purchase_detail.html
 msgid "Balance to pay"
 msgstr "देना बाकी"
 
-#: add_order.html, sale_create.html, stored values
-msgid "Bank Transfer"
-msgstr "बैंक ट्रांसफर"
-
-#: add_order.html, add_product.html
 msgid "Barcode"
 msgstr "बारकोड"
 
-#: low_stock_list.html, product_list.html
 msgid "Barcode:"
 msgstr "बारकोड:"
 
-#: product_list.html
 msgid "base units"
 msgstr "छोटी यूनिट"
 
-#: add_order.html, supplier_list.html
 msgid "Basic Details"
 msgstr "मुख्य जानकारी"
 
-#: add_order.html, add_product.html
 msgid "Basic Information"
 msgstr "मुख्य जानकारी"
 
-#: h1_register.html, near_expiry.html, purchase_detail.html, purchase_invoice.html, return_form.html, return_note.html, sale_detail.html, sale_invoice.html
 msgid "Batch"
 msgstr "बैच"
 
-#: batches.py
 msgid "Batch %(batch_number)s of '%(product_name)s' already exists with expiry %(expiry_date)s. Check the batch number or expiry."
 msgstr "'%(product_name)s' का बैच %(batch_number)s पहले से है, एक्सपायरी %(expiry_date)s है। बैच नंबर या एक्सपायरी देख लें।"
 
-#: batches.py
 msgid "Batch %(batch_number)s of '%(product_name)s' expired on %(expiry_date)s and cannot be sold."
 msgstr "'%(product_name)s' का बैच %(batch_number)s %(expiry_date)s को एक्सपायर हो गया, इसे बेच नहीं सकते।"
 
-#: views.py
 msgid "Batch %(batch_number)s of '%(product_name)s' has expired and cannot be sold."
 msgstr "'%(product_name)s' का बैच %(batch_number)s एक्सपायर हो गया है, इसे बेच नहीं सकते।"
 
-#: views.py
 msgid "Batch number for '%(product_name)s'"
 msgstr "'%(product_name)s' का बैच नंबर"
 
-#: stored values
 msgid "Batch numbers on stock"
 msgstr "स्टॉक पर बैच नंबर"
 
-#: near_expiry.html
 msgid "Batches in stock that expire soon, and expired stock that cannot be sold"
 msgstr "जल्दी एक्सपायर होने वाला स्टॉक, और एक्सपायर स्टॉक जो बेचा नहीं जा सकता"
 
-#: dashboard.html
 msgid "best day"
 msgstr "सबसे अच्छा दिन"
 
-#: add_order.html, register.html, stored values
 msgid "Bihar"
 msgstr "बिहार"
 
-#: customer_account.html, dashboard.html, return_form.html, returns_list.html
 msgid "Bill"
 msgstr "बिल"
 
-#: customer_account.html
 msgid "bill"
 msgstr "बिल"
 
-#: views.py
 msgid "Bill %(bill_number)s from %(supplier_name)s has already been entered."
 msgstr "%(supplier_name)s का बिल %(bill_number)s पहले ही डाला जा चुका है।"
 
-#: customer_account.html, supplier_account.html
 msgid "Bill amount"
 msgstr "बिल की रकम"
 
-#: add_order.html, purchase_detail.html
 msgid "Bill Date"
 msgstr "बिल की तारीख"
 
-#: add_order.html, supplier_account.html
 msgid "Bill date"
 msgstr "बिल की तारीख"
 
-#: views.py
 msgid "Bill date is required."
 msgstr "बिल की तारीख ज़रूरी है।"
 
-#: purchase_invoice.html
 msgid "Bill Date:"
 msgstr "बिल की तारीख:"
 
-#: purchase_detail.html
 msgid "Bill fully paid and closed"
 msgstr "बिल का पूरा भुगतान हो गया, बिल बंद"
 
-#: purchase_detail.html
 msgid "Bill Information"
 msgstr "बिल की जानकारी"
 
-#: add_order.html, supplier_account.html
 msgid "Bill No."
 msgstr "बिल नंबर"
 
-#: purchase_invoice.html
 msgid "Bill No:"
 msgstr "बिल नंबर:"
 
-#: add_order.html, purchase_detail.html
 msgid "Bill Number"
 msgstr "बिल नंबर"
 
-#: views.py
 msgid "Bill number is required."
 msgstr "बिल नंबर ज़रूरी है।"
 
-#: add_order.html
 msgid "Bill number printed on the supplier's bill"
 msgstr "सप्लायर के बिल पर छपा बिल नंबर"
 
-#: add_order.html, purchase_detail.html, sale_create.html
 msgid "Bill Summary"
 msgstr "बिल का सारांश"
 
-#: sale_invoice.html
 msgid "Bill To"
 msgstr "बिल किसके नाम"
 
-#: customer_account.html
 msgid "Billed"
 msgstr "कुल बिल"
 
-#: base.html, userlogin.html
 msgid "Billing & Stock"
 msgstr "बिलिंग और स्टॉक"
 
-#: userlogin.html
 msgid "Billing, stock and udhari."
 msgstr "बिलिंग, स्टॉक और उधारी।"
 
-#: customer_list.html
 msgid "Bills"
 msgstr "बिल"
 
-#: dashboard.html
 msgid "bills this month"
 msgstr "इस महीने के बिल"
 
-#: dashboard.html
 msgid "Bills to pay"
 msgstr "चुकाने वाले बिल"
 
-#: return_form.html
 msgid "Bought"
 msgstr "खरीदा"
 
-#: add_product.html, product_list.html
 msgid "Bought in"
 msgstr "किसमें खरीदते हैं"
 
-#: dashboard.html
 msgid "bought this month"
 msgstr "इस महीने खरीदा"
 
-#: add_order.html, add_product.html, low_stock_list.html, product_list.html
 msgid "Brand"
 msgstr "ब्रांड"
 
-#: views.py
 msgid "Brand name is required."
 msgstr "ब्रांड का नाम ज़रूरी है।"
 
-#: register.html
 msgid "Business information of the retailer"
 msgstr "दुकान की कारोबारी जानकारी"
 
-#: stored values
 msgid "Buy in one unit, sell in another (box -> piece)"
 msgstr "एक यूनिट में खरीदें, दूसरी में बेचें (डिब्बा -> पीस)"
 
-#: add_order.html, add_product.html, customer_account.html, purchase_detail.html, quotation_create.html, return_form.html, sale_create.html, supplier_list.html
 msgid "Cancel"
 msgstr "रद्द करें"
 
-#: quotation_detail.html
 msgid "Cancel quotation"
 msgstr "कोटेशन रद्द करें"
 
-#: quotation_detail.html, quotation_list.html, stored values
 msgid "Cancelled"
 msgstr "रद्द"
 
-#: userlogin.html
 msgid "Caps Lock is on"
 msgstr "Caps Lock चालू है"
 
-#: add_order.html, sale_create.html, stored values
 msgid "Cash"
 msgstr "नकद"
 
-#: add_order.html
 msgid "Cash on Delivery"
 msgstr "डिलीवरी पर नकद"
 
-#: stored values
+msgid "Cash paid"
+msgstr "नकद दिया"
+
+msgid "Cash received"
+msgstr "नकद मिला"
+
+msgid "Cash received now"
+msgstr "अभी मिला नकद"
+
+msgid "Cash received. It clears the oldest unpaid bills first and a receipt number is created automatically."
+msgstr "नकद मिला। इससे सबसे पुराने बाकी बिल पहले चुकते हैं और रसीद नंबर अपने आप बनता है।"
+
+msgid "Cash received. It clears the oldest unpaid bills first. The bill you are making stays as it is."
+msgstr "नकद मिला। इससे सबसे पुराने बाकी बिल पहले चुकते हैं। आप जो बिल बना रहे हैं, वह वैसा ही रहेगा।"
+
 msgid "Cash refund"
 msgstr "नकद वापसी"
 
-#: return_note.html
 msgid "Cash refunded"
 msgstr "नकद वापस दिया"
 
-#: add_order.html, add_product.html, low_stock_list.html, product_list.html
 msgid "Category"
 msgstr "कैटेगरी"
 
-#: views.py
 msgid "Category name is required."
 msgstr "कैटेगरी का नाम ज़रूरी है।"
 
-#: stored values
 msgid "CGST + SGST"
 msgstr "CGST + SGST"
 
-#: stored values
 msgid "CGST + SGST / IGST split on invoices"
 msgstr "बिल पर CGST + SGST / IGST अलग दिखाएं"
 
-#: stored values
 msgid "Chandigarh"
 msgstr "चंडीगढ़"
 
-#: base.html, userlogin.html
 msgid "Change"
 msgstr "बदलें"
 
-#: add_product.html
 msgid "Charged to customers marked \"Wholesale\". Empty = selling price for everyone."
 msgstr "\"होलसेल\" वाले ग्राहकों से लिया जाता है। खाली छोड़ें तो सबके लिए बेचने का दाम।"
 
-#: add_order.html, sale_create.html, stored values
-msgid "Cheque"
-msgstr "चेक"
-
-#: add_order.html, register.html, stored values
 msgid "Chhattisgarh"
 msgstr "छत्तीसगढ़"
 
-#: add_order.html, add_supplier.html, register.html, supplier_account.html, supplier_list.html
 msgid "City"
 msgstr "शहर"
 
-#: supplier_list.html
 msgid "City / GSTIN"
 msgstr "शहर / GSTIN"
 
-#: register.html
 msgid "City is required"
 msgstr "शहर ज़रूरी है"
 
-#: customer_list.html, near_expiry.html, purchase_list.html, quotation_list.html, retailer_list.html, returns_list.html, sales_list.html, supplier_list.html, supplier_product_list.html
 msgid "Clear"
 msgstr "साफ़ करें"
 
-#: customer_list.html, quotation_list.html, retailer_list.html, sales_list.html, supplier_list.html
 msgid "Clear filters"
 msgstr "फ़िल्टर हटाएं"
 
-#: sale_create.html
 msgid "Click \"Add item\" to add products to this invoice."
 msgstr "इस बिल में सामान जोड़ने के लिए \"सामान जोड़ें\" दबाएं।"
 
-#: add_order.html, base.html, customer_account.html, product_list.html, purchase_detail.html, sale_create.html, supplier_list.html, userlogin.html
 msgid "Close"
 msgstr "बंद करें"
 
-#: purchase_detail.html
 msgid "Closed"
 msgstr "बंद"
 
-#: base.html
 msgid "Collapse menu"
 msgstr "मेन्यू छोटा करें"
 
-#: base.html
 msgid "Collapse sidebar"
 msgstr "साइडबार छोटा करें"
 
-#: dashboard.html
 msgid "Collect"
 msgstr "वसूली"
 
-#: dashboard.html
 msgid "Collect dues"
 msgstr "उधारी वसूलें"
 
-#: dashboard.html
 msgid "collected"
 msgstr "वसूला"
 
-#: dashboard.html
 msgid "Column chart of daily sales for the last 14 days"
 msgstr "पिछले 14 दिनों की रोज़ की बिक्री का चार्ट"
 
-#: add_order.html, register.html
 msgid "Confirm Password"
 msgstr "पासवर्ड दोबारा"
 
-#: retailer_list.html, supplier_account.html, supplier_list.html
 msgid "Contact"
 msgstr "संपर्क"
 
-#: add_order.html, add_supplier.html, purchase_detail.html, supplier_list.html
 msgid "Contact Person"
 msgstr "संपर्क व्यक्ति"
 
-#: units.py
 msgid "Conversion can have at most %(QUANTITY_PLACES)s decimal places."
 msgstr "बदलाव में दशमलव के बाद ज़्यादा से ज़्यादा %(QUANTITY_PLACES)s अंक हो सकते हैं।"
 
-#: units.py
 msgid "Conversion must be a whole number for this shop."
 msgstr "इस दुकान के लिए बदलाव पूरी संख्या में होना चाहिए।"
 
-#: units.py
 msgid "Conversion must be more than 1 (e.g. 1 Box = 100 pc)."
 msgstr "बदलाव 1 से ज़्यादा होना चाहिए (जैसे 1 डिब्बा = 100 पीस)।"
 
-#: quotation_detail.html, quotation_list.html
 msgid "Convert to sale"
 msgstr "बिक्री में बदलें"
 
-#: quotation_detail.html, quotation_list.html
 msgid "Converted"
 msgstr "बिक्री बन गई"
 
-#: stored values
 msgid "Converted to sale"
 msgstr "बिक्री बन गई"
 
-#: quotation_list.html
 msgid "Converted to sales"
 msgstr "बिक्री बन गई"
 
-#: sale_create.html
 msgid "Converting quotation <strong>%(number)s</strong> to a sale. Quoted prices are kept; check quantities and stock, then save."
 msgstr "कोटेशन <strong>%(number)s</strong> को बिक्री में बदल रहे हैं। कोटेशन के दाम वही रहेंगे; मात्रा और स्टॉक देखकर सेव करें।"
 
-#: stored values, userlogin.html
 msgid "Cosmetics / Gifts / Mobile accessories"
 msgstr "कॉस्मेटिक / गिफ्ट / मोबाइल एक्सेसरीज़"
 
-#: near_expiry.html
 msgid "Cost value"
 msgstr "लागत"
 
-#: quotation_views.py
 msgid "Could not save the quotation. Please try again."
 msgstr "कोटेशन सेव नहीं हुआ। फिर से कोशिश करें।"
 
-#: userlogin.html
 msgid "Could not sign in"
 msgstr "लॉग इन नहीं हो सका"
 
-#: register.html
 msgid "Create a login and shop profile for a new retailer"
 msgstr "नई दुकान के लिए लॉगिन और दुकान की जानकारी बनाएं"
 
-#: dashboard.html
 msgid "Create a sale"
 msgstr "बिक्री करें"
 
-#: sale_create.html
 msgid "Create a sales invoice for your customer"
 msgstr "अपने ग्राहक के लिए बिक्री का बिल बनाएं"
 
-#: dashboard.html
 msgid "Create one"
 msgstr "एक बनाएं"
 
-#: quotation_list.html
 msgid "Create the first quotation"
 msgstr "पहला कोटेशन बनाएं"
 
-#: sales_list.html
 msgid "Create your first sale"
 msgstr "अपनी पहली बिक्री करें"
 
-#: sale_detail.html
 msgid "Created:"
 msgstr "बनाया:"
 
-#: add_order.html, sale_create.html, stored values
-msgid "Credit"
-msgstr "उधार"
-
-#: models.py
 msgid "Credit cannot be negative."
 msgstr "क्रेडिट माइनस में नहीं हो सकता।"
 
-#: add_order.html, add_supplier.html, supplier_list.html
 msgid "Credit Days"
 msgstr "उधार के दिन"
 
-#: supplier_account.html
 msgid "Credit days"
 msgstr "उधार के दिन"
 
-#: views.py
 msgid "Credit days cannot be negative."
 msgstr "उधार के दिन माइनस में नहीं हो सकते।"
 
-#: add_order.html, add_supplier.html, sale_create.html, supplier_list.html
 msgid "Credit Limit"
 msgstr "उधार सीमा"
 
-#: customer_account.html, customer_list.html, views.py
 msgid "Credit limit"
 msgstr "उधार सीमा"
 
-#: views.py
 msgid "Credit limit cannot be negative."
 msgstr "उधार सीमा माइनस में नहीं हो सकती।"
 
-#: views.py
 msgid "Credit limit exceeded for '%(customer_name)s'. Current outstanding: ₹%(current_balance)s. New due: ₹%(due_amount)s. Credit limit: ₹%(credit_limit)s."
 msgstr "'%(customer_name)s' की उधार सीमा पार हो गई। अभी बाकी: ₹%(current_balance)s। नया बाकी: ₹%(due_amount)s। उधार सीमा: ₹%(credit_limit)s।"
 
-#: return_note.html
 msgid "Credit Note"
 msgstr "क्रेडिट नोट"
 
-#: return_note.html
 msgid "CREDIT NOTE"
 msgstr "क्रेडिट नोट"
 
-#: sale_detail.html
 msgid "Credit note"
 msgstr "क्रेडिट नोट"
 
-#: return_views.py
 msgid "Credit note %(credit_note_number)s saved for ₹%(total)s."
 msgstr "क्रेडिट नोट %(credit_note_number)s ₹%(total)s का सेव हुआ।"
 
-#: returns_list.html
 msgid "Credit notes"
 msgstr "क्रेडिट नोट"
 
-#: returns_list.html
 msgid "Credit notes for goods customers returned, debit notes for goods sent back to suppliers"
 msgstr "ग्राहक ने लौटाए सामान के क्रेडिट नोट, सप्लायर को लौटाए सामान के डेबिट नोट"
 
-#: views.py
-msgid "Credit payment cannot be recorded."
-msgstr "उधार का पेमेंट दर्ज नहीं हो सकता।"
-
-#: views.py
-msgid "Credit sales cannot have a paid amount."
-msgstr "उधार बिक्री में भुगतान की रकम नहीं हो सकती।"
-
-#: return_note.html
 msgid "Credit total"
 msgstr "कुल क्रेडिट"
 
-#: sale_create.html
 msgid "Credit used"
 msgstr "इस्तेमाल हुई उधार"
 
-#: add_product.html
 msgid "Current inventory levels and product status"
 msgstr "अभी का स्टॉक और सामान की स्थिति"
 
-#: add_order.html, add_product.html, product_list.html
 msgid "Current Stock"
 msgstr "अभी का स्टॉक"
 
-#: views.py
 msgid "Current stock"
 msgstr "अभी का स्टॉक"
 
-#: views.py
 msgid "Current stock cannot be negative."
 msgstr "अभी का स्टॉक माइनस में नहीं हो सकता।"
 
-#: customer_list.html, dashboard.html, quotation_create.html, quotation_detail.html, quotation_list.html, return_note.html, returns_list.html, sale_create.html, sales_list.html
 msgid "Customer"
 msgstr "ग्राहक"
 
-#: customer_account.html
 msgid "Customer Account"
 msgstr "ग्राहक का खाता"
 
-#: sale_detail.html
 msgid "Customer account"
 msgstr "ग्राहक का खाता"
 
-#: customer_list.html
 msgid "Customer accounts"
 msgstr "ग्राहकों के खाते"
 
-#: customer_list.html
 msgid "Customer accounts (khata) of %(shop)s"
 msgstr "%(shop)s के ग्राहकों के खाते (खाता-बही)"
 
-#: customer_list.html
 msgid "Customer accounts (khata) of all retailer shops"
 msgstr "सब दुकानों के ग्राहकों के खाते (खाता-बही)"
 
-#: sale_create.html
 msgid "Customer and invoice information"
 msgstr "ग्राहक और बिल की जानकारी"
 
-#: views.py
 msgid "Customer created successfully."
 msgstr "ग्राहक जुड़ गया।"
 
-#: customer_account.html
 msgid "Customer details"
 msgstr "ग्राहक की जानकारी"
 
-#: sale_detail.html
 msgid "Customer Details"
 msgstr "ग्राहक की जानकारी"
 
-#: models.py
 msgid "Customer does not belong to this retailer."
 msgstr "यह ग्राहक इस दुकान का नहीं है।"
 
-#: dashboard.html
 msgid "Customer dues"
 msgstr "ग्राहकों की उधारी"
 
-#: customer_list.html
 msgid "Customer has paid in advance"
 msgstr "ग्राहक ने एडवांस दिया है"
 
-#: sale_create.html
 msgid "Customer Name"
 msgstr "ग्राहक का नाम"
 
-#: sales_list.html
 msgid "Customer name"
 msgstr "ग्राहक का नाम"
 
-#: views.py
 msgid "Customer name cannot exceed 200 characters."
 msgstr "ग्राहक का नाम 200 अक्षर से ज़्यादा नहीं हो सकता।"
 
-#: views.py
 msgid "Customer name is required."
 msgstr "ग्राहक का नाम ज़रूरी है।"
 
-#: customer_list.html
 msgid "Customer name or mobile"
 msgstr "ग्राहक का नाम या मोबाइल"
 
-#: customer_list.html, sales_list.html
 msgid "Customer name or mobile..."
 msgstr "ग्राहक का नाम या मोबाइल..."
 
-#: account_views.py
 msgid "Customer not found."
 msgstr "ग्राहक नहीं मिला।"
 
-#: account_views.py
 msgid "Customer Statement"
 msgstr "ग्राहक का विवरण"
 
-#: base.html, customer_list.html, dashboard.html, retailer_list.html, shop_type_services.html
 msgid "Customers"
 msgstr "ग्राहक"
 
-#: dashboard.html
 msgid "customers"
 msgstr "ग्राहक"
 
-#: h1_register.html, return_note.html, sale_invoice.html
 msgid "D.L. No:"
 msgstr "ड्रग लाइसेंस नं:"
 
-#: stored values
 msgid "Dadra and Nagar Haveli and Daman and Diu"
 msgstr "दादरा नगर हवेली और दमन दीव"
 
-#: dashboard.html
 msgid "Daily sales"
 msgstr "रोज़ की बिक्री"
 
-#: base.html, dashboard.html, h1_register.html
 msgid "Dashboard"
 msgstr "डैशबोर्ड"
 
-#: account_statement.html, customer_account.html, dashboard.html, h1_register.html, purchase_detail.html, purchase_invoice.html, purchase_list.html, sale_create.html, sale_detail.html, sales_list.html, supplier_account.html
 msgid "Date"
 msgstr "तारीख"
 
-#: account_statement.html, quotation_detail.html, quotation_print.html, return_note.html, sale_invoice.html
 msgid "Date:"
 msgstr "तारीख:"
 
-#: near_expiry.html
 msgid "Days left"
 msgstr "बचे दिन"
 
-#: models.py
 msgid "Debit cannot be negative."
 msgstr "डेबिट माइनस में नहीं हो सकता।"
 
-#: purchase_detail.html, purchase_invoice.html
 msgid "Debit note"
 msgstr "डेबिट नोट"
 
-#: return_note.html
 msgid "Debit Note"
 msgstr "डेबिट नोट"
 
-#: return_note.html
 msgid "DEBIT NOTE"
 msgstr "डेबिट नोट"
 
-#: return_views.py
 msgid "Debit note %(debit_note_number)s saved for ₹%(total)s."
 msgstr "डेबिट नोट %(debit_note_number)s ₹%(total)s का सेव हुआ।"
 
-#: returns_list.html
 msgid "Debit notes"
 msgstr "डेबिट नोट"
 
-#: return_note.html
 msgid "Debit total"
 msgstr "कुल डेबिट"
 
-#: product_list.html, supplier_list.html
 msgid "Delete"
 msgstr "हटाएं"
 
-#: supplier_list.html
 msgid "Delete supplier"
 msgstr "सप्लायर हटाएं"
 
-#: supplier_list.html
 msgid "Delete supplier?"
 msgstr "सप्लायर हटाएं?"
 
-#: product_list.html
 msgid "Deleted successfully!"
 msgstr "हटा दिया गया!"
 
-#: add_order.html, register.html, stored values
 msgid "Delhi"
 msgstr "दिल्ली"
 
-#: quotation_detail.html
 msgid "Details"
 msgstr "जानकारी"
 
-#: quotation_print.html, return_note.html, sale_detail.html, sale_invoice.html
 msgid "Disc."
 msgstr "छूट"
 
-#: add_order.html, purchase_detail.html, purchase_invoice.html, quotation_create.html, quotation_detail.html, quotation_print.html, return_note.html, sale_create.html, sale_detail.html, sale_invoice.html, views.py
 msgid "Discount"
 msgstr "छूट"
 
-#: quotation_create.html
 msgid "Discount (₹)"
 msgstr "छूट (₹)"
 
-#: views.py
 msgid "Discount cannot be greater than subtotal."
 msgstr "छूट कुल रकम से ज़्यादा नहीं हो सकती।"
 
-#: views.py
 msgid "Discount cannot be greater than the amount for '%(product_name)s'."
 msgstr "'%(product_name)s' की छूट उसकी रकम से ज़्यादा नहीं हो सकती।"
 
-#: models.py
 msgid "Discount cannot be greater than the gross amount."
 msgstr "छूट कुल रकम से ज़्यादा नहीं हो सकती।"
 
-#: models.py
 msgid "Discount cannot be negative."
 msgstr "छूट माइनस में नहीं हो सकती।"
 
-#: quotation_views.py, views.py
 msgid "Discount for %(product_name)s"
 msgstr "%(product_name)s की छूट"
 
-#: views.py
 msgid "Discount for '%(product_name)s' cannot exceed ₹%(gross_amount)s."
 msgstr "'%(product_name)s' की छूट ₹%(gross_amount)s से ज़्यादा नहीं हो सकती।"
 
-#: quotation_views.py
 msgid "Discount for '%(product_name)s' is more than the line amount."
 msgstr "'%(product_name)s' की छूट लाइन की रकम से ज़्यादा है।"
 
-#: h1_register.html, sale_detail.html
 msgid "Doctor"
 msgstr "डॉक्टर"
 
-#: sale_create.html
 msgid "Doctor Name"
 msgstr "डॉक्टर का नाम"
 
-#: sale_invoice.html
 msgid "Doctor:"
 msgstr "डॉक्टर:"
 
-#: userlogin.html
 msgid "Done"
 msgstr "हो गया"
 
-#: purchase_list.html
 msgid "Download bill"
 msgstr "बिल डाउनलोड करें"
 
-#: purchase_list.html
 msgid "Download bill (PDF)"
 msgstr "बिल डाउनलोड करें (PDF)"
 
-#: sale_detail.html, sales_list.html
 msgid "Download invoice"
 msgstr "बिल डाउनलोड करें"
 
-#: sales_list.html
 msgid "Download invoice (PDF)"
 msgstr "बिल डाउनलोड करें (PDF)"
 
-#: account_statement.html, customer_account.html, purchase_detail.html, purchase_invoice.html, sale_invoice.html, supplier_account.html
 msgid "Download PDF"
 msgstr "PDF डाउनलोड करें"
 
-#: h1_register.html
 msgid "Drug"
 msgstr "दवा"
 
-#: register.html
 msgid "Drug Licence No."
 msgstr "ड्रग लाइसेंस नं."
 
-#: stored values
 msgid "Drug licence on the shop and invoices"
 msgstr "दुकान और बिल पर ड्रग लाइसेंस"
 
-#: add_product.html
 msgid "Drug Schedule"
 msgstr "दवा का शेड्यूल"
 
-#: customer_account.html, dashboard.html, sales_list.html, supplier_account.html
 msgid "Due"
 msgstr "बाकी"
 
-#: purchase_detail.html
 msgid "due"
 msgstr "बाकी"
 
-#: customer_list.html
 msgid "Due (udhari)"
 msgstr "बाकी (उधारी)"
 
-#: add_order.html, sale_detail.html
 msgid "Due Amount"
 msgstr "बाकी रकम"
 
-#: add_order.html, purchase_detail.html, purchase_list.html
 msgid "Due Date"
 msgstr "आखिरी तारीख"
 
-#: add_order.html, supplier_account.html
 msgid "Due date"
 msgstr "आखिरी तारीख"
 
-#: purchase_detail.html
 msgid "Due date %(date)s. Pay in parts or in full before or after this date."
 msgstr "आखिरी तारीख %(date)s। इस तारीख से पहले या बाद में, थोड़ा-थोड़ा या पूरा चुका सकते हैं।"
 
-#: purchase_detail.html
 msgid "Due date was %(date)s. You can still record a payment."
 msgstr "आखिरी तारीख %(date)s थी। आप अभी भी पेमेंट दर्ज कर सकते हैं।"
 
-#: purchase_invoice.html
 msgid "Due Date:"
 msgstr "आखिरी तारीख:"
 
-#: purchase_detail.html
 msgid "Due in %(counter)s day"
 msgid_plural "Due in %(counter)s days"
 msgstr[0] "%(counter)s दिन में चुकाना है"
 msgstr[1] "%(counter)s दिन में चुकाना है"
 
-#: purchase_detail.html
 msgid "Due today"
 msgstr "आज चुकाना है"
 
-#: add_product.html
 msgid "e.g. 100"
 msgstr "जैसे 100"
 
-#: add_order.html, register.html
 msgid "e.g. 12, MG Road, Near City Mall"
 msgstr "जैसे 12, एमजी रोड, सिटी मॉल के पास"
 
-#: register.html
 msgid "e.g. 20B-MH-12345"
 msgstr "जैसे 20B-MH-12345"
 
-#: register.html
 msgid "e.g. 21B-MH-12345"
 msgstr "जैसे 21B-MH-12345"
 
-#: add_order.html, register.html
 msgid "e.g. 400001"
 msgstr "जैसे 400001"
 
-#: add_order.html, register.html
 msgid "e.g. 9876543210"
 msgstr "जैसे 9876543210"
 
-#: add_product.html
 msgid "E.g. bought per Box, sold per pc: 1 Box = 100 pc. Prices below are per selling unit."
 msgstr "जैसे डिब्बे में खरीदें, पीस में बेचें: 1 डिब्बा = 100 पीस। नीचे के दाम बेचने वाली यूनिट के हैं।"
 
-#: quotation_create.html
 msgid "e.g. Delivery in 3 days, prices include loading"
 msgstr "जैसे 3 दिन में डिलीवरी, दाम में लोडिंग शामिल"
 
-#: add_order.html, register.html
 msgid "e.g. Mumbai"
 msgstr "जैसे मुंबई"
 
-#: add_order.html, register.html
 msgid "e.g. Rajesh General Store"
 msgstr "जैसे राजेश जनरल स्टोर"
 
-#: add_order.html, register.html
 msgid "e.g. Rajesh Kumar Sharma"
 msgstr "जैसे राजेश कुमार शर्मा"
 
-#: add_order.html, register.html
 msgid "e.g. rajesh@store.com"
 msgstr "जैसे rajesh@store.com"
 
-#: add_order.html, register.html
 msgid "e.g. rajesh_store"
 msgstr "जैसे rajesh_store"
 
-#: add_product.html
 msgid "e.g., 1.5 sq mm, FR, 90 m coil"
 msgstr "जैसे 1.5 sq mm, FR, 90 m कॉइल"
 
-#: add_order.html, add_product.html
 msgid "e.g., 10"
 msgstr "जैसे 10"
 
-#: add_order.html, add_product.html
 msgid "e.g., 2106"
 msgstr "जैसे 2106"
 
-#: add_order.html, add_product.html
 msgid "e.g., 50"
 msgstr "जैसे 50"
 
-#: add_product.html
 msgid "e.g., Cipla Ltd"
 msgstr "जैसे Cipla Ltd"
 
-#: add_product.html
 msgid "e.g., Paracetamol 500mg"
 msgstr "जैसे Paracetamol 500mg"
 
-#: add_order.html, add_product.html
 msgid "e.g., Tata Salt, Aashirvaad Atta 5kg"
 msgstr "जैसे टाटा नमक, आशीर्वाद आटा 5kg"
 
-#: dashboard.html
 msgid "Earliest due first"
 msgstr "पहले जिसकी तारीख पहले"
 
-#: product_list.html, supplier_list.html
 msgid "Edit"
 msgstr "बदलें"
 
-#: supplier_list.html
 msgid "Edit supplier"
 msgstr "सप्लायर बदलें"
 
-#: supplier_list.html
 msgid "Edit Supplier"
 msgstr "सप्लायर बदलें"
 
-#: product_list.html
 msgid "Editable Fields"
 msgstr "बदले जा सकने वाले खाने"
 
-#: customer_account.html, purchase_detail.html, sale_create.html, sale_detail.html, supplier_account.html
 msgid "Email"
 msgstr "ईमेल"
 
-#: add_order.html, add_supplier.html, register.html, supplier_list.html
 msgid "Email Address"
 msgstr "ईमेल पता"
 
-#: views.py
 msgid "Email already exists."
 msgstr "यह ईमेल पहले से है।"
 
-#: userlogin.html
 msgid "English, Hindi and Marathi"
 msgstr "अंग्रेज़ी, हिंदी और मराठी"
 
-#: accounts.py, batches.py
 msgid "Enter a valid %(label)s."
 msgstr "सही %(label)s डालें।"
 
-#: quotation_views.py
 msgid "Enter a valid 'valid until' date."
 msgstr "सही 'कब तक मान्य' तारीख डालें।"
 
-#: register.html
 msgid "Enter a valid 10-digit mobile number"
 msgstr "सही 10 अंकों का मोबाइल नंबर डालें"
 
-#: register.html
 msgid "Enter a valid 6-digit PIN code"
 msgstr "सही 6 अंकों का पिन कोड डालें"
 
-#: register.html
 msgid "Enter a valid email address"
 msgstr "सही ईमेल पता डालें"
 
-#: add_product.html
 msgid "Enter a valid minimum stock level"
 msgstr "सही कम से कम स्टॉक डालें"
 
-#: accounts.py
 msgid "Enter a valid payment date."
 msgstr "पेमेंट की सही तारीख डालें।"
 
-#: add_product.html
 msgid "Enter a valid purchase price"
 msgstr "सही खरीद दाम डालें"
 
-#: add_product.html
 msgid "Enter a valid stock quantity"
 msgstr "सही स्टॉक मात्रा डालें"
 
-#: views.py
 msgid "Enter a valid wholesale price."
 msgstr "सही होलसेल दाम डालें।"
 
-#: add_order.html
 msgid "Enter alternate mobile"
 msgstr "दूसरा मोबाइल डालें"
 
-#: add_supplier.html
 msgid "Enter alternate mobile number"
 msgstr "दूसरा मोबाइल नंबर डालें"
 
-#: add_order.html, add_supplier.html
 msgid "Enter city"
 msgstr "शहर डालें"
 
-#: add_order.html, add_supplier.html
 msgid "Enter complete address"
 msgstr "पूरा पता डालें"
 
-#: add_order.html, add_supplier.html
 msgid "Enter contact person name"
 msgstr "संपर्क व्यक्ति का नाम डालें"
 
-#: add_order.html, add_supplier.html
 msgid "Enter email address"
 msgstr "ईमेल पता डालें"
 
-#: add_order.html, add_supplier.html
 msgid "Enter GSTIN"
 msgstr "GSTIN डालें"
 
-#: return_form.html
 msgid "Enter how many of each item come back. Leave 0 for items that stay."
 msgstr "हर सामान कितना वापस आया, लिखें। जो वापस नहीं आया उसमें 0 रहने दें।"
 
-#: add_product.html
 msgid "Enter how many selling units are in one purchase unit"
 msgstr "एक खरीद यूनिट में कितनी बेचने वाली यूनिट हैं, लिखें"
 
-#: units.py
 msgid "Enter how many selling units are in one purchase unit."
 msgstr "एक खरीद यूनिट में कितनी बेचने वाली यूनिट हैं, लिखें।"
 
-#: add_order.html, add_supplier.html
 msgid "Enter mobile number"
 msgstr "मोबाइल नंबर डालें"
 
-#: add_order.html, add_product.html
 msgid "Enter new brand name"
 msgstr "नए ब्रांड का नाम डालें"
 
-#: add_order.html, add_product.html
 msgid "Enter new category name"
 msgstr "नई कैटेगरी का नाम डालें"
 
-#: add_order.html, add_product.html
 msgid "Enter new unit (e.g., dozen, pack)"
 msgstr "नई यूनिट डालें (जैसे दर्जन, पैकेट)"
 
-#: add_order.html
 msgid "Enter paid amount"
 msgstr "दी गई रकम डालें"
 
-#: add_order.html
 msgid "Enter PAN"
 msgstr "PAN डालें"
 
-#: add_supplier.html
 msgid "Enter PAN card number"
 msgstr "PAN कार्ड नंबर डालें"
 
-#: add_order.html, add_supplier.html
 msgid "Enter pincode"
 msgstr "पिन कोड डालें"
 
-#: add_order.html, add_supplier.html
 msgid "Enter state"
 msgstr "राज्य डालें"
 
-#: add_order.html, add_supplier.html
 msgid "Enter supplier name"
 msgstr "सप्लायर का नाम डालें"
 
-#: returns.py
 msgid "Enter the quantity to return for at least one item."
 msgstr "कम से कम एक सामान की वापसी मात्रा डालें।"
 
-#: userlogin.html
 msgid "Enter your username"
 msgstr "अपना यूज़रनेम डालें"
 
-#: supplier_product_list.html
 msgid "Every product of this shop is already linked to this supplier."
 msgstr "इस दुकान का हर सामान पहले से इस सप्लायर से जुड़ा है।"
 
-#: return_form.html
 msgid "Everything on this bill has already been returned."
 msgstr "इस बिल का सब सामान पहले ही वापस हो चुका है।"
 
-#: purchase_detail.html, purchase_invoice.html, return_form.html, return_note.html, sale_detail.html
 msgid "Exp"
 msgstr "एक्स."
 
-#: base.html
 msgid "Expand menu"
 msgstr "मेन्यू बड़ा करें"
 
-#: near_expiry.html, quotation_list.html
 msgid "Expired"
 msgstr "एक्सपायर"
 
-#: near_expiry.html
 msgid "Expired (cannot be sold)"
 msgstr "एक्सपायर (बेच नहीं सकते)"
 
-#: dashboard.html
 msgid "expired in stock"
 msgstr "एक्सपायर स्टॉक में"
 
-#: quotation_detail.html
 msgid "Expired on"
 msgstr "एक्सपायर हुआ"
 
-#: near_expiry.html
 msgid "Expired stock"
 msgstr "एक्सपायर स्टॉक"
 
-#: dashboard_views.py
 msgid "Expired stock cannot be sold; return or remove it"
 msgstr "एक्सपायर स्टॉक बेच नहीं सकते; इसे वापस करें या हटाएं"
 
-#: near_expiry.html
 msgid "Expiring in %(days)s days"
 msgstr "%(days)s दिन में एक्सपायर"
 
-#: dashboard.html, near_expiry.html
 msgid "Expiring in 90 days"
 msgstr "90 दिन में एक्सपायर"
 
-#: near_expiry.html
 msgid "Expiring within %(window)s days"
 msgstr "%(window)s दिन के अंदर एक्सपायर"
 
-#: h1_register.html, near_expiry.html, sale_invoice.html
 msgid "Expiry"
 msgstr "एक्सपायरी"
 
-#: views.py
 msgid "Expiry date for '%(product_name)s'"
 msgstr "'%(product_name)s' की एक्सपायरी तारीख"
 
-#: views.py
 msgid "Expiry date of opening stock"
 msgstr "शुरुआती स्टॉक की एक्सपायरी तारीख"
 
-#: stored values
 msgid "Expiry dates on stock"
 msgstr "स्टॉक पर एक्सपायरी तारीख"
 
-#: add_product.html
 msgid "Expiry is required when opening stock is more than 0"
 msgstr "शुरुआती स्टॉक 0 से ज़्यादा हो तो एक्सपायरी ज़रूरी है"
 
-#: add_product.html
 msgid "Expiry of Opening Stock"
 msgstr "शुरुआती स्टॉक की एक्सपायरी"
 
-#: add_product.html
 msgid "Fill in the details below to add a product to %(shop)s"
 msgstr "%(shop)s में सामान जोड़ने के लिए नीचे जानकारी भरें"
 
-#: add_product.html
 msgid "Fill in the details below to add a product to your inventory"
 msgstr "सामान जोड़ने के लिए नीचे जानकारी भरें"
 
-#: customer_list.html, near_expiry.html, purchase_list.html, quotation_list.html, retailer_list.html, returns_list.html, sales_list.html, supplier_list.html, supplier_product_list.html
 msgid "Filter"
 msgstr "फ़िल्टर"
 
-#: customer_list.html, retailer_list.html, sales_list.html, supplier_list.html
 msgid "Filters applied"
 msgstr "फ़िल्टर लगे हैं"
 
-#: return_form.html
 msgid "First reduces this bill's balance due"
 msgstr "पहले इस बिल की बाकी रकम घटती है"
 
-#: account_statement.html, purchase_invoice.html, quotation_print.html, return_note.html, sale_invoice.html
 msgid "For"
 msgstr "की ओर से"
 
-#: userlogin.html
 msgid "For your information"
 msgstr "आपकी जानकारी के लिए"
 
-#: userlogin.html
 msgid "Forgot password?"
 msgstr "पासवर्ड भूल गए?"
 
-#: add_order.html, purchase_detail.html, purchase_invoice.html
 msgid "Free"
 msgstr "फ्री"
 
-#: return_form.html
 msgid "free (not returnable)"
 msgstr "फ्री (वापस नहीं होगा)"
 
-#: add_order.html
 msgid "Free Qty"
 msgstr "फ्री मात्रा"
 
-#: views.py
 msgid "Free quantity for '%(product_name)s'"
 msgstr "'%(product_name)s' की फ्री मात्रा"
 
-#: h1_register.html, purchase_list.html, sales_list.html
 msgid "From"
 msgstr "से"
 
-#: sale_detail.html
 msgid "From quotation"
 msgstr "कोटेशन से"
 
-#: customer_account.html, sale_create.html
 msgid "Full due"
 msgstr "पूरा बाकी"
 
-#: sale_create.html
 msgid "Full history"
 msgstr "पूरा हिसाब"
 
-#: purchase_detail.html, sale_detail.html
 msgid "Fully Paid"
 msgstr "पूरा भुगतान"
 
-#: purchase_invoice.html
 msgid "Fully paid"
 msgstr "पूरा भुगतान"
 
-#: stored values, userlogin.html
 msgid "General / Kirana store"
 msgstr "जनरल / किराना दुकान"
 
-#: sale_create.html
 msgid "Generated on save"
 msgstr "सेव करने पर बनेगा"
 
-#: product_list.html
 msgid "Get started by adding your first product to the inventory."
 msgstr "शुरुआत के लिए अपना पहला सामान जोड़ें।"
 
-#: add_order.html, register.html, stored values
 msgid "Goa"
 msgstr "गोवा"
 
-#: dashboard_views.py
 msgid "Good afternoon"
 msgstr "नमस्ते"
 
-#: dashboard_views.py
 msgid "Good evening"
 msgstr "शुभ संध्या"
 
-#: dashboard_views.py
 msgid "Good morning"
 msgstr "सुप्रभात"
 
-#: sale_invoice.html
 msgid "Goods once sold will not be taken back or exchanged. Subject to local jurisdiction."
 msgstr "बिका हुआ सामान वापस या बदला नहीं जाएगा। स्थानीय कोर्ट के अधीन।"
 
-#: sale_detail.html
 msgid "Goods Returned (credit notes)"
 msgstr "वापस आया सामान (क्रेडिट नोट)"
 
-#: purchase_detail.html
 msgid "Goods Returned (debit notes)"
 msgstr "वापस किया सामान (डेबिट नोट)"
 
-#: purchase_invoice.html
 msgid "Goods returned (debit notes)"
 msgstr "वापस किया सामान (डेबिट नोट)"
 
-#: return_form.html
 msgid "Goods returned by %(party_name)s. A credit note is made; stock comes back."
 msgstr "%(party_name)s ने सामान वापस किया। क्रेडिट नोट बनेगा; स्टॉक वापस आएगा।"
 
-#: return_form.html
 msgid "Goods sent back to %(party_name)s. A debit note is made; stock goes out."
 msgstr "%(party_name)s को सामान वापस भेजा। डेबिट नोट बनेगा; स्टॉक कम होगा।"
 
-#: add_order.html, purchase_detail.html, purchase_invoice.html, sale_create.html, sale_detail.html, sale_invoice.html
 msgid "Grand Total"
 msgstr "कुल रकम"
 
-#: views.py
 msgid "Grand total must be greater than zero."
 msgstr "कुल रकम शून्य से ज़्यादा होनी चाहिए।"
 
-#: return_note.html
 msgid "Gross"
 msgstr "कुल"
 
-#: add_order.html, add_product.html, product_list.html
 msgid "GST (%)"
 msgstr "GST (%)"
 
-#: purchase_detail.html, sale_detail.html
 msgid "GST / Tax"
 msgstr "GST / टैक्स"
 
-#: userlogin.html
 msgid "GST bills, returns and credit notes"
 msgstr "GST बिल, रिटर्न और क्रेडिट नोट"
 
-#: models.py, views.py
 msgid "GST cannot be negative."
 msgstr "GST माइनस में नहीं हो सकता।"
 
-#: models.py
 msgid "GST cannot exceed 100%."
 msgstr "GST 100% से ज़्यादा नहीं हो सकता।"
 
-#: add_product.html
 msgid "GST must be between 0 and 100"
 msgstr "GST 0 से 100 के बीच होना चाहिए"
 
-#: views.py
 msgid "GST must be between 0 and 100."
 msgstr "GST 0 से 100 के बीच होना चाहिए।"
 
-#: add_order.html, add_supplier.html, supplier_list.html
 msgid "GST Number"
 msgstr "GST नंबर"
 
-#: views.py
 msgid "GST percentage cannot be greater than 100."
 msgstr "GST प्रतिशत 100 से ज़्यादा नहीं हो सकता।"
 
-#: purchase_invoice.html, return_note.html, sale_invoice.html
 msgid "GST rate"
 msgstr "GST दर"
 
-#: account_views.py
 msgid "GST split is not used for this shop."
 msgstr "इस दुकान में GST का बंटवारा इस्तेमाल नहीं होता।"
 
-#: purchase_invoice.html
 msgid "GST summary"
 msgstr "GST का हिसाब"
 
-#: customer_account.html, purchase_detail.html, quotation_detail.html, retailer_list.html, sale_detail.html, supplier_account.html
 msgid "GSTIN"
 msgstr "GSTIN"
 
-#: add_order.html, register.html, stored values
 msgid "Gujarat"
 msgstr "गुजरात"
 
-#: base.html
 msgid "H1 Register"
 msgstr "H1 रजिस्टर"
 
-#: sale_invoice.html
 msgid "half + half"
 msgstr "आधा + आधा"
 
-#: stored values, userlogin.html
 msgid "Hardware"
 msgstr "हार्डवेयर"
 
-#: add_order.html, register.html, stored values
 msgid "Haryana"
 msgstr "हरियाणा"
 
-#: dashboard.html
 msgid "Highest udhari first"
 msgstr "सबसे ज़्यादा उधारी पहले"
 
-#: stored values
 msgid "Himachal Pradesh"
 msgstr "हिमाचल प्रदेश"
 
-#: supplier_product_list.html
 msgid "Hold Ctrl (or Cmd) to pick more than one."
 msgstr "एक से ज़्यादा चुनने के लिए Ctrl (या Cmd) दबाकर रखें।"
 
-#: sale_create.html
-msgid "How it is paid"
-msgstr "पेमेंट कैसे हुआ"
-
-#: return_note.html
 msgid "How it was settled"
 msgstr "हिसाब कैसे हुआ"
 
-#: sale_create.html
-msgid "How the customer is paying"
-msgstr "ग्राहक कैसे पेमेंट कर रहा है"
-
-#: purchase_invoice.html, quotation_print.html, return_note.html, sale_invoice.html
 msgid "HSN"
 msgstr "HSN"
 
-#: add_order.html, add_product.html, product_list.html
 msgid "HSN Code"
 msgstr "HSN कोड"
 
-#: add_product.html
 msgid "HSN code is required"
 msgstr "HSN कोड ज़रूरी है"
 
-#: stored values
 msgid "HSN code is required on products"
 msgstr "सामान पर HSN कोड ज़रूरी है"
 
-#: product_list.html
 msgid "HSN: — | Barcode: —"
 msgstr "HSN: — | बारकोड: —"
 
-#: stored values
 msgid "IGST"
 msgstr "IGST"
 
-#: add_order.html
 msgid "Immediate"
 msgstr "तुरंत"
 
-#: purchase_detail.html
 msgid "in stock"
 msgstr "स्टॉक में"
 
-#: supplier_product_list.html
 msgid "In stock"
 msgstr "स्टॉक में"
 
-#: dashboard.html
 msgid "in total"
 msgstr "कुल"
 
-#: dashboard.html, low_stock_list.html, product_list.html, retailer_list.html, supplier_account.html, supplier_list.html
 msgid "Inactive"
 msgstr "बंद"
 
-#: sales.py
 msgid "Insufficient stock for '%(product_name)s'. Available stock: %(available_stock)s, requested: %(quantity)s."
 msgstr "'%(product_name)s' का स्टॉक कम है। स्टॉक: %(available_stock)s, मांगा: %(quantity)s।"
 
-#: views.py
 msgid "Insufficient stock for '%(product_name)s'. Available stock: %(available_stock)s. Requested quantity: %(quantity)s."
 msgstr "'%(product_name)s' का स्टॉक कम है। स्टॉक: %(available_stock)s। मांगी गई मात्रा: %(quantity)s।"
 
-#: batches.py
 msgid "Insufficient stock for '%(product_name)s'. Available: %(available)s%(note)s. Requested: %(quantity)s."
 msgstr "'%(product_name)s' का स्टॉक कम है। मौजूद: %(available)s%(note)s। मांगा: %(quantity)s।"
 
-#: sale_invoice.html
 msgid "Inter-state supply: IGST charged."
 msgstr "दूसरे राज्य में बिक्री: IGST लगा।"
 
-#: purchase_invoice.html
 msgid "inter-state: IGST"
 msgstr "दूसरा राज्य: IGST"
 
-#: sale_invoice.html
 msgid "Intra-state supply: CGST + SGST charged."
 msgstr "अपने राज्य में बिक्री: CGST + SGST लगा।"
 
-#: purchase_invoice.html
 msgid "intra-state: CGST + SGST"
 msgstr "अपना राज्य: CGST + SGST"
 
-#: add_product.html
 msgid "Invalid barcode format"
 msgstr "बारकोड सही नहीं है"
 
-#: views.py
 msgid "Invalid GST selected for '%(product_name)s'. %(exc)s"
 msgstr "'%(product_name)s' के लिए GST सही नहीं चुना। %(exc)s"
 
-#: views.py
 msgid "Invalid numeric or decimal format provided."
 msgstr "नंबर सही तरीके से नहीं लिखा।"
 
-#: views.py
 msgid "Invalid product ID."
 msgstr "सामान की ID सही नहीं है।"
 
-#: views.py
 msgid "Invalid unit for '%(product_name)s'."
 msgstr "'%(product_name)s' की यूनिट सही नहीं है।"
 
-#: views.py
 msgid "Invalid unit selected for '%(product_name)s'."
 msgstr "'%(product_name)s' के लिए गलत यूनिट चुनी गई।"
 
-#: views.py
 msgid "Invalid value for %(field_name)s."
 msgstr "%(field_name)s की रकम सही नहीं है।"
 
-#: customer_account.html, dashboard.html, h1_register.html, returns_list.html, sale_create.html, sale_invoice.html
 msgid "Invoice"
 msgstr "बिल"
 
-#: sale_create.html, sale_detail.html
 msgid "Invoice Date"
 msgstr "बिल की तारीख"
 
-#: sale_detail.html
 msgid "Invoice Date:"
 msgstr "बिल की तारीख:"
 
-#: sale_detail.html
 msgid "Invoice Information"
 msgstr "बिल की जानकारी"
 
-#: sales_list.html
 msgid "Invoice No."
 msgstr "बिल नं."
 
-#: sale_invoice.html
 msgid "Invoice No:"
 msgstr "बिल नं:"
 
-#: sale_create.html, sale_detail.html
 msgid "Invoice Number"
 msgstr "बिल नंबर"
 
-#: sale_create.html
 msgid "Invoice progress"
 msgstr "बिल की प्रगति"
 
-#: sale_detail.html
 msgid "Invoice Summary"
 msgstr "बिल का सारांश"
 
-#: dashboard.html, sales_list.html
 msgid "Invoices"
 msgstr "बिल"
 
-#: dashboard.html
 msgid "invoices this month"
 msgstr "इस महीने के बिल"
 
-#: add_order.html, add_supplier.html, supplier_list.html
 msgid "Is Active"
 msgstr "चालू है"
 
-#: purchase_detail.html, purchase_invoice.html, quotation_print.html, return_note.html, sale_detail.html, sale_invoice.html
 msgid "Item"
 msgstr "सामान"
 
-#: add_order.html, quotation_create.html, sale_create.html, sale_detail.html
 msgid "Items"
 msgstr "सामान"
 
-#: return_form.html
 msgid "Items to return"
 msgstr "वापस होने वाला सामान"
 
-#: stored values
 msgid "Jammu and Kashmir"
 msgstr "जम्मू और कश्मीर"
 
-#: add_order.html, register.html, stored values
 msgid "Jharkhand"
 msgstr "झारखंड"
 
-#: retailer_list.html
 msgid "Joined"
 msgstr "जुड़े"
 
-#: add_order.html, register.html, stored values
 msgid "Karnataka"
 msgstr "कर्नाटक"
 
-#: stored values
 msgid "Keep as credit on account"
 msgstr "खाते में जमा रखें"
 
-#: return_note.html
 msgid "Kept as credit on account"
 msgstr "खाते में जमा रखा"
 
-#: product_list.html
 msgid "Kept batch-wise: add stock through a purchase with batch and expiry."
 msgstr "बैच के हिसाब से: बैच और एक्सपायरी के साथ खरीद करके स्टॉक जोड़ें।"
 
-#: add_order.html, register.html, stored values
 msgid "Kerala"
 msgstr "केरल"
 
-#: dashboard.html
 msgid "Key figures"
 msgstr "मुख्य आंकड़े"
 
-#: customer_account.html
 msgid "Khata"
 msgstr "खाता"
 
-#: stored values
 msgid "Ladakh"
 msgstr "लद्दाख"
 
-#: stored values
 msgid "Lakshadweep"
 msgstr "लक्षद्वीप"
 
-#: base.html, userlogin.html
 msgid "Language"
 msgstr "भाषा"
 
-#: dashboard.html
 msgid "Last 14 days"
 msgstr "पिछले 14 दिन"
 
-#: supplier_product_list.html
 msgid "Last bought"
 msgstr "आखिरी बार खरीदा"
 
-#: shop_type_services.html
 msgid "Last changed by %(name)s on %(when)s"
 msgstr "आखिरी बदलाव: %(name)s, %(when)s"
 
-#: supplier_product_list.html
 msgid "Last price"
 msgstr "आखिरी दाम"
 
-#: customer_list.html
 msgid "Last purchase"
 msgstr "आखिरी खरीद"
 
-#: supplier_account.html
 msgid "Last ₹%(amount)s on %(date)s"
 msgstr "आखिरी ₹%(amount)s, %(date)s को"
 
-#: dashboard.html
 msgid "Latest invoices"
 msgstr "नए बिल"
 
-#: dashboard.html
 msgid "Latest supplier bills"
 msgstr "सप्लायर के नए बिल"
 
-#: views.py
 msgid "Ledger credit cannot be negative."
 msgstr "खाते का क्रेडिट माइनस में नहीं हो सकता।"
 
-#: views.py
 msgid "Ledger debit cannot be negative."
 msgstr "खाते का डेबिट माइनस में नहीं हो सकता।"
 
-#: views.py
 msgid "Ledger entry cannot contain both debit and credit."
 msgstr "एक एंट्री में डेबिट और क्रेडिट दोनों नहीं हो सकते।"
 
-#: customer_account.html, sale_create.html
 msgid "Left"
 msgstr "बाकी"
 
-#: dashboard.html
 msgid "left"
 msgstr "बचा"
 
-#: add_order.html
 msgid "Left to pay"
 msgstr "चुकाना बाकी"
 
-#: supplier_account.html
 msgid "less for returns"
 msgstr "वापसी के कारण कम"
 
-#: purchase_detail.html, purchase_invoice.html, sale_detail.html, sale_invoice.html
 msgid "Less: goods returned"
 msgstr "घटाएं: वापस आया सामान"
 
-#: retailer_list.html
 msgid "Location"
 msgstr "जगह"
 
-#: register.html
 msgid "Location details of the shop"
 msgstr "दुकान की जगह की जानकारी"
 
-#: retailer_list.html
 msgid "Login"
 msgstr "लॉगिन"
 
-#: register.html
 msgid "Login credentials for the retailer"
 msgstr "दुकान का लॉगिन"
 
-#: base.html
 msgid "Logout"
 msgstr "लॉगआउट"
 
-#: dashboard.html
 msgid "Low stock"
 msgstr "कम स्टॉक"
 
-#: userlogin.html
 msgid "Made for Indian shops"
 msgstr "भारतीय दुकानों के लिए बना"
 
-#: add_order.html, register.html, stored values
 msgid "Madhya Pradesh"
 msgstr "मध्य प्रदेश"
 
-#: add_order.html, register.html, stored values
 msgid "Maharashtra"
 msgstr "महाराष्ट्र"
 
-#: add_order.html
 msgid "Main Godown"
 msgstr "मुख्य गोदाम"
 
-#: base.html
 msgid "Main menu"
 msgstr "मुख्य मेन्यू"
 
-#: userlogin.html
 msgid "Make GST bills in seconds, know your stock at a glance and never forget a customer's due again."
 msgstr "सेकंडों में GST बिल बनाएँ, एक नज़र में स्टॉक देखें और ग्राहक की उधारी कभी न भूलें।"
 
-#: product_list.html
 msgid "Manage and track all products in your general store"
 msgstr "अपनी दुकान का सब सामान संभालें और देखें"
 
-#: dashboard.html
 msgid "Manage your business"
 msgstr "अपना कारोबार संभालें"
 
-#: stored values
 msgid "Manipur"
 msgstr "मणिपुर"
 
-#: add_product.html, product_list.html
 msgid "Manufacturer"
 msgstr "बनाने वाली कंपनी"
 
-#: return_form.html
 msgid "max"
 msgstr "ज़्यादा से ज़्यादा"
 
-#: base.html
 msgid "Medicines"
 msgstr "दवाइयाँ"
 
-#: stored values
 msgid "Meghalaya"
 msgstr "मेघालय"
 
-#: dashboard.html
 msgid "Min"
 msgstr "कम से कम"
 
-#: add_order.html, register.html
 msgid "Min 8 characters"
 msgstr "कम से कम 8 अक्षर"
 
-#: add_order.html, add_product.html, low_stock_list.html, product_list.html
 msgid "Minimum Stock"
 msgstr "कम से कम स्टॉक"
 
-#: views.py
 msgid "Minimum stock"
 msgstr "कम से कम स्टॉक"
 
-#: views.py
 msgid "Minimum stock cannot be negative."
 msgstr "कम से कम स्टॉक माइनस में नहीं हो सकता।"
 
-#: stored values
 msgid "Mizoram"
 msgstr "मिज़ोरम"
 
-#: add_order.html, add_supplier.html, customer_account.html, purchase_detail.html, sale_create.html, sale_detail.html, supplier_account.html, supplier_list.html
 msgid "Mobile"
 msgstr "मोबाइल"
 
-#: add_order.html, register.html, sale_create.html
 msgid "Mobile Number"
 msgstr "मोबाइल नंबर"
 
-#: views.py
 msgid "Mobile number is required."
 msgstr "मोबाइल नंबर ज़रूरी है।"
 
-#: purchase_invoice.html, quotation_print.html, return_note.html, sale_invoice.html
 msgid "Mobile:"
 msgstr "मोबाइल:"
 
-#: purchase_detail.html, purchase_invoice.html
-msgid "Mode"
-msgstr "तरीका"
-
-#: return_form.html
 msgid "Money for the returned goods"
 msgstr "वापस आए सामान के पैसे"
 
-#: product_list.html
 msgid "MRP (₹)"
 msgstr "MRP (₹)"
 
-#: models.py, views.py
 msgid "MRP cannot be negative."
 msgstr "MRP माइनस में नहीं हो सकता।"
 
-#: views.py
 msgid "MRP for %(product_name)s"
 msgstr "%(product_name)s का MRP"
 
-#: stored values
 msgid "MRP is required on products"
 msgstr "सामान पर MRP ज़रूरी है"
 
-#: views.py
 msgid "MRP is required."
 msgstr "MRP ज़रूरी है।"
 
-#: views.py
 msgid "MRP must be greater than 0."
 msgstr "MRP 0 से ज़्यादा होना चाहिए।"
 
-#: add_product.html
 msgid "MRP must be greater than or equal to selling price"
 msgstr "MRP बेचने के दाम के बराबर या उससे ज़्यादा होना चाहिए"
 
-#: views.py
 msgid "MRP must be greater than or equal to selling price."
 msgstr "MRP बेचने के दाम के बराबर या उससे ज़्यादा होना चाहिए।"
 
-#: stored values
 msgid "Nagaland"
 msgstr "नागालैंड"
 
-#: sale_detail.html
 msgid "Name"
 msgstr "नाम"
 
-#: base.html, near_expiry.html
 msgid "Near Expiry"
 msgstr "जल्द एक्सपायरी"
 
-#: near_expiry.html
 msgid "Near Expiry Stock"
 msgstr "जल्द एक्सपायर होने वाला स्टॉक"
 
-#: add_product.html
 msgid "Needed only when current stock is more than 0. Saved as batch \"OPENING\"."
 msgstr "सिर्फ तब ज़रूरी जब स्टॉक 0 से ज़्यादा हो। बैच \"OPENING\" नाम से सेव होगा।"
 
-#: dashboard.html
 msgid "Needs attention"
 msgstr "ध्यान देना है"
 
-#: add_order.html
 msgid "Net 15"
 msgstr "15 दिन"
 
-#: add_order.html
 msgid "Net 30"
 msgstr "30 दिन"
 
-#: add_order.html
 msgid "Net 45"
 msgstr "45 दिन"
 
-#: add_order.html
 msgid "Net 60"
 msgstr "60 दिन"
 
-#: quotation_create.html
 msgid "New customer? Add them from the sales screen first."
 msgstr "नया ग्राहक? पहले बिक्री वाली स्क्रीन से उसे जोड़ें।"
 
-#: dashboard.html
 msgid "New order"
 msgstr "नया ऑर्डर"
 
-#: base.html, dashboard.html
 msgid "New purchase"
 msgstr "नई खरीद"
 
-#: add_order.html
 msgid "New Purchase Order"
 msgstr "नया खरीद ऑर्डर"
 
-#: purchase_list.html, supplier_account.html
 msgid "New purchase order"
 msgstr "नया खरीद ऑर्डर"
 
-#: quotation_create.html
 msgid "New Quotation"
 msgstr "नया कोटेशन"
 
-#: quotation_list.html
 msgid "New quotation"
 msgstr "नया कोटेशन"
 
-#: register.html
 msgid "New Retailer Account"
 msgstr "नई दुकान का खाता"
 
-#: base.html, customer_account.html, customer_list.html, dashboard.html
 msgid "New sale"
 msgstr "नई बिक्री"
 
-#: sale_create.html
 msgid "New Sale Invoice"
 msgstr "नया बिक्री बिल"
 
-#: userlogin.html
 msgid "New shop?"
 msgstr "नई दुकान?"
 
-#: customer_list.html, near_expiry.html, purchase_list.html, quotation_list.html, retailer_list.html, sales_list.html, supplier_list.html
 msgid "Next"
 msgstr "आगे"
 
-#: views.py
 msgid "No active retailer is associated with this user."
 msgstr "इस यूज़र से कोई चालू दुकान नहीं जुड़ी है।"
 
-#: account_views.py, dashboard_views.py, return_views.py, supplier_product_views.py, views.py
 msgid "No active retailer profile is linked to your account."
 msgstr "आपके खाते से कोई चालू दुकान नहीं जुड़ी है।"
 
-#: near_expiry.html
 msgid "No batches to show"
 msgstr "दिखाने के लिए कोई बैच नहीं"
 
-#: returns_list.html
 msgid "No credit notes yet"
 msgstr "अभी कोई क्रेडिट नोट नहीं"
 
-#: dashboard.html
 msgid "No customer dues"
 msgstr "किसी ग्राहक पर उधारी नहीं"
 
-#: customer_list.html
 msgid "No customers match your filters"
 msgstr "फ़िल्टर से कोई ग्राहक नहीं मिला"
 
-#: customer_list.html
 msgid "No customers to show"
 msgstr "दिखाने के लिए कोई ग्राहक नहीं"
 
-#: customer_list.html
 msgid "No customers yet"
 msgstr "अभी कोई ग्राहक नहीं"
 
-#: returns_list.html
 msgid "No debit notes yet"
 msgstr "अभी कोई डेबिट नोट नहीं"
 
-#: dashboard.html
 msgid "No due date"
 msgstr "कोई आखिरी तारीख नहीं"
 
-#: purchase_detail.html
 msgid "No due date set for this bill."
 msgstr "इस बिल की कोई आखिरी तारीख नहीं है।"
 
-#: customer_account.html
 msgid "No dues"
 msgstr "कोई बाकी नहीं"
 
-#: sale_create.html
 msgid "No earlier purchases. This is the customer's first bill."
 msgstr "पहले कोई खरीद नहीं। यह ग्राहक का पहला बिल है।"
 
-#: dashboard.html, near_expiry.html
 msgid "No expired stock"
 msgstr "कोई एक्सपायर स्टॉक नहीं"
 
-#: sales_list.html
 msgid "No invoices to show"
 msgstr "दिखाने के लिए कोई बिल नहीं"
 
-#: purchase_detail.html
 msgid "No items found for this purchase."
 msgstr "इस खरीद में कोई सामान नहीं मिला।"
 
-#: sale_detail.html
 msgid "No items found for this sale."
 msgstr "इस बिक्री में कोई सामान नहीं मिला।"
 
-#: purchase_invoice.html
 msgid "No items on this bill."
 msgstr "इस बिल में कोई सामान नहीं।"
 
-#: sale_create.html
 msgid "No items yet"
 msgstr "अभी कोई सामान नहीं"
 
-#: customer_account.html
 msgid "No limit set"
 msgstr "कोई सीमा नहीं"
 
-#: dashboard.html
 msgid "No overdue bills, stock alerts or customer dues."
 msgstr "न कोई बिल बाकी, न स्टॉक की चिंता, न ग्राहक की उधारी।"
 
-#: purchase_invoice.html
 msgid "No payment made yet."
 msgstr "अभी कोई पेमेंट नहीं हुआ।"
 
-#: purchase_detail.html
 msgid "No payment made yet. Use \"Record payment\" when you pay the supplier."
 msgstr "अभी कोई पेमेंट नहीं हुआ। सप्लायर को पैसे देने पर \"पेमेंट दर्ज करें\" दबाएं।"
 
-#: supplier_account.html
 msgid "No payments yet"
 msgstr "अभी कोई पेमेंट नहीं"
 
-#: low_stock_list.html
 msgid "No product is at or below its minimum stock level."
 msgstr "किसी सामान का स्टॉक कम से कम स्टॉक तक नहीं पहुँचा।"
 
-#: product_list.html
 msgid "No Products Found"
 msgstr "कोई सामान नहीं मिला"
 
-#: purchase_list.html
 msgid "No purchase orders found"
 msgstr "कोई खरीद ऑर्डर नहीं मिला"
 
-#: supplier_account.html
 msgid "No purchases from this supplier yet."
 msgstr "इस सप्लायर से अभी कोई खरीद नहीं।"
 
-#: customer_account.html, dashboard.html
 msgid "No purchases yet."
 msgstr "अभी कोई खरीद नहीं।"
 
-#: quotation_list.html
 msgid "No quotations match your filters"
 msgstr "फ़िल्टर से कोई कोटेशन नहीं मिला"
 
-#: quotation_list.html
 msgid "No quotations to show"
 msgstr "दिखाने के लिए कोई कोटेशन नहीं"
 
-#: quotation_list.html
 msgid "No quotations yet"
 msgstr "अभी कोई कोटेशन नहीं"
 
-#: views.py
 msgid "No retailer profile found for this account."
 msgstr "इस खाते की कोई दुकान नहीं मिली।"
 
-#: views.py
 msgid "No retailer profile is linked to your account."
 msgstr "आपके खाते से कोई दुकान नहीं जुड़ी है।"
 
-#: retailer_list.html
 msgid "No retailers match your filters"
 msgstr "फ़िल्टर से कोई दुकान नहीं मिली"
 
-#: retailer_list.html
 msgid "No retailers registered yet"
 msgstr "अभी कोई दुकान रजिस्टर नहीं"
 
-#: retailer_list.html
 msgid "No retailers to show"
 msgstr "दिखाने के लिए कोई दुकान नहीं"
 
-#: dashboard.html
 msgid "No retailers yet."
 msgstr "अभी कोई दुकान नहीं।"
 
-#: dashboard.html
 msgid "No sales in the last 14 days"
 msgstr "पिछले 14 दिनों में कोई बिक्री नहीं"
 
-#: sales_list.html
 msgid "No sales match your filters"
 msgstr "फ़िल्टर से कोई बिक्री नहीं मिली"
 
-#: dashboard.html
 msgid "No sales this month yet"
 msgstr "इस महीने अभी कोई बिक्री नहीं"
 
-#: sales_list.html
 msgid "No sales yet"
 msgstr "अभी कोई बिक्री नहीं"
 
-#: dashboard.html
 msgid "No sales yet."
 msgstr "अभी कोई बिक्री नहीं।"
 
-#: h1_register.html
 msgid "No Schedule H1 drugs were sold in this period."
 msgstr "इस समय में कोई शेड्यूल H1 दवा नहीं बिकी।"
 
-#: dashboard.html
 msgid "No shop linked to your account"
 msgstr "आपके खाते से कोई दुकान नहीं जुड़ी"
 
-#: supplier_product_list.html
 msgid "No supplier products yet"
 msgstr "अभी सप्लायर का कोई सामान नहीं"
 
-#: supplier_list.html
 msgid "No suppliers match your filters"
 msgstr "फ़िल्टर से कोई सप्लायर नहीं मिला"
 
-#: supplier_list.html
 msgid "No suppliers to show"
 msgstr "दिखाने के लिए कोई सप्लायर नहीं"
 
-#: supplier_list.html
 msgid "No suppliers yet"
 msgstr "अभी कोई सप्लायर नहीं"
 
-#: account_statement.html, customer_account.html, supplier_account.html
 msgid "No transactions yet."
 msgstr "अभी कोई लेन-देन नहीं।"
 
-#: customer_account.html
 msgid "No unpaid bills."
 msgstr "कोई बिल बाकी नहीं।"
 
-#: dashboard.html
 msgid "No unpaid supplier bills"
 msgstr "सप्लायर का कोई बिल बाकी नहीं"
 
-#: quotation_print.html, return_note.html
 msgid "No:"
 msgstr "नं:"
 
-#: views.py
 msgid "Not a finite number."
 msgstr "सही नंबर नहीं है।"
 
-#: stored values
 msgid "Not scheduled"
 msgstr "शेड्यूल नहीं"
 
-#: returns_list.html
 msgid "Note"
 msgstr "नोट"
 
-#: views.py
 msgid "Note: selling price ₹%(selling_price)s is below the purchase price ₹%(purchase_price)s."
 msgstr "ध्यान दें: बेचने का दाम ₹%(selling_price)s, खरीद दाम ₹%(purchase_price)s से कम है।"
 
-#: views.py
 msgid "Note: wholesale price ₹%(wholesale)s is below the purchase price ₹%(purchase_price)s."
 msgstr "ध्यान दें: होलसेल दाम ₹%(wholesale)s, खरीद दाम ₹%(purchase_price)s से कम है।"
 
-#: add_order.html, add_supplier.html, supplier_list.html
 msgid "Notes"
 msgstr "नोट"
 
-#: sale_create.html
 msgid "Notes for this invoice (optional)"
 msgstr "इस बिल के लिए नोट (ज़रूरी नहीं)"
 
-#: near_expiry.html
 msgid "Nothing expires in the next %(window)s days"
 msgstr "अगले %(window)s दिनों में कुछ एक्सपायर नहीं होगा"
 
-#: add_order.html, supplier_account.html
 msgid "Nothing is due to this supplier."
 msgstr "इस सप्लायर को कुछ देना बाकी नहीं है।"
 
-#: dashboard.html
 msgid "nothing overdue"
 msgstr "कोई बिल देर से नहीं"
 
-#: add_order.html, register.html, stored values
 msgid "Odisha"
 msgstr "ओडिशा"
 
-#: shop_type_services.html
 msgid "Off"
 msgstr "बंद"
 
-#: shop_type_services.html
 msgid "On"
 msgstr "चालू"
 
-#: returns.py
 msgid "Only %(current_stock)s of '%(product_name)s' is left in stock."
 msgstr "'%(product_name)s' का सिर्फ %(current_stock)s स्टॉक बचा है।"
 
-#: returns.py
 msgid "Only %(quantity)s of '%(product_name)s' batch %(batch_number)s is left in stock."
 msgstr "'%(product_name)s' के बैच %(batch_number)s का सिर्फ %(quantity)s स्टॉक बचा है।"
 
-#: returns.py
 msgid "Only %(returnable)s of '%(product_name)s' can be returned."
 msgstr "'%(product_name)s' के सिर्फ %(returnable)s वापस हो सकते हैं।"
 
-#: customer_list.html
 msgid "Only customers with dues"
 msgstr "सिर्फ उधारी वाले ग्राहक"
 
-#: quotation_views.py
 msgid "Only open quotations can be cancelled."
 msgstr "सिर्फ खुले कोटेशन रद्द हो सकते हैं।"
 
-#: shop_service_views.py
 msgid "Only the admin can switch shop types on or off."
 msgstr "दुकान के प्रकार सिर्फ़ एडमिन चालू या बंद कर सकते हैं।"
 
-#: account_views.py
 msgid "Only the admin can view the retailers list."
 msgstr "दुकानों की सूची सिर्फ एडमिन देख सकता है।"
 
-#: dashboard.html, quotation_detail.html, quotation_list.html, stored values
 msgid "Open"
 msgstr "खुला"
 
-#: returns_list.html
 msgid "Open / print"
 msgstr "खोलें / प्रिंट"
 
-#: returns_list.html
 msgid "Open a purchase bill to return items"
 msgstr "सामान वापस करने के लिए खरीद बिल खोलें"
 
-#: returns_list.html
 msgid "Open a sale to return items"
 msgstr "सामान वापस लेने के लिए बिक्री खोलें"
 
-#: dashboard.html
 msgid "Open any module or add something new"
 msgstr "कोई भी हिस्सा खोलें या कुछ नया जोड़ें"
 
-#: base.html
 msgid "Open menu"
 msgstr "मेन्यू खोलें"
 
-#: returns_list.html
 msgid "Open note"
 msgstr "नोट खोलें"
 
-#: quotation_list.html
 msgid "Open quotations"
 msgstr "खुले कोटेशन"
 
-#: quotation_list.html
 msgid "Open sale"
 msgstr "बिक्री खोलें"
 
-#: add_order.html, add_supplier.html, sale_create.html, supplier_list.html
 msgid "Opening Balance"
 msgstr "पुराना बाकी"
 
-#: customer_account.html
 msgid "opening balance"
 msgstr "पुराना बाकी"
 
-#: customer_account.html, views.py
 msgid "Opening balance"
 msgstr "पुराना बाकी"
 
-#: views.py
 msgid "Opening balance cannot be negative."
 msgstr "पुराना बाकी माइनस में नहीं हो सकता।"
 
-#: customer_account.html, purchase_detail.html
 msgid "Optional note"
 msgstr "नोट (ज़रूरी नहीं)"
 
-#: customer_account.html
 msgid "Order History"
 msgstr "ऑर्डर का हिसाब"
 
-#: purchase_list.html
 msgid "Order No."
 msgstr "ऑर्डर नं."
 
-#: purchase_detail.html
 msgid "Other Charge"
 msgstr "दूसरा खर्च"
 
-#: views.py
 msgid "Other charge"
 msgstr "दूसरा खर्च"
 
-#: add_order.html
 msgid "Other Charges"
 msgstr "दूसरे खर्च"
 
-#: purchase_invoice.html
 msgid "Other charges"
 msgstr "दूसरे खर्च"
 
-#: dashboard.html
 msgid "out of stock"
 msgstr "स्टॉक खत्म"
 
-#: dashboard.html
 msgid "Out of stock"
 msgstr "स्टॉक खत्म"
 
-#: product_list.html
 msgid "Out of Stock"
 msgstr "स्टॉक खत्म"
 
-#: sale_create.html, sales_list.html
 msgid "Outstanding"
 msgstr "बाकी"
 
-#: add_order.html, dashboard.html, purchase_detail.html, purchase_invoice.html, purchase_list.html, supplier_account.html
 msgid "Overdue"
 msgstr "देर हो गई"
 
-#: dashboard.html, supplier_account.html
 msgid "overdue"
 msgstr "देर हो गई"
 
-#: base.html
 msgid "Overview"
 msgstr "सारांश"
 
-#: add_order.html, register.html
 msgid "Owner Name"
 msgstr "मालिक का नाम"
 
-#: register.html
 msgid "Owner name is required"
 msgstr "मालिक का नाम ज़रूरी है"
 
-#: purchase_detail.html
 msgid "P.Price"
 msgstr "खरीद दाम"
 
-#: add_order.html, customer_account.html, purchase_detail.html, purchase_invoice.html, purchase_list.html, sale_create.html, sale_detail.html, sale_invoice.html, sales_list.html, stored values, supplier_account.html, userlogin.html
 msgid "Paid"
 msgstr "पूरा भुगतान"
 
-#: add_order.html, sale_create.html, sale_detail.html
 msgid "Paid Amount"
 msgstr "दी गई रकम"
 
-#: views.py
 msgid "Paid amount"
 msgstr "दी गई रकम"
 
-#: views.py
 msgid "Paid amount cannot be greater than the grand total."
 msgstr "दी गई रकम कुल रकम से ज़्यादा नहीं हो सकती।"
 
-#: models.py
 msgid "Paid amount cannot be negative."
 msgstr "दी गई रकम माइनस में नहीं हो सकती।"
 
-#: views.py
 msgid "Paid amount cannot exceed grand total of ₹%(grand_total)s."
 msgstr "दी गई रकम कुल रकम ₹%(grand_total)s से ज़्यादा नहीं हो सकती।"
 
-#: models.py
 msgid "Paid amount cannot exceed the grand total."
 msgstr "दी गई रकम कुल रकम से ज़्यादा नहीं हो सकती।"
 
-#: purchase_detail.html
+msgid "Paid in cash. When the full balance is paid, the bill is closed automatically."
+msgstr "नकद में भुगतान। पूरा बाकी चुकाने पर बिल अपने आप बंद हो जाता है।"
+
 msgid "Paid so far"
 msgstr "अब तक दिया"
 
-#: add_order.html, add_supplier.html, supplier_list.html
 msgid "PAN Number"
 msgstr "PAN नंबर"
 
-#: purchase_list.html, sale_detail.html, sales_list.html, stored values
 msgid "Partial"
 msgstr "आंशिक भुगतान"
 
-#: account_statement.html, customer_account.html, supplier_account.html
 msgid "Particulars"
 msgstr "ब्यौरा"
 
-#: add_order.html, register.html, userlogin.html
 msgid "Password"
 msgstr "पासवर्ड"
 
-#: userlogin.html
 msgid "Password must be at least 6 characters"
 msgstr "पासवर्ड कम से कम 6 अक्षर का होना चाहिए"
 
-#: register.html
 msgid "Password must be at least 8 characters"
 msgstr "पासवर्ड कम से कम 8 अक्षर का होना चाहिए"
 
-#: register.html
 msgid "Passwords do not match"
 msgstr "दोनों पासवर्ड एक जैसे नहीं हैं"
 
-#: h1_register.html, sale_detail.html
 msgid "Patient"
 msgstr "मरीज़"
 
-#: stored values
 msgid "Patient / doctor details on sales"
 msgstr "बिक्री पर मरीज़ / डॉक्टर की जानकारी"
 
-#: sale_create.html
 msgid "Patient Name"
 msgstr "मरीज़ का नाम"
 
-#: views.py
 msgid "Patient name and doctor name are required for prescription drugs: %(scheduled)s."
 msgstr "पर्चे वाली दवाओं के लिए मरीज़ और डॉक्टर का नाम ज़रूरी है: %(scheduled)s।"
 
-#: sale_create.html
 msgid "Patient's name"
 msgstr "मरीज़ का नाम"
 
-#: sale_invoice.html
 msgid "Patient:"
 msgstr "मरीज़:"
 
-#: purchase_detail.html
 msgid "Pay full"
 msgstr "पूरा दें"
 
-#: sale_create.html
 msgid "Pay full amount"
 msgstr "पूरी रकम दें"
 
-#: supplier_account.html
 msgid "Payable"
 msgstr "देना है"
 
-#: sale_create.html, sale_invoice.html
 msgid "Payment"
 msgstr "पेमेंट"
 
-#: models.py
 msgid "Payment amount must be greater than zero."
 msgstr "पेमेंट की रकम शून्य से ज़्यादा होनी चाहिए।"
 
-#: views.py
 msgid "Payment calculation mismatch."
 msgstr "पेमेंट का हिसाब नहीं मिल रहा।"
 
-#: customer_account.html
 msgid "Payment clears the oldest bills first."
 msgstr "पेमेंट से पहले सबसे पुराने बिल चुकते हैं।"
 
-#: models.py
 msgid "Payment customer does not match ledger customer."
 msgstr "पेमेंट का ग्राहक और खाते का ग्राहक अलग हैं।"
 
-#: models.py
 msgid "Payment customer does not match the sale customer."
 msgstr "पेमेंट का ग्राहक और बिक्री का ग्राहक अलग हैं।"
 
-#: customer_account.html, purchase_detail.html, sale_create.html
 msgid "Payment date"
 msgstr "पेमेंट की तारीख"
 
-#: accounts.py
 msgid "Payment date cannot be before %(Y)s."
 msgstr "पेमेंट की तारीख %(Y)s से पहले की नहीं हो सकती।"
 
-#: accounts.py
 msgid "Payment date cannot be in the future."
 msgstr "पेमेंट की तारीख आगे की नहीं हो सकती।"
 
-#: add_order.html
 msgid "Payment Details"
 msgstr "पेमेंट की जानकारी"
 
-#: add_order.html, purchase_invoice.html
 msgid "Payment history"
 msgstr "पेमेंट का हिसाब"
 
-#: purchase_detail.html
 msgid "Payment History"
 msgstr "पेमेंट का हिसाब"
 
-#: customer_account.html, purchase_detail.html
-msgid "Payment mode"
-msgstr "पेमेंट का तरीका"
-
-#: account_views.py
 msgid "Payment of ₹%(amount)s recorded. Balance due: ₹%(due_amount)s."
 msgstr "₹%(amount)s का पेमेंट दर्ज हुआ। बाकी रकम: ₹%(due_amount)s।"
 
-#: account_views.py
 msgid "Payment of ₹%(amount)s recorded. Bill %(bill_number)s is now fully paid and closed."
 msgstr "₹%(amount)s का पेमेंट दर्ज हुआ। बिल %(bill_number)s का पूरा भुगतान हो गया और बिल बंद।"
 
-#: purchase_detail.html
 msgid "Payment overdue by %(counter)s day"
 msgid_plural "Payment overdue by %(counter)s days"
 msgstr[0] "पेमेंट में %(counter)s दिन की देर"
 msgstr[1] "पेमेंट में %(counter)s दिन की देर"
 
-#: models.py
 msgid "Payment retailer does not match the sale retailer."
 msgstr "पेमेंट की दुकान और बिक्री की दुकान अलग हैं।"
 
-#: add_order.html, purchase_detail.html, sale_detail.html
 msgid "Payment Status"
 msgstr "पेमेंट की स्थिति"
 
-#: purchase_detail.html, sale_detail.html
 msgid "Payment Summary"
 msgstr "पेमेंट का सारांश"
 
-#: add_order.html, purchase_detail.html
 msgid "Payment Terms"
 msgstr "पेमेंट की शर्त"
 
-#: purchase_invoice.html
 msgid "Payment terms:"
 msgstr "पेमेंट की शर्त:"
 
-#: add_order.html, purchase_list.html, sale_create.html, sale_detail.html, sales_list.html
-msgid "Payment Type"
-msgstr "पेमेंट का तरीका"
-
-#: sale_create.html
-msgid "Payment type"
-msgstr "पेमेंट का तरीका"
-
-#: purchase_detail.html
 msgid "Payments made"
 msgstr "दिए गए पेमेंट"
 
-#: sale_detail.html
 msgid "Payments Received"
 msgstr "मिले पेमेंट"
 
-#: h1_register.html
 msgid "Period:"
 msgstr "समय:"
 
-#: stored values, userlogin.html
 msgid "Pharmacy"
 msgstr "मेडिकल / फ़ार्मेसी"
 
-#: account_statement.html, purchase_invoice.html, quotation_print.html, return_note.html, sale_invoice.html
 msgid "Phone:"
 msgstr "फ़ोन:"
 
-#: add_order.html
 msgid "Pick a product to see its purchase price history"
 msgstr "खरीद दाम का पुराना हिसाब देखने के लिए सामान चुनें"
 
-#: supplier_product_list.html
 msgid "Pick a supplier above to add products to it by hand."
 msgstr "हाथ से सामान जोड़ने के लिए ऊपर सप्लायर चुनें।"
 
-#: quotation_create.html
 msgid "Pick the shop and customer, then add items."
 msgstr "दुकान और ग्राहक चुनें, फिर सामान जोड़ें।"
 
-#: add_order.html, register.html
 msgid "PIN Code"
 msgstr "पिन कोड"
 
-#: add_order.html, add_supplier.html, supplier_list.html
 msgid "Pincode"
 msgstr "पिन कोड"
 
-#: sale_invoice.html
 msgid "Place of supply:"
 msgstr "बिक्री कहाँ हुई:"
 
-#: views.py
 msgid "Please add at least one product to the purchase."
 msgstr "खरीद में कम से कम एक सामान जोड़ें।"
 
-#: quotation_views.py, views.py
 msgid "Please add at least one product."
 msgstr "कम से कम एक सामान जोड़ें।"
 
-#: returns.py
 msgid "Please choose how to settle the return."
 msgstr "वापसी का हिसाब कैसे करना है, चुनें।"
 
-#: shop_service_views.py
 msgid "Please choose to switch the service on or off."
 msgstr "सेवा चालू करनी है या बंद, चुनें।"
 
-#: dashboard.html
 msgid "Please contact the administrator to activate your retailer profile."
 msgstr "अपनी दुकान चालू करवाने के लिए एडमिन से बात करें।"
 
-#: views.py
 msgid "Please enter a valid 10-digit mobile number."
 msgstr "सही 10 अंकों का मोबाइल नंबर डालें।"
 
-#: views.py
 msgid "Please enter a valid bill date."
 msgstr "बिल की सही तारीख डालें।"
 
-#: views.py
 msgid "Please enter a valid email address."
 msgstr "सही ईमेल पता डालें।"
 
-#: views.py
 msgid "Please enter a valid mobile number."
 msgstr "सही मोबाइल नंबर डालें।"
 
-#: userlogin.html
 msgid "Please enter a valid username"
 msgstr "सही यूज़रनेम डालें"
 
-#: views.py
-msgid "Please enter the paid amount."
-msgstr "दी गई रकम डालें।"
-
-#: views.py
 msgid "Please enter your username and password."
 msgstr "कृपया यूज़रनेम और पासवर्ड डालें।"
 
-#: views.py
 msgid "Please fill all required fields: %(missing_fields)s"
 msgstr "ये सब खाने भरें: %(missing_fields)s"
 
-#: userlogin.html
 msgid "Please note"
 msgstr "ध्यान दें"
 
-#: add_product.html
 msgid "Please select a brand"
 msgstr "ब्रांड चुनें"
 
-#: add_product.html
 msgid "Please select a category"
 msgstr "कैटेगरी चुनें"
 
-#: quotation_views.py, views.py
 msgid "Please select a customer."
 msgstr "ग्राहक चुनें।"
 
-#: views.py
-msgid "Please select a payment type."
-msgstr "पेमेंट का तरीका चुनें।"
-
-#: add_product.html
 msgid "Please select a retailer"
 msgstr "दुकान चुनें"
 
-#: views.py
 msgid "Please select a retailer."
 msgstr "दुकान चुनें।"
 
-#: quotation_views.py
 msgid "Please select a shop that uses quotations."
 msgstr "कोटेशन वाली दुकान चुनें।"
 
-#: register.html
 msgid "Please select a state"
 msgstr "राज्य चुनें"
 
-#: supplier_product_views.py
 msgid "Please select a supplier."
 msgstr "सप्लायर चुनें।"
 
-#: add_product.html
 msgid "Please select a unit"
 msgstr "यूनिट चुनें"
 
-#: views.py
 msgid "Please select a unit for '%(product_name)s'."
 msgstr "'%(product_name)s' के लिए यूनिट चुनें।"
 
-#: views.py
 msgid "Please select a valid drug schedule."
 msgstr "दवा का सही शेड्यूल चुनें।"
 
-#: accounts.py, views.py
-msgid "Please select a valid payment type."
-msgstr "पेमेंट का सही तरीका चुनें।"
-
-#: account_views.py, views.py
 msgid "Please select a valid price level."
 msgstr "सही दाम का स्तर चुनें।"
 
-#: units.py
 msgid "Please select a valid purchase unit."
 msgstr "सही खरीद यूनिट चुनें।"
 
-#: shop_service_views.py, views.py
 msgid "Please select a valid shop type."
 msgstr "सही दुकान का प्रकार चुनें।"
 
-#: account_views.py, views.py
 msgid "Please select a valid state."
 msgstr "सही राज्य चुनें।"
 
-#: supplier_product_views.py
 msgid "Please select at least one product of this supplier's shop."
 msgstr "इस सप्लायर की दुकान का कम से कम एक सामान चुनें।"
 
-#: register.html
 msgid "Please select the shop type"
 msgstr "दुकान का प्रकार चुनें"
 
-#: userlogin.html
 msgid "Please sign in"
 msgstr "कृपया लॉग इन करें"
 
-#: sale_create.html
 msgid "Prescribing doctor"
 msgstr "पर्चा लिखने वाले डॉक्टर"
 
-#: sale_detail.html, sale_invoice.html
 msgid "Prescription"
 msgstr "पर्चा"
 
-#: sale_create.html
 msgid "Prescription no., date or notes (optional)"
 msgstr "पर्चा नंबर, तारीख या नोट (ज़रूरी नहीं)"
 
-#: sale_create.html
 msgid "Prescription Note"
 msgstr "पर्चे का नोट"
 
-#: customer_list.html, near_expiry.html, purchase_list.html, quotation_list.html, retailer_list.html, sales_list.html, supplier_list.html
 msgid "Previous"
 msgstr "पीछे"
 
-#: sale_create.html
 msgid "Previous balance due"
 msgstr "पुराना बाकी"
 
-#: quotation_detail.html, sale_create.html, sale_detail.html
 msgid "Price"
 msgstr "दाम"
 
-#: quotation_create.html
 msgid "Price (₹)"
 msgstr "दाम (₹)"
 
-#: quotation_list.html
 msgid "Price estimates for customers. Convert one to a sale when the customer agrees."
 msgstr "ग्राहकों के लिए दाम का अनुमान। ग्राहक मान जाए तो इसे बिक्री में बदलें।"
 
-#: quotation_views.py
 msgid "Price for %(product_name)s"
 msgstr "%(product_name)s का दाम"
 
-#: quotation_views.py
 msgid "Price for '%(product_name)s' cannot be below the purchase price."
 msgstr "'%(product_name)s' का दाम खरीद दाम से कम नहीं हो सकता।"
 
-#: quotation_views.py
 msgid "Price for '%(product_name)s' cannot be more than MRP ₹%(mrp)s."
 msgstr "'%(product_name)s' का दाम MRP ₹%(mrp)s से ज़्यादा नहीं हो सकता।"
 
-#: quotation_views.py
 msgid "Price for '%(product_name)s' must be greater than 0."
 msgstr "'%(product_name)s' का दाम 0 से ज़्यादा होना चाहिए।"
 
-#: customer_account.html
 msgid "Price level"
 msgstr "दाम का स्तर"
 
-#: sale_create.html
 msgid "Price Level"
 msgstr "दाम का स्तर"
 
-#: quotation_detail.html
 msgid "Price level:"
 msgstr "दाम का स्तर:"
 
-#: account_views.py
 msgid "Price levels are not available for this shop."
 msgstr "इस दुकान में दाम के स्तर नहीं हैं।"
 
-#: add_order.html
 msgid "Price/Unit"
 msgstr "दाम/यूनिट"
 
-#: add_order.html, add_product.html
 msgid "Pricing Details"
 msgstr "दाम की जानकारी"
 
-#: account_statement.html, h1_register.html, purchase_invoice.html, quotation_detail.html, quotation_list.html, quotation_print.html, return_note.html, returns_list.html, sale_invoice.html
 msgid "Print"
 msgstr "प्रिंट"
 
-#: purchase_detail.html, purchase_list.html
 msgid "Print bill"
 msgstr "बिल प्रिंट करें"
 
-#: customer_account.html, sale_detail.html, sales_list.html
 msgid "Print invoice"
 msgstr "बिल प्रिंट करें"
 
-#: quotation_list.html
 msgid "Print quotation"
 msgstr "कोटेशन प्रिंट करें"
 
-#: customer_account.html, customer_list.html, supplier_account.html
 msgid "Print statement"
 msgstr "विवरण प्रिंट करें"
 
-#: purchase_invoice.html
 msgid "Printed on"
 msgstr "प्रिंट की तारीख"
 
-#: low_stock_list.html, near_expiry.html, product_list.html, purchase_detail.html, quotation_create.html, quotation_detail.html, return_form.html, sale_create.html, sale_detail.html, supplier_product_list.html
 msgid "Product"
 msgstr "सामान"
 
-#: views.py
 msgid "Product \"%(product_name)s\" deleted successfully."
 msgstr "सामान \"%(product_name)s\" हटा दिया गया।"
 
-#: views.py
 msgid "Product '%(product_name)s' was not found for this retailer."
 msgstr "इस दुकान में सामान '%(product_name)s' नहीं मिला।"
 
-#: add_order.html
 msgid "Product Active"
 msgstr "सामान चालू"
 
-#: views.py
 msgid "Product added successfully."
 msgstr "सामान जुड़ गया।"
 
-#: views.py
 msgid "Product ID is required."
 msgstr "सामान की ID ज़रूरी है।"
 
-#: add_product.html
 msgid "Product identification and classification details"
 msgstr "सामान की पहचान और कैटेगरी"
 
-#: quotation_views.py
 msgid "Product in row %(row)s does not exist."
 msgstr "लाइन %(row)s का सामान नहीं मिला।"
 
-#: views.py
 msgid "Product in row %(row_number)s does not exist."
 msgstr "लाइन %(row_number)s का सामान नहीं मिला।"
 
-#: product_list.html
 msgid "Product Info"
 msgstr "सामान की जानकारी"
 
-#: product_list.html
 msgid "Product Inventory"
 msgstr "सामान का स्टॉक"
 
-#: views.py
 msgid "Product is missing in row %(row_number)s."
 msgstr "लाइन %(row_number)s में सामान नहीं चुना।"
 
-#: product_list.html
 msgid "Product List"
 msgstr "सामान की सूची"
 
-#: add_order.html, add_product.html, product_list.html
 msgid "Product Name"
 msgstr "सामान का नाम"
 
-#: add_product.html
 msgid "Product name is required"
 msgstr "सामान का नाम ज़रूरी है"
 
-#: views.py
 msgid "Product not found."
 msgstr "सामान नहीं मिला।"
 
-#: add_product.html
 msgid "Product saved successfully!"
 msgstr "सामान सेव हो गया!"
 
-#: add_product.html
 msgid "Product search also matches the salt."
 msgstr "सामान खोजने पर साल्ट से भी मिलता है।"
 
-#: add_product.html
 msgid "Product Status"
 msgstr "सामान की स्थिति"
 
-#: views.py
 msgid "Product updated successfully.%(price_warning)s"
 msgstr "सामान बदल दिया गया।%(price_warning)s"
 
-#: add_product.html
 msgid "Product will be visible for billing"
 msgstr "सामान बिलिंग में दिखेगा"
 
-#: supplier_product_list.html
 msgid "Product, barcode or supplier..."
 msgstr "सामान, बारकोड या सप्लायर..."
 
-#: near_expiry.html
 msgid "Product, salt or batch"
 msgstr "सामान, साल्ट या बैच"
 
-#: near_expiry.html
 msgid "Product, salt or batch..."
 msgstr "सामान, साल्ट या बैच..."
 
-#: base.html, dashboard.html, retailer_list.html, shop_type_services.html
 msgid "Products"
 msgstr "सामान"
 
-#: low_stock_list.html
 msgid "Products at or below their minimum stock level"
 msgstr "जिस सामान का स्टॉक कम से कम स्टॉक के बराबर या कम है"
 
-#: supplier_list.html
 msgid "Products bought from this supplier"
 msgstr "इस सप्लायर से खरीदा सामान"
 
-#: sale_create.html
 msgid "Products sold on this invoice"
 msgstr "इस बिल में बिका सामान"
 
-#: supplier_product_list.html
 msgid "Products you buy from %(name)s"
 msgstr "%(name)s से खरीदा जाने वाला सामान"
 
-#: stored values
 msgid "Puducherry"
 msgstr "पुडुचेरी"
 
-#: add_order.html, register.html, stored values
 msgid "Punjab"
 msgstr "पंजाब"
 
-#: base.html, low_stock_list.html, product_list.html
 msgid "Purchase"
 msgstr "खरीद"
 
-#: purchase_detail.html, purchase_invoice.html
 msgid "Purchase Bill"
 msgstr "खरीद बिल"
 
-#: supplier_account.html
 msgid "Purchase Bills"
 msgstr "खरीद बिल"
 
-#: add_order.html
 msgid "Purchase History"
 msgstr "खरीद का हिसाब"
 
-#: purchase_list.html
 msgid "Purchase List"
 msgstr "खरीद की सूची"
 
-#: views.py
 msgid "Purchase order %(bill_number)s created successfully!"
 msgstr "खरीद ऑर्डर %(bill_number)s बन गया!"
 
-#: add_order.html
 msgid "Purchase Order Details"
 msgstr "खरीद ऑर्डर की जानकारी"
 
-#: add_order.html, add_product.html
 msgid "Purchase Price"
 msgstr "खरीद दाम"
 
-#: product_list.html
 msgid "Purchase Price (₹)"
 msgstr "खरीद दाम (₹)"
 
-#: views.py
 msgid "Purchase price cannot be negative."
 msgstr "खरीद दाम माइनस में नहीं हो सकता।"
 
-#: views.py
 msgid "Purchase price for %(product_name)s"
 msgstr "%(product_name)s का खरीद दाम"
 
-#: views.py
 msgid "Purchase price for '%(product_name)s' must be greater than zero."
 msgstr "'%(product_name)s' का खरीद दाम शून्य से ज़्यादा होना चाहिए।"
 
-#: views.py
 msgid "Purchase price must be greater than 0."
 msgstr "खरीद दाम 0 से ज़्यादा होना चाहिए।"
 
-#: returns_list.html
 msgid "Purchase returns (debit notes)"
 msgstr "खरीद वापसी (डेबिट नोट)"
 
-#: units.py
 msgid "Purchase unit must be different from the selling unit."
 msgstr "खरीद यूनिट बेचने वाली यूनिट से अलग होनी चाहिए।"
 
-#: add_product.html
 msgid "Purchase, selling price, MRP and tax configuration"
 msgstr "खरीद दाम, बेचने का दाम, MRP और टैक्स"
 
-#: purchase_detail.html
 msgid "Purchased Items"
 msgstr "खरीदा सामान"
 
-#: dashboard.html, purchase_list.html, shop_type_services.html, supplier_list.html
 msgid "Purchases"
 msgstr "खरीद"
 
-#: add_order.html, h1_register.html, purchase_detail.html, purchase_invoice.html, quotation_create.html, quotation_detail.html, quotation_print.html, return_note.html, sale_create.html, sale_detail.html, sale_invoice.html
 msgid "Qty"
 msgstr "मात्रा"
 
-#: near_expiry.html
 msgid "Quantity"
 msgstr "मात्रा"
 
-#: quotation_views.py, views.py
 msgid "Quantity for '%(product_name)s'"
 msgstr "'%(product_name)s' की मात्रा"
 
-#: models.py
 msgid "Quantity must be greater than zero."
 msgstr "मात्रा शून्य से ज़्यादा होनी चाहिए।"
 
-#: dashboard.html
 msgid "Quick actions"
 msgstr "जल्दी के काम"
 
-#: quotation_detail.html, quotation_list.html, quotation_print.html
 msgid "Quotation"
 msgstr "कोटेशन"
 
-#: quotation_print.html
 msgid "QUOTATION"
 msgstr "कोटेशन"
 
-#: quotation_views.py
 msgid "Quotation %(quotation_number)s cancelled."
 msgstr "कोटेशन %(quotation_number)s रद्द हो गया।"
 
-#: quotation_views.py
 msgid "Quotation %(quotation_number)s created."
 msgstr "कोटेशन %(quotation_number)s बन गया।"
 
-#: views.py
 msgid "Quotation %(quotation_number)s has already been converted to a sale."
 msgstr "कोटेशन %(quotation_number)s पहले ही बिक्री में बदल चुका है।"
 
-#: views.py
 msgid "Quotation %(quotation_number)s was already converted or cancelled."
 msgstr "कोटेशन %(quotation_number)s पहले ही बदला या रद्द हो चुका है।"
 
-#: views.py
 msgid "Quotation %(quotation_number)s was cancelled and cannot be converted."
 msgstr "कोटेशन %(quotation_number)s रद्द हो चुका है, इसे बिक्री में नहीं बदल सकते।"
 
-#: quotation_list.html
 msgid "Quotation no., customer or mobile..."
 msgstr "कोटेशन नं., ग्राहक या मोबाइल..."
 
-#: base.html, quotation_list.html
 msgid "Quotations"
 msgstr "कोटेशन"
 
-#: stored values
 msgid "Quotations / estimates"
 msgstr "कोटेशन / अनुमान"
 
-#: quotation_print.html
 msgid "Quoted to"
 msgstr "किसके लिए"
 
-#: add_order.html, register.html, stored values
 msgid "Rajasthan"
 msgstr "राजस्थान"
 
-#: purchase_invoice.html, quotation_print.html, return_note.html, sale_invoice.html
 msgid "Rate"
 msgstr "रेट"
 
-#: return_form.html
 msgid "Rate (₹)"
 msgstr "रेट (₹)"
 
-#: add_order.html, register.html
 msgid "Re-enter password"
 msgstr "पासवर्ड दोबारा डालें"
 
-#: purchase_detail.html, return_form.html, return_note.html, sale_detail.html
 msgid "Reason"
 msgstr "कारण"
 
-#: sale_detail.html
 msgid "Receipt No."
 msgstr "रसीद नं."
 
-#: sale_detail.html
 msgid "Receive due payment"
 msgstr "बाकी पेमेंट लें"
 
-#: sale_create.html
 msgid "Receive old due"
 msgstr "पुरानी उधारी लें"
 
-#: sale_create.html
 msgid "Receive Old Due"
 msgstr "पुरानी उधारी लें"
 
-#: customer_account.html, customer_list.html
 msgid "Receive payment"
 msgstr "पेमेंट लें"
 
-#: customer_account.html
 msgid "Receive Payment"
 msgstr "पेमेंट लें"
 
-#: customer_account.html, sales_list.html
 msgid "Received"
 msgstr "मिला"
 
-#: dashboard.html, purchase_list.html, sale_create.html
 msgid "Recent purchases"
 msgstr "हाल की खरीद"
 
-#: dashboard.html
 msgid "Recent sales"
 msgstr "हाल की बिक्री"
 
-#: add_order.html
 msgid "Record a purchase bill from your supplier"
 msgstr "अपने सप्लायर का खरीद बिल दर्ज करें"
 
-#: purchase_detail.html
 msgid "Record payment"
 msgstr "पेमेंट दर्ज करें"
 
-#: purchase_detail.html
 msgid "Record Payment"
 msgstr "पेमेंट दर्ज करें"
 
-#: purchase_detail.html
 msgid "Recorded by"
 msgstr "किसने दर्ज किया"
 
-#: purchase_detail.html, purchase_invoice.html, sale_detail.html
 msgid "Reduced due"
 msgstr "बाकी में कमी"
 
-#: return_note.html
 msgid "Reduced the bill's balance due"
 msgstr "बिल की बाकी रकम घटी"
 
-#: account_statement.html, supplier_account.html
 msgid "Ref:"
 msgstr "रेफ़:"
 
-#: customer_account.html, purchase_detail.html, purchase_invoice.html, sale_create.html, sale_detail.html
-msgid "Reference"
-msgstr "रेफ़रेंस"
-
-#: returns_list.html
 msgid "Refund due"
 msgstr "वापसी बाकी"
 
-#: return_note.html
 msgid "Refund due from supplier"
 msgstr "सप्लायर से वापसी बाकी"
 
-#: purchase_detail.html, purchase_invoice.html
 msgid "Refund from supplier"
 msgstr "सप्लायर से वापसी"
 
-#: returns_list.html, sale_detail.html
 msgid "Refunded"
 msgstr "वापस दिया"
 
-#: register.html
 msgid "Register Retailer"
 msgstr "दुकान रजिस्टर करें"
 
-#: retailer_list.html
 msgid "Register the first retailer"
 msgstr "पहली दुकान रजिस्टर करें"
 
-#: retailer_list.html
 msgid "Registered shops"
 msgstr "रजिस्टर दुकानें"
 
-#: views.py
 msgid "Registration failed because the username, email, or another value already exists."
 msgstr "रजिस्टर नहीं हुआ, क्योंकि यूज़रनेम, ईमेल या कोई और जानकारी पहले से है।"
 
-#: customer_account.html, purchase_detail.html, purchase_invoice.html, sale_create.html, sale_detail.html, sale_invoice.html
 msgid "Remarks"
 msgstr "टिप्पणी"
 
-#: quotation_create.html
 msgid "Remarks / terms"
 msgstr "टिप्पणी / शर्तें"
 
-#: userlogin.html
 msgid "Remember me"
 msgstr "मुझे याद रखें"
 
-#: add_order.html, quotation_create.html, sale_create.html, supplier_product_list.html
 msgid "Remove"
 msgstr "हटाएं"
 
-#: supplier_product_list.html
 msgid "Remove from supplier"
 msgstr "सप्लायर से हटाएं"
 
-#: supplier_product_views.py
 msgid "Removed %(name)s. Past bills are not changed."
 msgstr "%(name)s हटा दिया। पुराने बिल नहीं बदले।"
 
-#: dashboard.html
 msgid "Reorder list"
 msgstr "दोबारा मंगाने की सूची"
 
-#: low_stock_list.html, product_list.html
 msgid "Reorder List"
 msgstr "दोबारा मंगाने की सूची"
 
-#: userlogin.html
 msgid "Reorder list is ready"
 msgstr "दोबारा मँगाने की सूची तैयार है"
 
-#: dashboard_views.py
 msgid "Reorder now to avoid missed sales"
 msgstr "बिक्री न रुके, इसलिए अभी मंगाएं"
 
-#: dashboard.html
 msgid "Reorder these soon"
 msgstr "इन्हें जल्दी मंगाएं"
 
-#: dashboard.html
 msgid "Restock"
 msgstr "दोबारा मंगाएं"
 
-#: sale_create.html, stored values
 msgid "Retail"
 msgstr "रिटेल"
 
-#: stored values
 msgid "Retail and wholesale prices"
 msgstr "रिटेल और होलसेल दाम"
 
-#: add_order.html
 msgid "Retail Store"
 msgstr "रिटेल दुकान"
 
-#: add_order.html, add_product.html, customer_list.html, low_stock_list.html, product_list.html, sale_create.html, sales_list.html, supplier_list.html
 msgid "Retailer"
 msgstr "दुकान"
 
-#: views.py
 msgid "Retailer %(shop_name)s registered successfully."
 msgstr "दुकान %(shop_name)s रजिस्टर हो गई।"
 
-#: views.py
 msgid "Retailer does not exist or you are not authorized to use this retailer."
 msgstr "दुकान नहीं मिली, या आपको इसकी अनुमति नहीं है।"
 
-#: retailer_list.html
 msgid "Retailer list"
 msgstr "दुकानों की सूची"
 
-#: add_order.html, add_supplier.html
 msgid "Retailer Name"
 msgstr "दुकान का नाम"
 
-#: views.py
 msgid "Retailer registered successfully."
 msgstr "दुकान रजिस्टर हो गई।"
 
-#: customer_list.html, near_expiry.html, purchase_detail.html, purchase_list.html, quotation_list.html, returns_list.html, sale_detail.html, sales_list.html, supplier_list.html
 msgid "Retailer Shop"
 msgstr "दुकान"
 
-#: base.html, dashboard.html, retailer_list.html
 msgid "Retailers"
 msgstr "दुकानें"
 
-#: return_form.html
 msgid "Return"
 msgstr "वापसी"
 
-#: sale_detail.html
 msgid "Return items"
 msgstr "सामान वापस लें"
 
-#: return_form.html
 msgid "Return now"
 msgstr "अभी वापस"
 
-#: returns.py
 msgid "Return quantity for '%(product_name)s'"
 msgstr "'%(product_name)s' की वापसी मात्रा"
 
-#: purchase_detail.html
 msgid "Return to supplier"
 msgstr "सप्लायर को वापस करें"
 
-#: return_form.html
 msgid "Return to Supplier"
 msgstr "सप्लायर को वापसी"
 
-#: base.html, returns_list.html
 msgid "Returns"
 msgstr "वापसी"
 
-#: purchase_detail.html
 msgid "S.Price"
 msgstr "बिक्री दाम"
 
-#: quotation_detail.html, sale_detail.html
 msgid "Sale"
 msgstr "बिक्री"
 
-#: views.py
 msgid "Sale %(invoice_number)s created successfully."
 msgstr "बिक्री %(invoice_number)s बन गई।"
 
-#: models.py
 msgid "Sale customer does not match ledger customer."
 msgstr "बिक्री का ग्राहक और खाते का ग्राहक अलग हैं।"
 
-#: sale_create.html, sale_detail.html
 msgid "Sale Details"
 msgstr "बिक्री की जानकारी"
 
-#: sales.py
 msgid "Sale quantity must be greater than zero."
 msgstr "बिक्री की मात्रा शून्य से ज़्यादा होनी चाहिए।"
 
-#: base.html, dashboard.html, sales_list.html, shop_type_services.html
 msgid "Sales"
 msgstr "बिक्री"
 
-#: sales_list.html
+msgid "Sales are paid in cash. Enter 0 to keep the whole bill as due (udhari)."
+msgstr "बिक्री का भुगतान नकद में होता है। पूरा बिल उधारी में रखने के लिए 0 डालें।"
+
 msgid "Sales invoices"
 msgstr "बिक्री के बिल"
 
-#: sales_list.html
 msgid "Sales invoices of %(shop)s"
 msgstr "%(shop)s के बिक्री बिल"
 
-#: sales_list.html
 msgid "Sales invoices of all retailer shops"
 msgstr "सब दुकानों के बिक्री बिल"
 
-#: return_form.html
 msgid "Sales Return"
 msgstr "बिक्री वापसी"
 
-#: returns_list.html
 msgid "Sales returns (credit notes)"
 msgstr "बिक्री वापसी (क्रेडिट नोट)"
 
-#: dashboard.html
 msgid "Sales this month"
 msgstr "इस महीने की बिक्री"
 
-#: add_product.html, product_list.html
 msgid "Salt / Composition"
 msgstr "साल्ट / मिश्रण"
 
-#: add_product.html, product_list.html
 msgid "Same as selling unit"
 msgstr "बेचने वाली यूनिट जैसा"
 
-#: customer_account.html, sale_create.html
 msgid "Same as shop"
 msgstr "दुकान वाला राज्य"
 
-#: add_order.html, customer_account.html, quotation_create.html
 msgid "Save"
 msgstr "सेव करें"
 
-#: add_order.html, quotation_create.html, sale_create.html
 msgid "Save & Print"
 msgstr "सेव और प्रिंट करें"
 
-#: product_list.html, supplier_list.html
 msgid "Save Changes"
 msgstr "बदलाव सेव करें"
 
-#: return_form.html
 msgid "Save credit note"
 msgstr "क्रेडिट नोट सेव करें"
 
-#: sale_create.html
 msgid "Save Customer"
 msgstr "ग्राहक सेव करें"
 
-#: return_form.html
 msgid "Save debit note"
 msgstr "डेबिट नोट सेव करें"
 
-#: customer_account.html, purchase_detail.html, sale_create.html
 msgid "Save payment"
 msgstr "पेमेंट सेव करें"
 
-#: add_order.html, add_product.html
 msgid "Save Product"
 msgstr "सामान सेव करें"
 
-#: add_order.html
 msgid "Save Retailer"
 msgstr "दुकान सेव करें"
 
-#: sale_create.html
 msgid "Save Sale"
 msgstr "बिक्री सेव करें"
 
-#: add_order.html, add_supplier.html
 msgid "Save Supplier"
 msgstr "सप्लायर सेव करें"
 
-#: product_list.html
 msgid "Saved successfully!"
 msgstr "सेव हो गया!"
 
-#: add_order.html, add_product.html
 msgid "Scan or enter barcode"
 msgstr "बारकोड स्कैन करें या लिखें"
 
-#: sale_invoice.html
 msgid "Sch."
 msgstr "शेड्यूल"
 
-#: product_list.html
 msgid "Schedule"
 msgstr "शेड्यूल"
 
-#: stored values
 msgid "Schedule H"
 msgstr "शेड्यूल H"
 
-#: add_product.html
 msgid "Schedule H, H1 and X sales need patient and doctor details."
 msgstr "शेड्यूल H, H1 और X की बिक्री पर मरीज़ और डॉक्टर की जानकारी ज़रूरी है।"
 
-#: stored values
 msgid "Schedule H1"
 msgstr "शेड्यूल H1"
 
-#: h1_register.html
 msgid "Schedule H1 Drug Register"
 msgstr "शेड्यूल H1 दवा रजिस्टर"
 
-#: h1_register.html
 msgid "Schedule H1 Register"
 msgstr "शेड्यूल H1 रजिस्टर"
 
-#: stored values
 msgid "Schedule X"
 msgstr "शेड्यूल X"
 
-#: supplier_product_list.html
 msgid "Search"
 msgstr "खोजें"
 
-#: low_stock_list.html, product_list.html
 msgid "Search by name, barcode or HSN..."
 msgstr "नाम, बारकोड या HSN से खोजें..."
 
-#: sale_create.html
 msgid "Search customer by name or mobile"
 msgstr "नाम या मोबाइल से ग्राहक खोजें"
 
-#: quotation_list.html
 msgid "Search quotations"
 msgstr "कोटेशन खोजें"
 
-#: retailer_list.html
 msgid "Search retailers"
 msgstr "दुकान खोजें"
 
-#: returns_list.html
 msgid "Search returns"
 msgstr "वापसी खोजें"
 
-#: supplier_list.html
 msgid "Search supplier name..."
 msgstr "सप्लायर का नाम खोजें..."
 
-#: register.html
 msgid "Second Licence No."
 msgstr "दूसरा लाइसेंस नं."
 
-#: add_order.html
 msgid "Secondary Warehouse"
 msgstr "दूसरा गोदाम"
 
-#: sale_create.html
 msgid "Select a customer to see their mobile, credit limit and outstanding balance."
 msgstr "ग्राहक चुनें, उसका मोबाइल, उधार सीमा और बाकी रकम दिखेगी।"
 
-#: add_order.html, add_supplier.html
 msgid "Select a Retailer"
 msgstr "दुकान चुनें"
 
-#: sale_create.html
 msgid "Select a retailer, then add products to this invoice."
 msgstr "दुकान चुनें, फिर इस बिल में सामान जोड़ें।"
 
-#: add_order.html, add_product.html
 msgid "Select brand"
 msgstr "ब्रांड चुनें"
 
-#: add_order.html, add_product.html
 msgid "Select category"
 msgstr "कैटेगरी चुनें"
 
-#: quotation_create.html
 msgid "Select customer"
 msgstr "ग्राहक चुनें"
 
-#: add_order.html
-msgid "Select Payment Type"
-msgstr "पेमेंट का तरीका चुनें"
-
-#: add_order.html
 msgid "Select Retailer"
 msgstr "दुकान चुनें"
 
-#: add_order.html, add_product.html, sale_create.html
 msgid "Select retailer"
 msgstr "दुकान चुनें"
 
-#: quotation_create.html
 msgid "Select shop"
 msgstr "दुकान चुनें"
 
-#: add_order.html, register.html
 msgid "Select shop type"
 msgstr "दुकान का प्रकार चुनें"
 
-#: add_order.html, register.html
 msgid "Select State"
 msgstr "राज्य चुनें"
 
-#: add_order.html
 msgid "Select Supplier"
 msgstr "सप्लायर चुनें"
 
-#: add_order.html
 msgid "Select Terms"
 msgstr "शर्त चुनें"
 
-#: add_order.html, add_product.html
 msgid "Select unit"
 msgstr "यूनिट चुनें"
 
-#: add_order.html
 msgid "Select Warehouse"
 msgstr "गोदाम चुनें"
 
-#: views.py
 msgid "Selected batch for '%(product_name)s' does not exist."
 msgstr "'%(product_name)s' का चुना हुआ बैच नहीं मिला।"
 
-#: batches.py
 msgid "Selected batch of '%(product_name)s' was not found or is empty."
 msgstr "'%(product_name)s' का चुना हुआ बैच नहीं मिला या खाली है।"
 
-#: views.py
 msgid "Selected brand does not exist or does not belong to this retailer."
 msgstr "चुना हुआ ब्रांड नहीं मिला या इस दुकान का नहीं है।"
 
-#: views.py
 msgid "Selected category does not exist or does not belong to this retailer."
 msgstr "चुनी हुई कैटेगरी नहीं मिली या इस दुकान की नहीं है।"
 
-#: views.py
 msgid "Selected customer does not exist."
 msgstr "चुना हुआ ग्राहक नहीं मिला।"
 
-#: views.py
 msgid "Selected quotation does not exist."
 msgstr "चुना हुआ कोटेशन नहीं मिला।"
 
-#: views.py
 msgid "Selected retailer does not exist or is inactive."
 msgstr "चुनी हुई दुकान नहीं मिली या बंद है।"
 
-#: views.py
 msgid "Selected retailer does not exist or you are not authorized to use it."
 msgstr "चुनी हुई दुकान नहीं मिली या आपको इसकी अनुमति नहीं है।"
 
-#: views.py
 msgid "Selected retailer does not exist."
 msgstr "चुनी हुई दुकान नहीं मिली।"
 
-#: views.py
 msgid "Selected supplier does not exist or is inactive."
 msgstr "चुना हुआ सप्लायर नहीं मिला या बंद है।"
 
-#: views.py
 msgid "Selected unit does not exist."
 msgstr "चुनी हुई यूनिट नहीं मिली।"
 
-#: views.py
 msgid "Selected unit was not found for '%(product_name)s'."
 msgstr "'%(product_name)s' के लिए चुनी यूनिट नहीं मिली।"
 
-#: stored values
 msgid "Sell loose quantities (e.g. 2.5 kg, 1.5 m)"
 msgstr "खुला सामान बेचें (जैसे 2.5 किलो, 1.5 मीटर)"
 
-#: dashboard_views.py
 msgid "Sell these first or return them to the supplier"
 msgstr "इन्हें पहले बेचें या सप्लायर को वापस करें"
 
-#: base.html, low_stock_list.html, product_list.html
 msgid "Selling"
 msgstr "बिक्री"
 
-#: stored values
 msgid "Selling below purchase price is allowed (warning only)"
 msgstr "खरीद दाम से कम में बेच सकते हैं (सिर्फ चेतावनी)"
 
-#: add_order.html, add_product.html
 msgid "Selling Price"
 msgstr "बेचने का दाम"
 
-#: product_list.html
 msgid "Selling Price (₹)"
 msgstr "बेचने का दाम (₹)"
 
-#: views.py
 msgid "Selling price cannot be greater than MRP."
 msgstr "बेचने का दाम MRP से ज़्यादा नहीं हो सकता।"
 
-#: views.py
 msgid "Selling price cannot be lower than the purchase price."
 msgstr "बेचने का दाम खरीद दाम से कम नहीं हो सकता।"
 
-#: models.py, views.py
 msgid "Selling price cannot be negative."
 msgstr "बेचने का दाम माइनस में नहीं हो सकता।"
 
-#: views.py
 msgid "Selling price must be greater than 0."
 msgstr "बेचने का दाम 0 से ज़्यादा होना चाहिए।"
 
-#: views.py
 msgid "Selling price must be greater than or equal to purchase price."
 msgstr "बेचने का दाम खरीद दाम के बराबर या उससे ज़्यादा होना चाहिए।"
 
-#: add_product.html
 msgid "Selling price must be greater than purchase price"
 msgstr "बेचने का दाम खरीद दाम से ज़्यादा होना चाहिए"
 
-#: add_product.html
 msgid "selling units"
 msgstr "बेचने वाली यूनिट"
 
-#: dashboard.html, h1_register.html, quotation_create.html, retailer_list.html, supplier_product_list.html
 msgid "Shop"
 msgstr "दुकान"
 
-#: add_order.html, register.html
 msgid "Shop Address"
 msgstr "दुकान का पता"
 
-#: add_order.html, register.html
 msgid "Shop Details"
 msgstr "दुकान की जानकारी"
 
-#: sale_detail.html
 msgid "Shop GSTIN"
 msgstr "दुकान का GSTIN"
 
-#: add_order.html, register.html
 msgid "Shop Name"
 msgstr "दुकान का नाम"
 
-#: register.html
 msgid "Shop name is required"
 msgstr "दुकान का नाम ज़रूरी है"
 
-#: add_order.html, register.html
 msgid "Shop Type"
 msgstr "दुकान का प्रकार"
 
-#: retailer_list.html, supplier_product_list.html
 msgid "Shop type"
 msgstr "दुकान का प्रकार"
 
-#: base.html, shop_type_services.html, userlogin.html
 msgid "Shop types"
 msgstr "दुकान के प्रकार"
 
-#: retailer_list.html
 msgid "Shop, owner, username, mobile, city..."
 msgstr "दुकान, मालिक, यूज़रनेम, मोबाइल, शहर..."
 
-#: shop_type_services.html
 msgid "Shops"
 msgstr "दुकानें"
 
-#: dashboard.html
 msgid "Shops at a glance"
 msgstr "दुकानों पर एक नज़र"
 
-#: retailer_list.html
 msgid "Shops per type"
 msgstr "प्रकार के हिसाब से दुकानें"
 
-#: h1_register.html, near_expiry.html
 msgid "Show"
 msgstr "दिखाएं"
 
-#: add_order.html
 msgid "Show confirm password"
 msgstr "दोबारा वाला पासवर्ड दिखाएं"
 
-#: add_order.html, register.html
 msgid "Show password"
 msgstr "पासवर्ड दिखाएं"
 
-#: dashboard.html
 msgid "Showing"
 msgstr "दिखा रहे हैं"
 
-#: returns_list.html, supplier_product_list.html
 msgid "Showing %(start)s - %(end)s of %(total)s"
 msgstr "%(total)s में से %(start)s - %(end)s"
 
-#: near_expiry.html
 msgid "Showing %(start)s - %(end)s of %(total)s batches"
 msgstr "%(total)s बैच में से %(start)s - %(end)s"
 
-#: customer_list.html
 msgid "Showing %(start)s - %(end)s of %(total)s customers"
 msgstr "%(total)s ग्राहकों में से %(start)s - %(end)s"
 
-#: sales_list.html
 msgid "Showing %(start)s - %(end)s of %(total)s invoices"
 msgstr "%(total)s बिलों में से %(start)s - %(end)s"
 
-#: purchase_list.html
 msgid "Showing %(start)s - %(end)s of %(total)s orders"
 msgstr "%(total)s ऑर्डर में से %(start)s - %(end)s"
 
-#: low_stock_list.html, product_list.html
 msgid "Showing %(start)s - %(end)s of %(total)s products"
 msgstr "%(total)s सामान में से %(start)s - %(end)s"
 
-#: quotation_list.html
 msgid "Showing %(start)s - %(end)s of %(total)s quotations"
 msgstr "%(total)s कोटेशन में से %(start)s - %(end)s"
 
-#: retailer_list.html
 msgid "Showing %(start)s - %(end)s of %(total)s retailers"
 msgstr "%(total)s दुकानों में से %(start)s - %(end)s"
 
-#: supplier_list.html
 msgid "Showing %(start)s - %(end)s of %(total)s suppliers"
 msgstr "%(total)s सप्लायर में से %(start)s - %(end)s"
 
-#: low_stock_list.html, product_list.html
 msgid "Showing 0 of 0 products"
 msgstr "0 में से 0 सामान"
 
-#: userlogin.html
 msgid "Sign in"
 msgstr "लॉगिन"
 
-#: userlogin.html
 msgid "Sign in to open that page. We will take you there right after."
 msgstr "वह पेज खोलने के लिए लॉग इन करें। लॉग इन के बाद आप सीधे वहीं पहुँचेंगे।"
 
-#: userlogin.html
 msgid "Sign in to open your shop's dashboard"
 msgstr "अपनी दुकान का डैशबोर्ड खोलने के लिए लॉग इन करें"
 
-#: userlogin.html
 msgid "Signing you in..."
 msgstr "लॉग इन हो रहा है..."
 
-#: stored values
 msgid "Sikkim"
 msgstr "सिक्किम"
 
-#: add_product.html
 msgid "Size, gauge, grade or finish. Shown on quotations and bills."
 msgstr "साइज़, गेज, ग्रेड या फिनिश। कोटेशन और बिल पर दिखेगा।"
 
-#: dashboard.html
 msgid "sold"
 msgstr "बिका"
 
-#: return_form.html
 msgid "Sold"
 msgstr "बिका"
 
-#: sale_detail.html
 msgid "Sold Items"
 msgstr "बिका सामान"
 
-#: dashboard.html
 msgid "sold this month"
 msgstr "इस महीने बिका"
 
-#: views.py
 msgid "Something went wrong while adding the product. Please try again later."
 msgstr "सामान जोड़ते समय गड़बड़ी हुई। थोड़ी देर बाद फिर कोशिश करें।"
 
-#: views.py
 msgid "Something went wrong while adding the supplier. Please try again."
 msgstr "सप्लायर जोड़ते समय गड़बड़ी हुई। फिर से कोशिश करें।"
 
-#: views.py
 msgid "Something went wrong while deleting the supplier."
 msgstr "सप्लायर हटाते समय गड़बड़ी हुई।"
 
-#: views.py
 msgid "Something went wrong while loading low stock products."
 msgstr "कम स्टॉक वाला सामान खोलते समय गड़बड़ी हुई।"
 
-#: views.py
 msgid "Something went wrong while loading purchase details."
 msgstr "खरीद की जानकारी खोलते समय गड़बड़ी हुई।"
 
-#: views.py
 msgid "Something went wrong while loading purchases."
 msgstr "खरीद खोलते समय गड़बड़ी हुई।"
 
-#: views.py
 msgid "Something went wrong while loading the product list."
 msgstr "सामान की सूची खोलते समय गड़बड़ी हुई।"
 
-#: views.py
 msgid "Something went wrong while processing brand, category, or unit."
 msgstr "ब्रांड, कैटेगरी या यूनिट में गड़बड़ी हुई।"
 
-#: views.py
 msgid "Something went wrong while registering the retailer. Please try again later."
 msgstr "दुकान रजिस्टर करते समय गड़बड़ी हुई। थोड़ी देर बाद फिर कोशिश करें।"
 
-#: views.py
 msgid "Something went wrong while saving the purchase. Please try again."
 msgstr "खरीद सेव करते समय गड़बड़ी हुई। फिर से कोशिश करें।"
 
-#: views.py
 msgid "Something went wrong while updating the supplier."
 msgstr "सप्लायर बदलते समय गड़बड़ी हुई।"
 
-#: views.py
 msgid "Something went wrong. Please try again later."
 msgstr "कुछ गड़बड़ी हुई। थोड़ी देर बाद फिर कोशिश करें।"
 
-#: add_product.html, product_list.html
 msgid "Specification"
 msgstr "जानकारी (साइज़/ग्रेड)"
 
-#: stored values
 msgid "Specification on products (size, gauge, grade)"
 msgstr "सामान पर साइज़, गेज, ग्रेड"
 
-#: returns_list.html
 msgid "start a return from the purchase bill's page"
 msgstr "वापसी खरीद बिल के पेज से शुरू करें"
 
-#: returns_list.html
 msgid "start a return from the sale's page"
 msgstr "वापसी बिक्री के पेज से शुरू करें"
 
-#: add_order.html, add_supplier.html, register.html, sale_create.html, supplier_list.html
 msgid "State"
 msgstr "राज्य"
 
-#: customer_account.html
 msgid "State (GST)"
 msgstr "राज्य (GST)"
 
-#: add_order.html, purchase_detail.html
 msgid "State of Supply"
 msgstr "सप्लाई का राज्य"
 
-#: purchase_invoice.html
 msgid "State of supply:"
 msgstr "सप्लाई का राज्य:"
 
-#: account_views.py
 msgid "State saved. New bills for %(customer_name)s will use %(SGST)s"
 msgstr "राज्य सेव हो गया। %(customer_name)s के नए बिलों में लगेगा: %(SGST)s"
 
-#: stored values, userlogin.html
 msgid "Stationery"
 msgstr "स्टेशनरी"
 
-#: customer_account.html, dashboard.html, low_stock_list.html, product_list.html, purchase_list.html, quotation_list.html, retailer_list.html, sale_create.html, sales_list.html, supplier_account.html, supplier_list.html
 msgid "Status"
 msgstr "स्थिति"
 
-#: sale_invoice.html
 msgid "Status:"
 msgstr "स्थिति:"
 
-#: account_views.py
 msgid "Still due: ₹%(balance)s."
 msgstr "अभी बाकी: ₹%(balance)s।"
 
-#: dashboard.html, low_stock_list.html, product_list.html
 msgid "Stock"
 msgstr "स्टॉक"
 
-#: add_order.html, add_product.html
 msgid "Stock & Availability"
 msgstr "स्टॉक और उपलब्धता"
 
-#: base.html
 msgid "Stock & Buying"
 msgstr "स्टॉक और खरीद"
 
-#: sale_create.html
 msgid "Stock / Unit"
 msgstr "स्टॉक / यूनिट"
 
-#: add_product.html
 msgid "Stock and selling unit (e.g. pc, tablet, metre)."
 msgstr "स्टॉक और बेचने की यूनिट (जैसे पीस, गोली, मीटर)।"
 
-#: dashboard.html
 msgid "Stock levels look good"
 msgstr "स्टॉक ठीक है"
 
-#: views.py
 msgid "Stock of this product is kept batch-wise. Add stock through a purchase with batch and expiry."
 msgstr "इस सामान का स्टॉक बैच के हिसाब से है। बैच और एक्सपायरी के साथ खरीद करके स्टॉक जोड़ें।"
 
-#: dashboard.html
 msgid "stock value"
 msgstr "स्टॉक की कीमत"
 
-#: dashboard.html
 msgid "stock value (cost)"
 msgstr "स्टॉक की कीमत (लागत)"
 
-#: userlogin.html
 msgid "Stock, batches and expiry dates"
 msgstr "स्टॉक, बैच और एक्सपायरी तारीख"
 
-#: add_order.html, purchase_detail.html, purchase_invoice.html, quotation_create.html, quotation_detail.html, quotation_print.html, sale_create.html, sale_detail.html, sale_invoice.html
 msgid "Subtotal"
 msgstr "उप-जोड़"
 
-#: base.html
 msgid "Super Admin"
 msgstr "सुपर एडमिन"
 
-#: add_order.html, dashboard.html, purchase_detail.html, purchase_invoice.html, purchase_list.html, return_note.html, returns_list.html, supplier_list.html, supplier_product_list.html
 msgid "Supplier"
 msgstr "सप्लायर"
 
-#: add_order.html
 msgid "supplier"
 msgstr "सप्लायर"
 
-#: views.py
 msgid "Supplier \"%(supplier_name)s\" deleted successfully."
 msgstr "सप्लायर \"%(supplier_name)s\" हटा दिया गया।"
 
-#: purchase_detail.html, purchase_list.html, supplier_account.html
 msgid "Supplier account"
 msgstr "सप्लायर का खाता"
 
-#: supplier_account.html
 msgid "Supplier Account"
 msgstr "सप्लायर का खाता"
 
-#: views.py
 msgid "Supplier added successfully."
 msgstr "सप्लायर जुड़ गया।"
 
-#: views.py
 msgid "Supplier already exists for this retailer."
 msgstr "यह सप्लायर इस दुकान में पहले से है।"
 
-#: views.py
 msgid "Supplier already exists or violates a database constraint."
 msgstr "सप्लायर पहले से है या कोई और गड़बड़ी है।"
 
-#: purchase_detail.html, supplier_list.html
 msgid "Supplier Details"
 msgstr "सप्लायर की जानकारी"
 
-#: supplier_account.html
 msgid "Supplier details"
 msgstr "सप्लायर की जानकारी"
 
-#: add_supplier.html
 msgid "Supplier Information"
 msgstr "सप्लायर की जानकारी"
 
-#: views.py
 msgid "Supplier is required."
 msgstr "सप्लायर ज़रूरी है।"
 
-#: supplier_list.html
 msgid "Supplier list"
 msgstr "सप्लायर की सूची"
 
-#: add_order.html, add_supplier.html, supplier_list.html
 msgid "Supplier Name"
 msgstr "सप्लायर का नाम"
 
-#: supplier_list.html
 msgid "Supplier name"
 msgstr "सप्लायर का नाम"
 
-#: account_views.py, views.py
 msgid "Supplier not found."
 msgstr "सप्लायर नहीं मिला।"
 
-#: supplier_list.html
 msgid "Supplier products"
 msgstr "सप्लायर का सामान"
 
-#: supplier_product_list.html
 msgid "Supplier Products"
 msgstr "सप्लायर का सामान"
 
-#: account_views.py
 msgid "Supplier Statement"
 msgstr "सप्लायर का विवरण"
 
-#: views.py
 msgid "Supplier updated successfully."
 msgstr "सप्लायर बदल दिया गया।"
 
-#: views.py
 msgid "Supplier violates a database constraint."
 msgstr "सप्लायर में कोई गड़बड़ी है।"
 
-#: base.html, dashboard.html, shop_type_services.html, supplier_list.html
 msgid "Suppliers"
 msgstr "सप्लायर"
 
-#: supplier_list.html
+msgid "Suppliers are paid in cash. Enter 0 to keep the whole bill as due."
+msgstr "सप्लायर को भुगतान नकद में होता है। पूरा बिल बाकी रखने के लिए 0 डालें।"
+
 msgid "Suppliers of %(shop)s"
 msgstr "%(shop)s के सप्लायर"
 
-#: supplier_list.html
 msgid "Suppliers of all retailer shops"
 msgstr "सब दुकानों के सप्लायर"
 
-#: shop_type_services.html
 msgid "Switch a shop type on or off for the whole platform"
 msgstr "पूरे सिस्टम में किसी दुकान प्रकार को चालू या बंद करें"
 
-#: shop_type_services.html
 msgid "Switch off"
 msgstr "बंद करें"
 
-#: shop_type_services.html
 msgid "Switch off %(label)s? Its shops and records will be hidden and its owners will be logged out. Nothing is deleted."
 msgstr "%(label)s बंद करें? इसकी दुकानें और सारा रिकॉर्ड छिप जाएगा और मालिक लॉग आउट हो जाएँगे। कुछ भी डिलीट नहीं होगा।"
 
-#: shop_type_services.html
 msgid "Switch on"
 msgstr "चालू करें"
 
-#: shop_type_services.html
 msgid "Switch on %(label)s? Its shops and records will be visible again."
 msgstr "%(label)s चालू करें? इसकी दुकानें और रिकॉर्ड फिर से दिखेंगे।"
 
-#: add_order.html, register.html, stored values
 msgid "Tamil Nadu"
 msgstr "तमिलनाडु"
 
-#: add_order.html
 msgid "Tax"
 msgstr "टैक्स"
 
-#: sale_invoice.html
 msgid "TAX INVOICE"
 msgstr "टैक्स बिल"
 
-#: add_order.html, return_note.html
 msgid "Taxable"
 msgstr "टैक्स वाली रकम"
 
-#: purchase_invoice.html, sale_invoice.html
 msgid "Taxable value"
 msgstr "टैक्स वाली रकम"
 
-#: add_order.html
 msgid "Taxable value (Qty × Price)"
 msgstr "टैक्स वाली रकम (मात्रा × दाम)"
 
-#: add_order.html
 msgid "Taxable value + GST"
 msgstr "टैक्स वाली रकम + GST"
 
-#: add_order.html, register.html, stored values
 msgid "Telangana"
 msgstr "तेलंगाना"
 
-#: purchase_invoice.html, sale_invoice.html
 msgid "Terms"
 msgstr "शर्तें"
 
-#: quotation_print.html
 msgid "Terms / remarks"
 msgstr "शर्तें / टिप्पणी"
 
-#: sale_invoice.html
 msgid "Thank you for your business!"
 msgstr "आपके कारोबार के लिए धन्यवाद!"
 
-#: quotation_print.html
 msgid "Thank you for your enquiry!"
 msgstr "पूछताछ के लिए धन्यवाद!"
 
-#: shop_service_views.py
 msgid "The %(label)s service is on again. Its shops and records are visible."
 msgstr "%(label)s सेवा फिर से चालू है। इसकी दुकानें और रिकॉर्ड दिख रहे हैं।"
 
-#: shop_services.py
 msgid "The %(label)s service is paused by the admin. Please contact the admin."
 msgstr "%(label)s सेवा एडमिन ने बंद की है। कृपया एडमिन से संपर्क करें।"
 
-#: shop_service_views.py
 msgid "The %(label)s service is paused. Its shops and records are hidden and nothing was deleted."
 msgstr "%(label)s सेवा बंद कर दी गई है। इसकी दुकानें और रिकॉर्ड छिपा दिए गए हैं, कुछ भी डिलीट नहीं हुआ।"
 
-#: customer_account.html
-msgid "The amount clears the oldest unpaid bills first. A receipt number is created automatically."
-msgstr "रकम से पहले सबसे पुराने बाकी बिल चुकते हैं। रसीद नंबर अपने आप बनता है।"
-
-#: sale_create.html
-msgid "The amount clears the oldest unpaid bills first. Items already added to this sale will need to be added again after saving."
-msgstr "रकम से पहले सबसे पुराने बाकी बिल चुकते हैं। सेव करने के बाद इस बिक्री में जोड़ा सामान फिर से जोड़ना होगा।"
-
-#: customer_account.html
 msgid "The customer has paid more than billed."
 msgstr "ग्राहक ने बिल से ज़्यादा पैसे दिए हैं।"
 
-#: views.py
 msgid "The customer must be the same as on the quotation."
 msgstr "ग्राहक वही होना चाहिए जो कोटेशन में है।"
 
-#: views.py
 msgid "The same product cannot be added multiple times to the same invoice."
 msgstr "एक बिल में एक सामान बार-बार नहीं जोड़ सकते।"
 
-#: models.py
 msgid "The selected customer does not belong to this retailer."
 msgstr "चुना हुआ ग्राहक इस दुकान का नहीं है।"
 
-#: register.html
 msgid "The shop type decides which features (batches, expiry, loose quantities, quotations...) the shop gets."
 msgstr "दुकान के प्रकार से तय होता है कि कौन-सी सुविधाएं मिलेंगी (बैच, एक्सपायरी, खुला सामान, कोटेशन...)।"
 
-#: models.py, views.py
 msgid "The supplier and the product must belong to the same shop."
 msgstr "सप्लायर और सामान एक ही दुकान के होने चाहिए।"
 
-#: supplier_product_list.html
 msgid "They are added when you save a purchase bill, or pick a supplier above to add them."
 msgstr "खरीद बिल सेव करने पर ये अपने आप जुड़ते हैं, या ऊपर सप्लायर चुनकर जोड़ें।"
 
-#: dashboard.html
 msgid "Things to act on today"
 msgstr "आज करने वाले काम"
 
-#: sale_create.html
 msgid "This bill has a prescription drug (Schedule H/H1/X): patient and doctor are required."
 msgstr "इस बिल में पर्चे वाली दवा है (शेड्यूल H/H1/X): मरीज़ और डॉक्टर ज़रूरी हैं।"
 
-#: accounts.py
 msgid "This bill is already fully paid."
 msgstr "इस बिल का पूरा भुगतान पहले ही हो चुका है।"
 
-#: return_note.html
 msgid "This is a computer-generated credit note."
 msgstr "यह कंप्यूटर से बना क्रेडिट नोट है।"
 
-#: return_note.html
 msgid "This is a computer-generated debit note."
 msgstr "यह कंप्यूटर से बना डेबिट नोट है।"
 
-#: purchase_invoice.html
 msgid "This is a computer-generated document."
 msgstr "यह कंप्यूटर से बना दस्तावेज़ है।"
 
-#: sale_invoice.html
 msgid "This is a computer-generated invoice."
 msgstr "यह कंप्यूटर से बना बिल है।"
 
-#: account_statement.html
 msgid "This is a computer-generated statement."
 msgstr "यह कंप्यूटर से बना विवरण है।"
 
-#: quotation_print.html
 msgid "This is a quotation, not a tax invoice. Prices are valid for a limited time and subject to stock availability."
 msgstr "यह कोटेशन है, टैक्स बिल नहीं। दाम कुछ समय के लिए हैं और स्टॉक होने पर ही मिलेंगे।"
 
-#: quotation_print.html
 msgid "This is a quotation, not a tax invoice. Prices are valid until %(date)s and subject to stock availability."
 msgstr "यह कोटेशन है, टैक्स बिल नहीं। दाम %(date)s तक हैं और स्टॉक होने पर ही मिलेंगे।"
 
-#: dashboard.html
 msgid "This month, by sales amount"
 msgstr "इस महीने, बिक्री की रकम के हिसाब से"
 
-#: dashboard.html
 msgid "This month, per retailer shop"
 msgstr "इस महीने, हर दुकान का"
 
-#: add_order.html
 msgid "Time"
 msgstr "समय"
 
-#: h1_register.html, purchase_list.html, sales_list.html
 msgid "To"
 msgstr "तक"
 
-#: h1_register.html
 msgid "to"
 msgstr "से"
 
-#: dashboard.html
 msgid "To collect"
 msgstr "वसूलना है"
 
-#: dashboard.html
 msgid "To collect from customers"
 msgstr "ग्राहकों से वसूलना है"
 
-#: dashboard.html
 msgid "to pay"
 msgstr "देना है"
 
-#: dashboard.html
 msgid "To pay"
 msgstr "देना है"
 
-#: dashboard.html
 msgid "To pay suppliers"
 msgstr "सप्लायर को देना है"
 
-#: dashboard.html
 msgid "to reorder"
 msgstr "दोबारा मंगाना है"
 
-#: sale_create.html
 msgid "to save"
 msgstr "सेव करने के लिए"
 
-#: dashboard.html, userlogin.html
 msgid "Today's sales"
 msgstr "आज की बिक्री"
 
-#: userlogin.html
 msgid "Toggle password visibility"
 msgstr "पासवर्ड दिखाएं / छिपाएं"
 
-#: base.html
 msgid "Toggle theme"
 msgstr "रंग बदलें"
 
-#: dashboard.html
 msgid "Top selling products"
 msgstr "सबसे ज़्यादा बिकने वाला सामान"
 
-#: add_order.html, purchase_detail.html, purchase_invoice.html, quotation_create.html, quotation_detail.html, quotation_print.html, returns_list.html, sale_create.html, sale_detail.html, supplier_account.html
 msgid "Total"
 msgstr "कुल"
 
-#: add_order.html, customer_list.html, supplier_account.html
 msgid "Total billed"
 msgstr "कुल बिल"
 
-#: add_order.html
 msgid "Total GST"
 msgstr "कुल GST"
 
-#: customer_account.html, customer_list.html, purchase_invoice.html
 msgid "Total paid"
 msgstr "कुल दिया"
 
-#: product_list.html
 msgid "Total Products"
 msgstr "कुल सामान"
 
-#: customer_account.html
 msgid "Total purchases"
 msgstr "कुल खरीद"
 
-#: h1_register.html
 msgid "Total quantity"
 msgstr "कुल मात्रा"
 
-#: sales_list.html
 msgid "Total Sales"
 msgstr "कुल बिक्री"
 
-#: sale_invoice.html
 msgid "Total tax"
 msgstr "कुल टैक्स"
 
-#: customer_list.html
 msgid "Total to collect"
 msgstr "कुल वसूलना है"
 
-#: purchase_invoice.html
 msgid "Transport"
 msgstr "भाड़ा"
 
-#: add_order.html, purchase_detail.html
 msgid "Transport Charge"
 msgstr "भाड़ा"
 
-#: views.py
 msgid "Transport charge"
 msgstr "भाड़ा"
 
-#: stored values
 msgid "Tripura"
 msgstr "त्रिपुरा"
 
-#: sale_detail.html
-msgid "Type"
-msgstr "प्रकार"
-
-#: sale_invoice.html
-msgid "Type:"
-msgstr "प्रकार:"
-
-#: views.py
 msgid "Unable to create customer. Please try again."
 msgstr "ग्राहक नहीं जुड़ पाया। फिर से कोशिश करें।"
 
-#: views.py
 msgid "Unable to create the sale because of a database conflict. Please try again."
 msgstr "डेटा में टकराव के कारण बिक्री नहीं बनी। फिर से कोशिश करें।"
 
-#: views.py
 msgid "Unable to fetch product."
 msgstr "सामान नहीं मिल पाया।"
 
-#: views.py
 msgid "Unable to load products. Please try again."
 msgstr "सामान नहीं खुल पाया। फिर से कोशिश करें।"
 
-#: views.py
 msgid "Unable to load purchase details. Please try again."
 msgstr "खरीद की जानकारी नहीं खुल पाई। फिर से कोशिश करें।"
 
-#: views.py
 msgid "Unable to load purchase history."
 msgstr "खरीद का पुराना हिसाब नहीं खुल पाया।"
 
-#: views.py
 msgid "Unable to load the sales page. Please try again."
 msgstr "बिक्री का पेज नहीं खुल पाया। फिर से कोशिश करें।"
 
-#: add_order.html, add_product.html, low_stock_list.html, product_list.html
 msgid "Unit"
 msgstr "यूनिट"
 
-#: views.py
 msgid "Unit is missing for '%(product_name)s'."
 msgstr "'%(product_name)s' की यूनिट नहीं चुनी।"
 
-#: views.py
 msgid "Unit name is required."
 msgstr "यूनिट का नाम ज़रूरी है।"
 
-#: add_order.html, purchase_list.html, sale_create.html, sale_detail.html, sales_list.html, stored values
 msgid "Unpaid"
 msgstr "बाकी"
 
-#: add_order.html, customer_account.html, supplier_account.html
 msgid "Unpaid bills"
 msgstr "बाकी बिल"
 
-#: stored values
-msgid "UPI"
-msgstr "UPI"
-
-#: customer_account.html, purchase_detail.html
-msgid "UPI / cheque no."
-msgstr "UPI / चेक नं."
-
-#: sale_create.html
-msgid "UPI / cheque no. (optional)"
-msgstr "UPI / चेक नं. (ज़रूरी नहीं)"
-
-#: add_order.html
 msgid "Upload Bill"
 msgstr "बिल अपलोड करें"
 
-#: purchase_list.html
 msgid "Upload bills"
 msgstr "बिल अपलोड करें"
 
-#: add_order.html, register.html, userlogin.html
 msgid "Username"
 msgstr "यूज़रनेम"
 
-#: views.py
 msgid "Username already exists."
 msgstr "यह यूज़रनेम पहले से है।"
 
-#: register.html
 msgid "Username is required"
 msgstr "यूज़रनेम ज़रूरी है"
 
-#: add_order.html, register.html, stored values
 msgid "Uttar Pradesh"
 msgstr "उत्तर प्रदेश"
 
-#: stored values
 msgid "Uttarakhand"
 msgstr "उत्तराखंड"
 
-#: quotation_create.html, quotation_list.html
 msgid "Valid until"
 msgstr "कब तक मान्य"
 
-#: quotation_detail.html, quotation_print.html
 msgid "Valid until:"
 msgstr "कब तक मान्य:"
 
-#: near_expiry.html
 msgid "Value of listed stock (cost)"
 msgstr "दिखाए गए स्टॉक की कीमत (लागत)"
 
-#: product_list.html, quotation_list.html
 msgid "View"
 msgstr "देखें"
 
-#: customer_list.html
 msgid "View account history"
 msgstr "खाते का हिसाब देखें"
 
-#: dashboard.html
 msgid "View all"
 msgstr "सब देखें"
 
-#: dashboard.html
 msgid "View as table"
 msgstr "टेबल में देखें"
 
-#: purchase_detail.html
 msgid "View bill"
 msgstr "बिल देखें"
 
-#: dashboard.html
 msgid "View customers"
 msgstr "ग्राहक देखें"
 
-#: purchase_list.html
 msgid "View details"
 msgstr "पूरी जानकारी देखें"
 
-#: purchase_list.html
 msgid "View details & payments"
 msgstr "जानकारी और पेमेंट देखें"
 
-#: add_order.html
 msgid "View full history"
 msgstr "पूरा हिसाब देखें"
 
-#: dashboard.html
 msgid "View products"
 msgstr "सामान देखें"
 
-#: dashboard.html
 msgid "View purchases"
 msgstr "खरीद देखें"
 
-#: quotation_list.html
 msgid "View quotation"
 msgstr "कोटेशन देखें"
 
-#: dashboard.html
 msgid "View retailers"
 msgstr "दुकानें देखें"
 
-#: sales_list.html
 msgid "View sale"
 msgstr "बिक्री देखें"
 
-#: dashboard.html
 msgid "View sales"
 msgstr "बिक्री देखें"
 
-#: supplier_list.html
 msgid "View supplier"
 msgstr "सप्लायर देखें"
 
-#: dashboard.html
 msgid "View suppliers"
 msgstr "सप्लायर देखें"
 
-#: dashboard.html
 msgid "vs same days last month"
 msgstr "पिछले महीने के इतने ही दिनों से तुलना"
 
-#: purchase_detail.html
 msgid "Warehouse"
 msgstr "गोदाम"
 
-#: add_order.html
 msgid "Warehouse / Godown"
 msgstr "गोदाम"
 
-#: purchase_invoice.html
 msgid "Warehouse:"
 msgstr "गोदाम:"
 
-#: userlogin.html
 msgid "Welcome back"
 msgstr "फिर से स्वागत है"
 
-#: views.py
 msgid "Welcome back, %(username)s!"
 msgstr "फिर से स्वागत है, %(username)s!"
 
-#: add_order.html, register.html, stored values
 msgid "West Bengal"
 msgstr "पश्चिम बंगाल"
 
-#: sale_create.html
 msgid "What is sold"
 msgstr "क्या बिक रहा है"
 
-#: shop_type_services.html
 msgid "When a shop type is off, its shops and all their records (products, bills, customers, suppliers) are hidden everywhere and their owners cannot log in. Nothing is deleted. Switch it on again to see everything as before."
 msgstr "जब कोई दुकान प्रकार बंद होता है, तो उसकी दुकानें और उनका सारा रिकॉर्ड (सामान, बिल, ग्राहक, सप्लायर) हर जगह छिप जाता है और उनके मालिक लॉग इन नहीं कर सकते। कुछ भी डिलीट नहीं होता। फिर से चालू करने पर सब कुछ पहले जैसा दिखेगा।"
 
-#: purchase_detail.html
-msgid "When the full balance is paid, the bill is closed automatically."
-msgstr "पूरी बाकी रकम चुकते ही बिल अपने आप बंद हो जाता है।"
-
-#: supplier_product_list.html
 msgid "Which products you buy from which supplier"
 msgstr "कौन-सा सामान किस सप्लायर से खरीदते हैं"
 
-#: sale_create.html
 msgid "Who is buying"
 msgstr "कौन खरीद रहा है"
 
-#: customer_list.html, sale_create.html, stored values
 msgid "Wholesale"
 msgstr "होलसेल"
 
-#: add_product.html
 msgid "Wholesale Price"
 msgstr "होलसेल दाम"
 
-#: product_list.html
 msgid "Wholesale Price (₹)"
 msgstr "होलसेल दाम (₹)"
 
-#: views.py
 msgid "Wholesale price cannot be greater than MRP."
 msgstr "होलसेल दाम MRP से ज़्यादा नहीं हो सकता।"
 
-#: views.py
 msgid "Wholesale price cannot be lower than the purchase price."
 msgstr "होलसेल दाम खरीद दाम से कम नहीं हो सकता।"
 
-#: views.py
 msgid "Wholesale price cannot be more than the retail selling price."
 msgstr "होलसेल दाम रिटेल बेचने के दाम से ज़्यादा नहीं हो सकता।"
 
-#: add_product.html
 msgid "Wholesale price cannot be more than the selling price"
 msgstr "होलसेल दाम बेचने के दाम से ज़्यादा नहीं हो सकता"
 
-#: views.py
 msgid "Wholesale price must be greater than 0."
 msgstr "होलसेल दाम 0 से ज़्यादा होना चाहिए।"
 
-#: supplier_list.html
 msgid "will be permanently deleted. Suppliers that already have purchase bills cannot be deleted — mark them inactive instead."
 msgstr "हमेशा के लिए हट जाएगा। जिन सप्लायर के खरीद बिल हैं उन्हें हटा नहीं सकते — उन्हें बंद (Inactive) कर दें।"
 
-#: dashboard.html
 msgid "with dues"
 msgstr "उधारी वाले"
 
-#: customer_list.html
 msgid "With dues (udhari)"
 msgstr "उधारी वाले"
 
-#: views.py
 msgid "Wrong username or password. Please try again."
 msgstr "यूज़रनेम या पासवर्ड गलत है। फिर से कोशिश करें।"
 
-#: views.py
 msgid "You are not authorized to register a retailer."
 msgstr "आपको दुकान रजिस्टर करने की अनुमति नहीं है।"
 
-#: views.py
 msgid "You have logged out safely. See you again soon."
 msgstr "आप सुरक्षित रूप से लॉग आउट हो गए। जल्द मिलते हैं।"
 
-#: views.py
 msgid "You must be logged in."
 msgstr "पहले लॉगिन करें।"
 
-#: views.py
 msgid "Your account is not associated with a retailer."
 msgstr "आपका खाता किसी दुकान से नहीं जुड़ा है।"
 
-#: views.py
 msgid "Your account is turned off. Please contact the admin."
 msgstr "आपका खाता बंद है। कृपया एडमिन से संपर्क करें।"
 
-#: dashboard.html
 msgid "Your shop at a glance"
 msgstr "आपकी दुकान पर एक नज़र"
 
-#: userlogin.html
 msgid "Your shop's data is seen only by you and the admin"
 msgstr "आपकी दुकान का डेटा सिर्फ़ आप और एडमिन देख सकते हैं"
 
-#: dashboard_views.py
 msgid "₹%(due_amount)s to pay in the next 7 days"
 msgstr "अगले 7 दिनों में ₹%(due_amount)s चुकाने हैं"
 
-#: dashboard_views.py
 msgid "₹%(overdue_total)s past the due date"
 msgstr "₹%(overdue_total)s की तारीख निकल गई"
 
-#: account_views.py
 msgid "₹%(total)s received from %(customer_name)s (receipt %(receipt)s). %(balance)s"
 msgstr "%(customer_name)s से ₹%(total)s मिले (रसीद %(receipt)s)। %(balance)s"
 
-#: dashboard_views.py
 msgid "₹%(total)s to collect"
 msgstr "₹%(total)s वसूलना है"
 
-#: add_order.html, add_product.html
 msgid "➕ Other (Add New)"
 msgstr "➕ दूसरा (नया जोड़ें)"

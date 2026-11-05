@@ -145,7 +145,6 @@
                     <th>{% translate "Date" %}</th>
                     {% if is_admin %}<th>{% translate "Retailer Shop" %}</th>{% endif %}
                     <th>{% translate "Customer" %}</th>
-                    <th>{% translate "Payment Type" %}</th>
                     <th class="text-right">{% translate "Amount" %}</th>
                     <th class="text-right">{% translate "Paid" %}</th>
                     <th class="text-right">{% translate "Due" %}</th>
@@ -167,7 +166,6 @@
                             <span class="secondary-text">{{ sale.customer.mobile }}</span>
                         </div>
                     </td>
-                    <td>{{ sale.get_payment_type_display|tr|default:"—" }}</td>
                     <td class="text-right"><strong>₹{{ sale.grand_total|floatformat:2 }}</strong></td>
                     <td class="text-right amount-paid">₹{{ sale.paid_amount|floatformat:2 }}</td>
                     <td class="text-right {% if sale.due_amount > 0 %}amount-due{% endif %}">₹{{ sale.due_amount|floatformat:2 }}</td>

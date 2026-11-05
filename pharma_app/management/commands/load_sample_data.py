@@ -90,30 +90,30 @@ SHOPS = {
             "biscuit": {"name": "Parle-G Biscuits 800g", "unit": "pkt", "cat": "Packaged Food", "brand": "Parle", "hsn": "1905", "gst": "18", "pp": "78", "sp": "88", "mrp": "90", "min": "10"},
         },
         "purchases": [
-            (48, 0, "PWG/2026/1184", "net15", [("rice", "kg", "60", "96", "125"), ("dal", "kg", "40", "128", "160"), ("sugar", "kg", "80", "40", "48")], ("Bank Transfer", "full")),
-            (46, 1, "SGF-7731", "net30", [("atta", "bag", "20", "410", "485"), ("oil", "box", "4", "1656", "1980"), ("tea", "pkt", "24", "245", "290"), ("soap", "box", "3", "672", "864"), ("maggi", "box", "4", "576", "720"), ("salt", "pkt", "40", "24", "28"), ("biscuit", "pkt", "30", "78", "90")], ("UPI", "10000")),
+            (48, 0, "PWG/2026/1184", "net15", [("rice", "kg", "60", "96", "125"), ("dal", "kg", "40", "128", "160"), ("sugar", "kg", "80", "40", "48")], "full"),
+            (46, 1, "SGF-7731", "net30", [("atta", "bag", "20", "410", "485"), ("oil", "box", "4", "1656", "1980"), ("tea", "pkt", "24", "245", "290"), ("soap", "box", "3", "672", "864"), ("maggi", "box", "4", "576", "720"), ("salt", "pkt", "40", "24", "28"), ("biscuit", "pkt", "30", "78", "90")], "10000"),
             (20, 2, "GEO/1045", "net30", [("oil", "box", "3", "1620", "1980")], None),
             (12, 0, "PWG/2026/1302", "net15", [("rice", "kg", "40", "98", "125"), ("sugar", "kg", "50", "41", "48")], None),
         ],
         "sales": [
-            (35, 0, [("rice", "5", "0"), ("dal", "2", "0"), ("sugar", "3", "0")], "Cash"),
-            (33, 3, [("rice", "15", "50"), ("oil", "12", "60"), ("atta", "4", "0")], "Credit"),
-            (31, 1, [("tea", "2", "0"), ("biscuit", "3", "0"), ("maggi", "12", "0")], ("UPI", "500")),
-            (28, 2, [("atta", "1", "0"), ("salt", "2", "0"), ("soap", "4", "0")], "UPI"),
-            (26, 5, [("rice", "20", "100"), ("dal", "10", "0"), ("tea", "4", "0")], "Bank Transfer"),
-            (22, 4, [("sugar", "5", "0"), ("dal", "2.5", "0")], "Credit"),
-            (19, 0, [("oil", "2", "0"), ("maggi", "6", "0"), ("biscuit", "2", "0")], "Cash"),
-            (15, 3, [("rice", "10", "0"), ("sugar", "10", "0"), ("salt", "5", "0")], "Credit"),
-            (11, 1, [("atta", "2", "0"), ("dal", "3", "0")], "Cash"),
-            (8, 2, [("tea", "1", "0"), ("soap", "6", "10")], "UPI"),
-            (5, 0, [("rice", "2.5", "0"), ("sugar", "1.5", "0"), ("maggi", "10", "0")], "Cash"),
-            (3, 3, [("oil", "6", "30"), ("atta", "3", "0")], ("Cheque", "1500")),
-            (1, 4, [("biscuit", "2", "0"), ("salt", "1", "0")], "Cash"),
-            (0, 2, [("rice", "3", "0"), ("tea", "1", "0"), ("soap", "2", "0")], "UPI"),
-            (0, 0, [("maggi", "8", "0"), ("biscuit", "1", "0")], "Cash"),
+            (35, 0, [("rice", "5", "0"), ("dal", "2", "0"), ("sugar", "3", "0")], "full"),
+            (33, 3, [("rice", "15", "50"), ("oil", "12", "60"), ("atta", "4", "0")], "due"),
+            (31, 1, [("tea", "2", "0"), ("biscuit", "3", "0"), ("maggi", "12", "0")], "500"),
+            (28, 2, [("atta", "1", "0"), ("salt", "2", "0"), ("soap", "4", "0")], "full"),
+            (26, 5, [("rice", "20", "100"), ("dal", "10", "0"), ("tea", "4", "0")], "full"),
+            (22, 4, [("sugar", "5", "0"), ("dal", "2.5", "0")], "due"),
+            (19, 0, [("oil", "2", "0"), ("maggi", "6", "0"), ("biscuit", "2", "0")], "full"),
+            (15, 3, [("rice", "10", "0"), ("sugar", "10", "0"), ("salt", "5", "0")], "due"),
+            (11, 1, [("atta", "2", "0"), ("dal", "3", "0")], "full"),
+            (8, 2, [("tea", "1", "0"), ("soap", "6", "10")], "full"),
+            (5, 0, [("rice", "2.5", "0"), ("sugar", "1.5", "0"), ("maggi", "10", "0")], "full"),
+            (3, 3, [("oil", "6", "30"), ("atta", "3", "0")], "1500"),
+            (1, 4, [("biscuit", "2", "0"), ("salt", "1", "0")], "full"),
+            (0, 2, [("rice", "3", "0"), ("tea", "1", "0"), ("soap", "2", "0")], "full"),
+            (0, 0, [("maggi", "8", "0"), ("biscuit", "1", "0")], "full"),
         ],
-        "receipts": [(10, 3, "6000", "Cheque", "CHQ 004512"), (4, 4, "300", "Cash", "")],
-        "supplier_payments": [(25, 1, "8000", "Bank Transfer", "NEFT 88213"), (6, 2, "2500", "UPI", "UPI 2026103145")],
+        "receipts": [(10, 3, "6000"), (4, 4, "300")],
+        "supplier_payments": [(25, 1, "8000"), (6, 2, "2500")],
         "sale_return": (8, [("soap", "2")], "Two soaps were damaged in the pack", "account"),
         "purchase_return": (18, 2, [("oil", "1")], "One box with leaking pouches"),
         "low_stock": {"tea": "25", "salt": "40"},
@@ -152,28 +152,28 @@ SHOPS = {
             "file":   {"name": "Solo Plastic File Folder", "unit": "pc", "cat": "Files", "brand": "Solo", "hsn": "3926", "gst": "18", "pp": "18", "sp": "25", "mrp": "28", "min": "20"},
         },
         "purchases": [
-            (47, 0, "NED/26/3321", "net30", [("nb", "dozen", "15", "624", "840"), ("pen", "box", "40", "70", "100"), ("gel", "box", "10", "140", "200"), ("pencil", "box", "30", "40", "60")], ("Cheque", "6000")),
-            (45, 1, "KCA-1127", "net15", [("geo", "pc", "30", "118", "165"), ("marker", "box", "6", "220", "320"), ("fevi", "pc", "36", "34", "45"), ("file", "pc", "60", "18", "28")], ("Bank Transfer", "full")),
+            (47, 0, "NED/26/3321", "net30", [("nb", "dozen", "15", "624", "840"), ("pen", "box", "40", "70", "100"), ("gel", "box", "10", "140", "200"), ("pencil", "box", "30", "40", "60")], "6000"),
+            (45, 1, "KCA-1127", "net15", [("geo", "pc", "30", "118", "165"), ("marker", "box", "6", "220", "320"), ("fevi", "pc", "36", "34", "45"), ("file", "pc", "60", "18", "28")], "full"),
             (40, 2, "JKP/KA/889", "net30", [("a4", "ream", "40", "235", "310")], None),
             (14, 0, "NED/26/3510", "net30", [("nb", "dozen", "8", "636", "840"), ("pen", "box", "20", "70", "100")], None),
         ],
         "sales": [
-            (36, 1, [("nb", "120", "300"), ("pen", "200", "100"), ("pencil", "150", "0"), ("geo", "20", "200")], "Credit"),
-            (34, 0, [("nb", "4", "0"), ("gel", "2", "0"), ("geo", "1", "0")], "Cash"),
-            (30, 3, [("marker", "20", "0"), ("a4", "10", "0"), ("file", "15", "0")], ("UPI", "2000")),
-            (27, 2, [("pen", "5", "0"), ("pencil", "6", "0"), ("fevi", "1", "0")], "UPI"),
-            (24, 5, [("a4", "15", "150"), ("file", "20", "0")], "Bank Transfer"),
-            (20, 4, [("nb", "6", "0"), ("gel", "4", "0")], "Cash"),
-            (16, 1, [("a4", "5", "0"), ("marker", "10", "0")], "Credit"),
-            (12, 0, [("geo", "1", "0"), ("pencil", "10", "0")], "Cash"),
-            (9, 3, [("nb", "30", "100"), ("pen", "50", "0")], "Credit"),
-            (6, 2, [("fevi", "2", "0"), ("file", "3", "0")], "UPI"),
-            (3, 4, [("gel", "5", "0"), ("marker", "2", "0")], "Cash"),
-            (1, 0, [("nb", "2", "0"), ("pen", "3", "0")], "UPI"),
-            (0, 2, [("a4", "1", "0"), ("pencil", "4", "0")], "Cash"),
+            (36, 1, [("nb", "120", "300"), ("pen", "200", "100"), ("pencil", "150", "0"), ("geo", "20", "200")], "due"),
+            (34, 0, [("nb", "4", "0"), ("gel", "2", "0"), ("geo", "1", "0")], "full"),
+            (30, 3, [("marker", "20", "0"), ("a4", "10", "0"), ("file", "15", "0")], "2000"),
+            (27, 2, [("pen", "5", "0"), ("pencil", "6", "0"), ("fevi", "1", "0")], "full"),
+            (24, 5, [("a4", "15", "150"), ("file", "20", "0")], "full"),
+            (20, 4, [("nb", "6", "0"), ("gel", "4", "0")], "full"),
+            (16, 1, [("a4", "5", "0"), ("marker", "10", "0")], "due"),
+            (12, 0, [("geo", "1", "0"), ("pencil", "10", "0")], "full"),
+            (9, 3, [("nb", "30", "100"), ("pen", "50", "0")], "due"),
+            (6, 2, [("fevi", "2", "0"), ("file", "3", "0")], "full"),
+            (3, 4, [("gel", "5", "0"), ("marker", "2", "0")], "full"),
+            (1, 0, [("nb", "2", "0"), ("pen", "3", "0")], "full"),
+            (0, 2, [("a4", "1", "0"), ("pencil", "4", "0")], "full"),
         ],
-        "receipts": [(18, 1, "10000", "Bank Transfer", "NEFT 556201"), (5, 3, "4000", "UPI", "UPI 7781")],
-        "supplier_payments": [(20, 0, "7000", "Cheque", "CHQ 112009"), (8, 2, "5000", "Bank Transfer", "NEFT 334102")],
+        "receipts": [(18, 1, "10000"), (5, 3, "4000")],
+        "supplier_payments": [(20, 0, "7000"), (8, 2, "5000")],
         "sale_return": (6, [("file", "1")], "Customer bought an extra file by mistake", "cash"),
         "purchase_return": (30, 2, [("a4", "2")], "Two reams arrived torn"),
         "low_stock": {"geo": "15", "fevi": "40"},
@@ -212,26 +212,26 @@ SHOPS = {
             "charger":  {"name": "boAt 20W Type-C Fast Charger", "unit": "pc", "cat": "Mobile Accessories", "brand": "boAt", "hsn": "8504", "gst": "18", "pp": "420", "sp": "599", "mrp": "699", "min": "5"},
         },
         "purchases": [
-            (46, 0, "LLD/MUM/2290", "net30", [("lipstick", "pc", "20", "390", "500"), ("kajal", "pc", "30", "165", "210"), ("cream", "pc", "24", "175", "230"), ("facewash", "tube", "24", "150", "199"), ("perfume", "pc", "18", "245", "330")], ("UPI", "8000")),
-            (44, 1, "MGH-0567", "net15", [("frame", "pc", "15", "210", "399"), ("mug", "pc", "24", "140", "299")], ("Cash", "full")),
+            (46, 0, "LLD/MUM/2290", "net30", [("lipstick", "pc", "20", "390", "500"), ("kajal", "pc", "30", "165", "210"), ("cream", "pc", "24", "175", "230"), ("facewash", "tube", "24", "150", "199"), ("perfume", "pc", "18", "245", "330")], "8000"),
+            (44, 1, "MGH-0567", "net15", [("frame", "pc", "15", "210", "399"), ("mug", "pc", "24", "140", "299")], "full"),
             (42, 2, "DMAH/2026/771", "net30", [("cover", "pc", "40", "85", "249"), ("charger", "pc", "15", "420", "699")], None),
         ],
         "sales": [
-            (33, 0, [("lipstick", "2", "0"), ("kajal", "1", "0")], "UPI"),
-            (31, 3, [("cream", "6", "100"), ("facewash", "6", "0"), ("kajal", "4", "0")], "Credit"),
-            (29, 1, [("perfume", "1", "0"), ("mug", "1", "0")], "Cash"),
-            (25, 5, [("lipstick", "5", "150"), ("cream", "4", "0")], "Bank Transfer"),
-            (21, 2, [("cover", "1", "0"), ("charger", "1", "50")], "UPI"),
-            (18, 4, [("frame", "2", "0"), ("mug", "2", "0")], "Cash"),
-            (14, 3, [("facewash", "5", "0"), ("perfume", "3", "0")], ("UPI", "1000")),
-            (10, 0, [("kajal", "2", "0"), ("cover", "2", "0")], "Cash"),
-            (7, 1, [("charger", "1", "0")], "UPI"),
-            (4, 2, [("lipstick", "1", "0"), ("perfume", "1", "0")], "Cash"),
-            (2, 4, [("mug", "3", "0"), ("frame", "1", "0")], "UPI"),
-            (0, 0, [("cream", "1", "0"), ("kajal", "1", "0")], "Cash"),
+            (33, 0, [("lipstick", "2", "0"), ("kajal", "1", "0")], "full"),
+            (31, 3, [("cream", "6", "100"), ("facewash", "6", "0"), ("kajal", "4", "0")], "due"),
+            (29, 1, [("perfume", "1", "0"), ("mug", "1", "0")], "full"),
+            (25, 5, [("lipstick", "5", "150"), ("cream", "4", "0")], "full"),
+            (21, 2, [("cover", "1", "0"), ("charger", "1", "50")], "full"),
+            (18, 4, [("frame", "2", "0"), ("mug", "2", "0")], "full"),
+            (14, 3, [("facewash", "5", "0"), ("perfume", "3", "0")], "1000"),
+            (10, 0, [("kajal", "2", "0"), ("cover", "2", "0")], "full"),
+            (7, 1, [("charger", "1", "0")], "full"),
+            (4, 2, [("lipstick", "1", "0"), ("perfume", "1", "0")], "full"),
+            (2, 4, [("mug", "3", "0"), ("frame", "1", "0")], "full"),
+            (0, 0, [("cream", "1", "0"), ("kajal", "1", "0")], "full"),
         ],
-        "receipts": [(12, 3, "3500", "UPI", "UPI 9921")],
-        "supplier_payments": [(15, 0, "4000", "Bank Transfer", "NEFT 77100"), (9, 2, "6000", "UPI", "UPI 55320")],
+        "receipts": [(12, 3, "3500")],
+        "supplier_payments": [(15, 0, "4000"), (9, 2, "6000")],
         "sale_return": (20, [("charger", "1")], "Charger not working, customer returned", "cash"),
         "purchase_return": (19, 2, [("charger", "1")], "Faulty charger returned to supplier"),
         "low_stock": {"lipstick": "15", "charger": "16"},
@@ -271,30 +271,30 @@ SHOPS = {
                        "opening": ("4", "2026-09")},
         },
         "purchases": [
-            (45, 0, "MPD/2026/5521", "net30", [("pcm", "strip", "40", "30", "46.05", "DL6501", "2028-03"), ("pan", "strip", "20", "120", "169.05", "PN4412", "2027-11"), ("cetz", "strip", "30", "16", "22.50", "CZ1098", "2027-08")], ("Cheque", "3000")),
-            (43, 1, "AMA-8834", "net15", [("azi", "strip", "20", "85", "124.50", "AZ5531", "2027-06"), ("augm", "strip", "10", "175", "223.60", "AG7720", "2027-02"), ("benad", "btl", "24", "105", "135", "BN2209", "2027-09")], ("Bank Transfer", "full")),
+            (45, 0, "MPD/2026/5521", "net30", [("pcm", "strip", "40", "30", "46.05", "DL6501", "2028-03"), ("pan", "strip", "20", "120", "169.05", "PN4412", "2027-11"), ("cetz", "strip", "30", "16", "22.50", "CZ1098", "2027-08")], "3000"),
+            (43, 1, "AMA-8834", "net15", [("azi", "strip", "20", "85", "124.50", "AZ5531", "2027-06"), ("augm", "strip", "10", "175", "223.60", "AG7720", "2027-02"), ("benad", "btl", "24", "105", "135", "BN2209", "2027-09")], "full"),
             (41, 2, "APH/GJ/3310", "net30", [("ors", "pkt", "60", "18", "23.50", "OR8812", "2028-01"), ("volini", "tube", "12", "120", "155", "VG3301", "2027-12")], None),
             # A batch that is close to expiry (shows on Near Expiry):
             (25, 0, "MPD/2026/5690", "net30", [("pcm", "strip", "10", "29", "46.05", "DL6377", None), ("benad", "btl", "6", "100", "135", "BN1987", None)], None),
         ],
         "near_expiry_days": 24,
         "sales": [
-            (38, 0, [("pcm", "15", "0"), ("cetz", "10", "0")], "Cash"),
-            (35, 3, [("pcm", "60", "10"), ("ors", "20", "0"), ("pan", "30", "0")], "Credit", {"patient_name": "Ward patients (Bed 4, 7)", "doctor_name": "Dr. R. S. Kale", "prescription_note": "Shanti Nursing Home indent 1182"}),
-            (32, 1, [("azi", "5", "0")], "UPI", {"patient_name": "Sangeeta More", "doctor_name": "Dr. S. K. Joshi", "prescription_note": "Rx dated 28 Sep"}),
-            (29, 2, [("benad", "1", "0"), ("cetz", "10", "0")], "Cash"),
-            (26, 5, [("augm", "10", "0"), ("pan", "15", "0")], "UPI", {"patient_name": "Kiran Wagh", "doctor_name": "Dr. Meera Patil", "prescription_note": "Belagavi Care Clinic, OPD 2231"}),
-            (22, 4, [("volini", "1", "0"), ("pcm", "10", "0")], "Credit"),
-            (18, 0, [("azi", "3", "0"), ("pcm", "6", "0")], "Cash", {"patient_name": "Ramesh Gupta", "doctor_name": "Dr. A. R. Kulkarni"}),
-            (14, 3, [("ors", "20", "0"), ("benad", "6", "50"), ("pan", "30", "0")], ("Cheque", "1500"), {"patient_name": "Ward patients (Bed 2)", "doctor_name": "Dr. R. S. Kale"}),
-            (10, 1, [("cetz", "5", "0"), ("ors", "4", "0")], "UPI"),
-            (6, 2, [("augm", "6", "0")], "Cash", {"patient_name": "Vinod Kamble", "doctor_name": "Dr. N. V. Rao", "prescription_note": "Follow-up after 5 days"}),
-            (3, 0, [("pcm", "10", "0"), ("benad", "1", "0")], "Cash"),
-            (1, 4, [("pan", "15", "0")], "UPI", {"patient_name": "Lata Shirke", "doctor_name": "Dr. S. K. Joshi"}),
-            (0, 2, [("ors", "2", "0"), ("cetz", "10", "0")], "Cash"),
+            (38, 0, [("pcm", "15", "0"), ("cetz", "10", "0")], "full"),
+            (35, 3, [("pcm", "60", "10"), ("ors", "20", "0"), ("pan", "30", "0")], "due", {"patient_name": "Ward patients (Bed 4, 7)", "doctor_name": "Dr. R. S. Kale", "prescription_note": "Shanti Nursing Home indent 1182"}),
+            (32, 1, [("azi", "5", "0")], "full", {"patient_name": "Sangeeta More", "doctor_name": "Dr. S. K. Joshi", "prescription_note": "Rx dated 28 Sep"}),
+            (29, 2, [("benad", "1", "0"), ("cetz", "10", "0")], "full"),
+            (26, 5, [("augm", "10", "0"), ("pan", "15", "0")], "full", {"patient_name": "Kiran Wagh", "doctor_name": "Dr. Meera Patil", "prescription_note": "Belagavi Care Clinic, OPD 2231"}),
+            (22, 4, [("volini", "1", "0"), ("pcm", "10", "0")], "due"),
+            (18, 0, [("azi", "3", "0"), ("pcm", "6", "0")], "full", {"patient_name": "Ramesh Gupta", "doctor_name": "Dr. A. R. Kulkarni"}),
+            (14, 3, [("ors", "20", "0"), ("benad", "6", "50"), ("pan", "30", "0")], "1500", {"patient_name": "Ward patients (Bed 2)", "doctor_name": "Dr. R. S. Kale"}),
+            (10, 1, [("cetz", "5", "0"), ("ors", "4", "0")], "full"),
+            (6, 2, [("augm", "6", "0")], "full", {"patient_name": "Vinod Kamble", "doctor_name": "Dr. N. V. Rao", "prescription_note": "Follow-up after 5 days"}),
+            (3, 0, [("pcm", "10", "0"), ("benad", "1", "0")], "full"),
+            (1, 4, [("pan", "15", "0")], "full", {"patient_name": "Lata Shirke", "doctor_name": "Dr. S. K. Joshi"}),
+            (0, 2, [("ors", "2", "0"), ("cetz", "10", "0")], "full"),
         ],
-        "receipts": [(16, 3, "800", "Bank Transfer", "NEFT 900812"), (5, 4, "320", "Cash", "")],
-        "supplier_payments": [(22, 0, "4000", "Cheque", "CHQ 220145"), (12, 2, "1500", "UPI", "UPI 11890")],
+        "receipts": [(16, 3, "800"), (5, 4, "320")],
+        "supplier_payments": [(22, 0, "4000"), (12, 2, "1500")],
         "sale_return": (10, [("cetz", "5")], "Doctor changed the medicine", "account"),
         "purchase_return": (20, 2, [("ors", "10")], "Short expiry stock sent back"),
         "low_stock": {"volini": "20", "augm": "25"},
@@ -333,8 +333,8 @@ SHOPS = {
             "screw":  {"name": "Wood Screw 1.5 inch", "unit": "kg", "cat": "Fasteners", "brand": "Loose", "hsn": "7318", "gst": "18", "pp": "160", "sp": "220", "mrp": "", "wholesale": "190", "min": "5", "spec": "1.5 inch, CSK head, zinc plated"},
         },
         "purchases": [
-            (48, 0, "FCS/26/4410", "net30", [("wire15", "coil", "10", "1395", ""), ("wire25", "coil", "6", "2160", ""), ("switch", "box", "10", "840", "1300"), ("mcb", "pc", "20", "480", "720")], ("Bank Transfer", "50000")),
-            (46, 1, "APD-90021", "net30", [("paint", "ltr", "120", "265", "370")], ("Cheque", "full")),
+            (48, 0, "FCS/26/4410", "net30", [("wire15", "coil", "10", "1395", ""), ("wire25", "coil", "6", "2160", ""), ("switch", "box", "10", "840", "1300"), ("mcb", "pc", "20", "480", "720")], "50000"),
+            (46, 1, "APD-90021", "net30", [("paint", "ltr", "120", "265", "370")], "full"),
             (44, 2, "SPG/2026/1187", "net45", [("pipe", "m", "300", "38", ""), ("elbow", "box", "8", "450", "900")], None),
             (40, 0, "FCS/26/4502", "net30", [("drill", "pc", "6", "2650", "3999"), ("screw", "kg", "25.5", "160", "")], None),
         ],
@@ -346,20 +346,20 @@ SHOPS = {
             (5, [("pipe", "90", ""), ("elbow", "100", "")], 30, "open"),
         ],
         "sales": [
-            (34, 0, [("wire15", "180", "0"), ("switch", "20", "0"), ("mcb", "2", "0")], "Credit"),
-            (31, 2, [("paint", "4", "0"), ("screw", "1.5", "0")], "Cash"),
-            (28, 3, [("pipe", "60", "200"), ("elbow", "40", "0"), ("paint", "20", "0")], ("Bank Transfer", "8000")),
-            (24, 4, [("switch", "4", "0"), ("wire15", "12.5", "0")], "UPI"),
-            (21, 1, [("wire25", "90", "0"), ("mcb", "4", "100")], "Credit"),
-            (17, 5, [("pipe", "45", "0"), ("elbow", "30", "0")], "Bank Transfer"),
-            (13, 2, [("drill", "1", "100"), ("screw", "2", "0")], "UPI"),
-            (9, 0, [("paint", "10", "0"), ("wire25", "45", "0")], ("Cheque", "4000")),
-            (5, 4, [("elbow", "6", "0"), ("pipe", "6", "0")], "Cash"),
-            (2, 3, [("mcb", "3", "0"), ("switch", "20", "0")], "Credit"),
-            (0, 2, [("screw", "0.5", "0"), ("switch", "2", "0")], "Cash"),
+            (34, 0, [("wire15", "180", "0"), ("switch", "20", "0"), ("mcb", "2", "0")], "due"),
+            (31, 2, [("paint", "4", "0"), ("screw", "1.5", "0")], "full"),
+            (28, 3, [("pipe", "60", "200"), ("elbow", "40", "0"), ("paint", "20", "0")], "8000"),
+            (24, 4, [("switch", "4", "0"), ("wire15", "12.5", "0")], "full"),
+            (21, 1, [("wire25", "90", "0"), ("mcb", "4", "100")], "due"),
+            (17, 5, [("pipe", "45", "0"), ("elbow", "30", "0")], "full"),
+            (13, 2, [("drill", "1", "100"), ("screw", "2", "0")], "full"),
+            (9, 0, [("paint", "10", "0"), ("wire25", "45", "0")], "4000"),
+            (5, 4, [("elbow", "6", "0"), ("pipe", "6", "0")], "full"),
+            (2, 3, [("mcb", "3", "0"), ("switch", "20", "0")], "due"),
+            (0, 2, [("screw", "0.5", "0"), ("switch", "2", "0")], "full"),
         ],
-        "receipts": [(15, 0, "4000", "Cheque", "CHQ 778821"), (7, 1, "5000", "Bank Transfer", "NEFT 661290")],
-        "supplier_payments": [(25, 2, "8000", "Bank Transfer", "NEFT 445566"), (10, 0, "12000", "Cheque", "CHQ 990012")],
+        "receipts": [(15, 0, "4000"), (7, 1, "5000")],
+        "supplier_payments": [(25, 2, "8000"), (10, 0, "12000")],
         "sale_return": (13, [("screw", "0.5")], "Extra screws returned", "cash"),
         "purchase_return": (38, 3, [("drill", "1")], "Drill not working, returned under warranty"),
         "low_stock": {"drill": "6", "mcb": "15"},
@@ -496,9 +496,8 @@ class Command(BaseCommand):
                 taxable = (D(qty) * D(price)).quantize(D("0.01"))
                 total += taxable + (taxable * products[key].gst / 100).quantize(D("0.01"))
             if payment:
-                mode, amount = payment
-                data["payment_type"] = mode
-                data["paid_amount"] = str(total.quantize(D("0.01"))) if amount == "full" else amount
+                # Cash paid at purchase time: "full" or an amount.
+                data["paid_amount"] = str(total.quantize(D("0.01"))) if payment == "full" else payment
             response = client.post(reverse("add_new_order"), data, follow=True, **HOST)
             purchase = Purchase.objects.filter(retailer=shop, bill_number=bill_no).first()
             if purchase is None:
@@ -541,7 +540,7 @@ class Command(BaseCommand):
             if outcome == "convert":
                 lines = [(item.product, item.quantity, item.discount) for item in quotation.items.all()]
                 data = {"customer": quotation.customer_id, "quotation": quotation.id,
-                        "payment_type": "Credit", "paid_amount": "0", "action": "save"}
+                        "paid_amount": "0", "action": "save"}
                 for n, (product, qty, disc) in enumerate(lines, start=1):
                     data.update({f"items[{n}][product]": product.id, f"items[{n}][unit]": product.unit_id,
                                  f"items[{n}][quantity]": str(qty), f"items[{n}][discount]": str(disc)})
@@ -553,18 +552,18 @@ class Command(BaseCommand):
             elif outcome == "cancel":
                 client.post(reverse("quotation_cancel", args=[quotation.id]), **HOST)
 
-        # Customers paying old dues (khata)
-        for days_ago, customer_index, amount, mode, reference in spec.get("receipts", []):
+        # Customers paying old dues in cash (khata)
+        for days_ago, customer_index, amount in spec.get("receipts", []):
             customer = customers[customer_index]
             response = client.post(reverse("customer_receive_payment", args=[customer.id]), {
-                "amount": amount, "payment_type": mode, "reference": reference,
+                "amount": amount,
                 "payment_date": (today - timedelta(days=days_ago)).isoformat(), "remarks": "Old due received",
             }, follow=True, **HOST)
             if not Payment.objects.filter(customer=customer, receipt_number__isnull=False, amount__gt=0).exists():
                 self.fail(response, f"Receipt from {customer.customer_name}")
 
-        # Paying suppliers (part payments on open bills)
-        for days_ago, purchase_index, amount, mode, reference in spec.get("supplier_payments", []):
+        # Paying suppliers in cash (part payments on open bills)
+        for days_ago, purchase_index, amount in spec.get("supplier_payments", []):
             purchase = purchases[purchase_index]
             purchase.refresh_from_db()
             pay = min(D(amount), purchase.due_amount)
@@ -572,7 +571,7 @@ class Command(BaseCommand):
                 continue
             pay_date = max(today - timedelta(days=days_ago), purchase.bill_date)
             response = client.post(reverse("purchase_add_payment", args=[purchase.id]), {
-                "amount": str(pay), "payment_type": mode, "reference": reference,
+                "amount": str(pay),
                 "payment_date": pay_date.isoformat(), "remarks": "Part payment",
             }, follow=True, **HOST)
 
@@ -620,12 +619,14 @@ class Command(BaseCommand):
             })
         grand_total = calculate_sale_totals(totals_input)["grand_total"]
 
-        if payment == "Credit":
-            data.update(payment_type="Credit", paid_amount="0")
-        elif isinstance(payment, tuple):
-            data.update(payment_type=payment[0], paid_amount=payment[1])
+        # Sales are cash only: "full" = paid in full, "due" = nothing
+        # paid yet (udhari), any other value = the cash paid now.
+        if payment == "due":
+            data["paid_amount"] = "0"
+        elif payment == "full":
+            data["paid_amount"] = str(grand_total)
         else:
-            data.update(payment_type=payment, paid_amount=str(grand_total))
+            data["paid_amount"] = payment
 
         before = Sale.objects.filter(retailer=shop).count()
         response = client.post(reverse("sale_create"), data, follow=True, **HOST)

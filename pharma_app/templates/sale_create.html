@@ -78,7 +78,7 @@
         </li>
         <li data-step="payment">
             <span class="step-dot"><span class="step-num">3</span><i class="fas fa-check"></i></span>
-            <span class="step-text"><strong>{% translate "Payment" %}</strong><small>{% translate "How it is paid" %}</small></span>
+            <span class="step-text"><strong>{% translate "Payment" %}</strong><small>{% translate "Cash received" %}</small></span>
         </li>
     </ol>
 
@@ -272,40 +272,21 @@
                     <span class="sale-card-icon tone-amber"><i class="fas fa-money-bill-wave"></i></span>
                     <div class="sale-card-heading">
                         <h3>{% translate "Payment" %}</h3>
-                        <p>{% translate "How the customer is paying" %}</p>
+                        <p>{% translate "Cash received now" %}</p>
                     </div>
                 </header>
 
                 <div class="sale-card-body">
                     <div class="sale-fields two">
-                        <div class="form-group field-full" id="paymentTypeGroup">
-                            <span class="field-label" id="paymentTypeLabel">{% translate "Payment Type" %} <span class="required">*</span></span>
-                            <div class="pay-options" role="radiogroup" aria-labelledby="paymentTypeLabel">
-                                <label class="pay-option">
-                                    <input type="radio" name="payment_type" value="Cash" required>
-                                    <span><i class="fas fa-money-bill-wave"></i> {% translate "Cash" %}</span>
-                                </label>
-                                <label class="pay-option">
-                                    <input type="radio" name="payment_type" value="UPI">
-                                    <span><i class="fas fa-mobile-screen-button"></i> UPI</span>
-                                </label>
-                                <label class="pay-option">
-                                    <input type="radio" name="payment_type" value="Bank Transfer">
-                                    <span><i class="fas fa-building-columns"></i> {% translate "Bank Transfer" %}</span>
-                                </label>
-                                <label class="pay-option">
-                                    <input type="radio" name="payment_type" value="Cheque">
-                                    <span><i class="fas fa-money-check"></i> {% translate "Cheque" %}</span>
-                                </label>
-                                <label class="pay-option">
-                                    <input type="radio" name="payment_type" value="Credit">
-                                    <span><i class="fas fa-hand-holding-dollar"></i> {% translate "Credit" %}</span>
-                                </label>
+                        <div class="form-group field-full">
+                            <div class="cash-only-note">
+                                <span class="cash-chip"><i class="fas fa-money-bill-wave"></i> {% translate "Cash" %}</span>
+                                <span>{% translate "Sales are paid in cash. Enter 0 to keep the whole bill as due (udhari)." %}</span>
                             </div>
                         </div>
                         <div class="form-group">
                             <div class="label-row">
-                                <label for="paid_amount">{% translate "Paid Amount" %} <span class="required">*</span></label>
+                                <label for="paid_amount">{% translate "Cash received" %} <span class="required">*</span></label>
                                 <button type="button" class="link-btn" id="btnPayFull">
                                     <i class="fas fa-bolt"></i> {% translate "Pay full amount" %}
                                 </button>
@@ -535,24 +516,11 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="duePaymentType">{% translate "Payment type" %} <span class="required">*</span></label>
-                        <select id="duePaymentType" name="payment_type" class="form-control" required>
-                            <option value="Cash">{% translate "Cash" %}</option>
-                            <option value="UPI">UPI</option>
-                            <option value="Bank Transfer">{% translate "Bank Transfer" %}</option>
-                            <option value="Cheque">{% translate "Cheque" %}</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
                         <label for="duePaymentDate">{% translate "Payment date" %}</label>
                         <input type="date" id="duePaymentDate" name="payment_date" class="form-control" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}">
                     </div>
-                    <div class="form-group">
-                        <label for="dueReference">{% translate "Reference" %}</label>
-                        <input type="text" id="dueReference" name="reference" class="form-control" placeholder="{% translate "UPI / cheque no. (optional)" %}" maxlength="100">
-                    </div>
                 </div>
-                <p class="due-note"><i class="fas fa-circle-info"></i> {% translate "The amount clears the oldest unpaid bills first. Items already added to this sale will need to be added again after saving." %}</p>
+                <p class="due-note"><i class="fas fa-circle-info"></i> {% translate "Cash received. It clears the oldest unpaid bills first. The bill you are making stays as it is." %}</p>
             </form>
         </div>
         <div class="sale-modal-footer">
@@ -698,7 +666,6 @@ document.addEventListener('DOMContentLoaded', function() {
     var btnAddRow = document.getElementById('btnAddRow');
     var saleForm = document.getElementById('saleForm');
     var paidAmountInput = document.getElementById('paid_amount');
-    var paymentTypeGroup = document.getElementById('paymentTypeGroup');
     var btnPayFull = document.getElementById('btnPayFull');
     var toastContainer = document.getElementById('toastContainer');
     var customerModal = document.getElementById('customerModal');
@@ -711,10 +678,9 @@ document.addEventListener('DOMContentLoaded', function() {
     var btnSaveSale = document.getElementById('btnSaveSale');
     var btnSavePrint = document.getElementById('btnSavePrint');
 
-    // ===== Payment type (pill buttons) =====
-    function selectedPaymentType() {
-        var checked = saleForm ? saleForm.querySelector('input[name="payment_type"]:checked') : null;
-        return checked ? checked.value : '';
+    function currentGrandTotal() {
+        var el = document.getElementById('summaryGrandTotal');
+        return el ? (parseFloat(el.textContent.replace('\u20B9 ', '')) || 0) : 0;
     }
 
     // ===== Progress steps: Customer -> Items -> Payment =====
@@ -733,7 +699,11 @@ document.addEventListener('DOMContentLoaded', function() {
         var done = {
             customer: !!(customerSelect && customerSelect.value),
             items: hasProduct,
-            payment: !!selectedPaymentType()
+            // Cash only: done once the bill has a total and the cash
+            // received is between 0 and the total.
+            payment: hasProduct && currentGrandTotal() > 0 && !!paidAmountInput
+                && paidAmountInput.value !== ''
+                && (parseFloat(paidAmountInput.value) || 0) <= currentGrandTotal()
         };
 
         var items = steps.querySelectorAll('li[data-step]');
@@ -1115,11 +1085,50 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target === duePaymentModal) closeDueModal();
     });
     duePaymentForm.addEventListener('submit', function (e) {
+        e.preventDefault();
         var amount = parseFloat(document.getElementById('dueAmount').value) || 0;
         if (amount <= 0 || amount > currentDue + 0.001) {
-            e.preventDefault();
             showToastMessage(interpolate(gettext('Enter an amount between ₹ 0.01 and %s.'), [money(currentDue)]), 'error');
+            return;
         }
+
+        // Saved in the background so the bill being made is not lost.
+        var saveButton = duePaymentModal.querySelector('button[type="submit"]');
+        if (saveButton) saveButton.disabled = true;
+
+        fetch(duePaymentForm.action, {
+            method: 'POST',
+            body: new FormData(duePaymentForm),
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(function (response) {
+                return response.json().catch(function () {
+                    return { success: false, error: gettext('Could not save the payment. Please try again.') };
+                });
+            })
+            .then(function (result) {
+                if (!result.success) {
+                    showToastMessage(result.error || gettext('Could not save the payment. Please try again.'), 'error', 9000);
+                    return;
+                }
+                closeDueModal();
+                showToastMessage(result.message, 'success', 6000);
+
+                var option = customerSelect ? customerSelect.options[customerSelect.selectedIndex] : null;
+                if (option && option.value) {
+                    option.setAttribute('data-outstanding', result.balance);
+                    var elOutstanding = document.getElementById('custOutstanding');
+                    if (elOutstanding) elOutstanding.textContent = money(result.balance);
+                    loadCustomerHistory(option);
+                }
+            })
+            .catch(function () {
+                showToastMessage(gettext('No connection to the server. Please try again.'), 'error', 9000);
+            })
+            .then(function () {
+                if (saveButton) saveButton.disabled = false;
+            });
     });
 
     function clearCustomerDetails() {
@@ -1564,13 +1573,6 @@ document.addEventListener('DOMContentLoaded', function() {
         paidAmountInput.addEventListener('input', function() {
             var grandTotal = parseFloat(document.getElementById('summaryGrandTotal').textContent.replace('\u20B9 ', '')) || 0;
             updatePaymentCalculations(grandTotal);
-        });
-    }
-
-    // ===== Payment type pills =====
-    if (paymentTypeGroup) {
-        paymentTypeGroup.addEventListener('change', function () {
-            paymentTypeGroup.classList.remove('has-error');
             updateSteps();
         });
     }
@@ -1581,6 +1583,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var grandTotal = parseFloat(document.getElementById('summaryGrandTotal').textContent.replace('₹ ', '')) || 0;
             paidAmountInput.value = grandTotal.toFixed(2);
             updatePaymentCalculations(grandTotal);
+            updateSteps();
             paidAmountInput.focus();
         });
     }
@@ -1657,13 +1660,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // Validate payment type
-            if (!selectedPaymentType()) {
-                isValid = false;
-                errors.push(gettext('Please select a payment type'));
-                if (paymentTypeGroup) paymentTypeGroup.classList.add('has-error');
-            }
-
             // Validate paid amount
             var paidAmount = paidAmountInput ? (parseFloat(paidAmountInput.value) || 0) : 0;
             var grandTotal = parseFloat(document.getElementById('summaryGrandTotal').textContent.replace('\u20B9 ', '')) || 0;
@@ -1700,7 +1696,67 @@ document.addEventListener('DOMContentLoaded', function() {
             addHiddenInput('discount', document.getElementById('summaryDiscount').textContent.replace('- \u20B9 ', ''));
             addHiddenInput('gst', document.getElementById('summaryGST').textContent.replace('+ \u20B9 ', ''));
             addHiddenInput('grand_total', document.getElementById('summaryGrandTotal').textContent.replace('\u20B9 ', ''));
+
+            // Save in the background. If the server finds a problem
+            // (stock changed, credit limit, ...) the message is shown and
+            // everything typed on the page stays as it is.
+            e.preventDefault();
+            submitSale(e.submitter);
         });
+    }
+
+    var savingSale = false;
+
+    function setSaving(on, button) {
+        savingSale = on;
+        [btnSaveSale, btnSavePrint].forEach(function (btn) {
+            if (!btn) return;
+            btn.disabled = on;
+            if (on && btn === button) {
+                btn.setAttribute('data-label', btn.innerHTML);
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + gettext('Saving...');
+            } else if (!on && btn.hasAttribute('data-label')) {
+                btn.innerHTML = btn.getAttribute('data-label');
+                btn.removeAttribute('data-label');
+            }
+        });
+    }
+
+    function submitSale(button) {
+        if (savingSale) return;
+        if (button !== btnSavePrint) button = btnSaveSale;
+
+        var data = new FormData(saleForm);
+        data.set('action', (button && button.value) || 'save');
+
+        setSaving(true, button);
+
+        // getAttribute: the Save buttons are named "action", which hides
+        // saleForm.action in JavaScript.
+        fetch(saleForm.getAttribute('action'), {
+            method: 'POST',
+            body: data,
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(function (response) {
+                return response.json().catch(function () {
+                    return { success: false, error: gettext('Could not save the sale. Please try again.') };
+                });
+            })
+            .then(function (result) {
+                if (result.success && result.redirect) {
+                    // Buttons stay disabled while the next page opens.
+                    window.location.href = result.redirect;
+                    return;
+                }
+                setSaving(false);
+                showToastMessage(result.error || gettext('Could not save the sale. Please try again.'), 'error', 9000);
+            })
+            .catch(function () {
+                setSaving(false);
+                showToastMessage(gettext('No connection to the server. Your bill is still here; please try again.'), 'error', 9000);
+            });
     }
 
     function addHiddenInput(name, value) {
@@ -1715,7 +1771,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ===== Toast Notifications =====
-    function showToastMessage(message, type) {
+    function showToastMessage(message, type, duration) {
         type = type || 'error';
         var toast = document.createElement('div');
         toast.className = 'toast toast-' + type;
@@ -1739,7 +1795,7 @@ document.addEventListener('DOMContentLoaded', function() {
             toast.style.opacity = '0';
             toast.style.transform = 'translateX(100%)';
             setTimeout(function() { toast.remove(); }, 300);
-        }, 4000);
+        }, duration || 4000);
     }
 
     // ===== Customer Modal =====

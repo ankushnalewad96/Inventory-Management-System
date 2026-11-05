@@ -161,7 +161,7 @@
                                     <i class="fas {% if row.kind == 'sale' %}fa-cart-shopping{% elif row.kind == 'payment' %}fa-arrow-down{% elif row.kind == 'return' %}fa-rotate-left{% elif row.kind == 'refund' %}fa-money-bill-transfer{% else %}fa-flag{% endif %}"></i>
                                     {% if row.sale_id %}<a href="{% url 'sale_detail' row.sale_id %}" style="color: inherit; text-decoration: none;">{{ row.particulars }}</a>{% else %}{{ row.particulars }}{% endif %}
                                 </span>
-                                {% if row.payment_type %}<span class="row-sub">{{ row.payment_type|tr }}{% if row.receipt %} · {{ row.receipt }}{% endif %}</span>{% endif %}
+                                {% if row.receipt %}<span class="row-sub">{{ row.receipt }}</span>{% endif %}
                             </td>
                             <td class="numeric">{% if row.debit %}₹{{ row.debit }}{% else %}<span class="money-zero">—</span>{% endif %}</td>
                             <td class="numeric money-in">{% if row.credit %}₹{{ row.credit }}{% else %}<span class="money-zero">—</span>{% endif %}</td>
@@ -259,27 +259,15 @@
                         <input type="number" class="pm-input" id="payAmount" name="amount" step="0.01" min="0.01" max="{{ balance }}" required>
                     </div>
                     <div class="pm-field">
-                        <label for="payType">{% translate "Payment mode" %} <span class="required">*</span></label>
-                        <select class="pm-input" id="payType" name="payment_type" required>
-                            {% for type in payment_types %}
-                                <option value="{{ type }}">{{ type }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="pm-field">
                         <label for="payDate">{% translate "Payment date" %}</label>
                         <input type="date" class="pm-input" id="payDate" name="payment_date" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}">
-                    </div>
-                    <div class="pm-field">
-                        <label for="payReference">{% translate "Reference" %}</label>
-                        <input type="text" class="pm-input" id="payReference" name="reference" maxlength="100" placeholder="{% translate "UPI / cheque no." %}">
                     </div>
                     <div class="pm-field full">
                         <label for="payRemarks">{% translate "Remarks" %}</label>
                         <textarea class="pm-input" id="payRemarks" name="remarks" rows="2" placeholder="{% translate "Optional note" %}"></textarea>
                     </div>
                 </div>
-                <p class="pm-note"><i class="fas fa-circle-info"></i> {% translate "The amount clears the oldest unpaid bills first. A receipt number is created automatically." %}</p>
+                <p class="pm-note"><i class="fas fa-circle-info"></i> {% translate "Cash received. It clears the oldest unpaid bills first and a receipt number is created automatically." %}</p>
             </form>
         </div>
         <div class="pay-modal-footer">

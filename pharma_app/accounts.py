@@ -46,7 +46,10 @@ from django.utils.translation import gettext
 ZERO = Decimal("0.00")
 TWO_PLACES = Decimal("0.01")
 
-PAYMENT_TYPES = ("Cash", "UPI", "Bank Transfer", "Cheque")
+# Money to suppliers and from customers is cash only.
+CASH = "Cash"
+CUSTOMER_PAYMENT_TYPE = CASH
+SUPPLIER_PAYMENT_TYPE = CASH
 
 MONEY_FIELD = DecimalField(max_digits=14, decimal_places=2)
 
@@ -99,12 +102,6 @@ def parse_payment_date(value, earliest=None):
     return payment_date
 
 
-def check_payment_type(payment_type):
-    if payment_type not in PAYMENT_TYPES:
-        raise ValidationError(gettext('Please select a valid payment type.'))
-    return payment_type
-
-
 # ================================================================ SUPPLIERS
 
 def set_purchase_payment_fields(purchase):
@@ -129,14 +126,12 @@ def record_purchase_payment(
     purchase,
     *,
     amount,
-    payment_type,
     payment_date=None,
-    reference="",
     remarks="",
     user=None,
 ):
     """
-    Pay (part of) the balance due on a purchase bill.
+    Pay (part of) the balance due on a purchase bill, in cash.
 
     Returns the new PurchasePayment. Raises ValidationError when the
     amount is invalid, more than the balance due, or the bill is closed.
@@ -145,7 +140,6 @@ def record_purchase_payment(
     purchase = Purchase.objects.select_for_update().get(pk=purchase.pk)
 
     amount = parse_amount(amount)
-    check_payment_type(payment_type)
 
     if purchase.due_amount <= ZERO:
         raise ValidationError(gettext('This bill is already fully paid.'))
@@ -161,8 +155,7 @@ def record_purchase_payment(
         purchase=purchase,
         payment_date=parse_payment_date(payment_date, earliest=purchase.bill_date),
         amount=amount,
-        payment_type=payment_type,
-        reference=(reference or "").strip() or None,
+        payment_type=SUPPLIER_PAYMENT_TYPE,
         remarks=(remarks or "").strip() or None,
         created_by=user,
     )
@@ -244,7 +237,7 @@ def supplier_statement(supplier):
         events.append((payment.payment_date, 1, payment.created_at, {
             "date": payment.payment_date,
             "kind": "payment",
-            "particulars": f"Payment ({payment.payment_type}) for bill {payment.purchase.bill_number}",
+            "particulars": f"Payment for bill {payment.purchase.bill_number}",
             "reference": payment.reference or "",
             "purchase_id": payment.purchase_id,
             "debit": ZERO,
@@ -386,7 +379,6 @@ def customer_statement(customer):
             "kind": kind,
             "particulars": entry.remarks or ("Sale" if entry.debit > ZERO else "Payment received"),
             "sale_id": entry.sale_id,
-            "payment_type": entry.payment.payment_type if entry.payment_id else "",
             "receipt": entry.payment.receipt_number if entry.payment_id else "",
             "debit": entry.debit,
             "credit": entry.credit,
@@ -422,13 +414,12 @@ def receive_customer_payment(
     customer,
     *,
     amount,
-    payment_type,
     payment_date=None,
-    reference="",
     remarks="",
 ):
     """
     Customer pays old dues (udhari), with or without buying anything.
+    Customers always pay in cash.
 
     The money settles the oldest unpaid invoices first; anything left
     reduces the opening balance. Returns (receipt_number, settled) where
@@ -438,7 +429,7 @@ def receive_customer_payment(
     customer = Customer.objects.select_for_update().get(pk=customer.pk)
 
     amount = parse_amount(amount)
-    check_payment_type(payment_type)
+    payment_type = CUSTOMER_PAYMENT_TYPE
     payment_date = parse_payment_date(payment_date)
 
     outstanding = customer_balance(customer)
@@ -452,7 +443,6 @@ def receive_customer_payment(
         )
 
     receipt = next_receipt_number(customer.retailer, payment_date)
-    reference = (reference or "").strip() or None
     note = (remarks or "").strip() or "Due payment received"
 
     remaining = amount
@@ -479,7 +469,6 @@ def receive_customer_payment(
             payment_date=payment_date,
             amount=portion,
             payment_type=payment_type,
-            payment_reference=reference,
             receipt_number=receipt,
             remarks=note,
         ))
@@ -499,7 +488,6 @@ def receive_customer_payment(
             payment_date=payment_date,
             amount=remaining,
             payment_type=payment_type,
-            payment_reference=reference,
             receipt_number=receipt,
             remarks=note,
         ))

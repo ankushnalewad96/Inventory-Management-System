@@ -407,18 +407,6 @@ gap: 16px;
 align-items: flex-end;
 }
 
-.payment-type-group {
-display: flex;
-flex-direction: column;
-gap: 6px;
-}
-
-.payment-type-group label {
-font-size: 13px;
-font-weight: 500;
-color: var(--text-dark);
-}
-
 .upload-bill-btn {
 padding: 10px 18px;
 border: 1px dashed var(--border);
@@ -2220,3 +2208,41 @@ select.form-control option[value="other"] {
 }
 
 .supplier-product-hint[hidden] { display: none; }
+
+
+/* ===================================================================
+   CASH ONLY: note in the Payment Details card
+   =================================================================== */
+.cash-only-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-muted);
+}
+
+.cash-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--success, #10b981);
+    white-space: nowrap;
+}
+
+/* Save buttons while the purchase is being saved */
+#submitBtn:disabled,
+#submitPrintBtn:disabled {
+    opacity: 0.75;
+    cursor: wait;
+}

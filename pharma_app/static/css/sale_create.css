@@ -1682,79 +1682,6 @@ textarea.form-control {
     height: 36px;
 }
 
-/* ===== Payment type pills ===== */
-.field-label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-dark);
-}
-
-.pay-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.form-group .pay-option {
-    position: relative;
-    display: inline-flex;
-    margin: 0;
-    cursor: pointer;
-}
-
-.pay-option input {
-    position: absolute;
-    opacity: 0;
-    width: 1px;
-    height: 1px;
-    pointer-events: none;
-}
-
-.pay-option span {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 16px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--input-bg);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-dark);
-    transition: all 0.15s;
-}
-
-.pay-option span i {
-    color: var(--text-muted);
-    transition: color 0.15s;
-}
-
-.pay-option:hover span {
-    border-color: var(--primary);
-}
-
-.pay-option input:focus-visible + span {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
-}
-
-.pay-option input:checked + span {
-    border-color: var(--primary);
-    background: var(--primary);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
-}
-
-.pay-option input:checked + span i {
-    color: #fff;
-}
-
-.form-group.has-error .pay-option span {
-    border-color: var(--danger);
-}
-
 /* Label with an inline action on the right */
 .label-row {
     display: flex;
@@ -1842,19 +1769,6 @@ textarea.form-control {
 
     .step-text strong {
         font-size: 12px;
-    }
-}
-
-@media (max-width: 480px) {
-    .pay-options {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .form-group .pay-option,
-    .pay-option span {
-        width: 100%;
-        justify-content: center;
     }
 }
 
@@ -2093,3 +2007,39 @@ textarea.form-control {
 .quotation-banner i { color: var(--primary, #2563eb); }
 .quotation-banner span { flex: 1; min-width: 200px; }
 .quotation-banner-cancel { font-weight: 600; color: var(--primary, #2563eb); text-decoration: none; }
+
+/* ============================================================
+   CASH ONLY: note in the Payment card
+   ============================================================ */
+.cash-only-note {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--text-muted);
+}
+
+.cash-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--success, #10b981);
+    white-space: nowrap;
+}
+
+/* Save buttons while the sale is being saved */
+.summary-actions .btn:disabled {
+    opacity: 0.75;
+    cursor: wait;
+}

@@ -2807,6 +2807,26 @@ def add_order(request):
     )
 
 
+def _wants_json(request):
+    """The New Sale / New Purchase pages save in the background and ask for JSON."""
+
+    return request.headers.get("x-requested-with") == "XMLHttpRequest"
+
+
+def _purchase_error(request, message, status=400):
+    """
+    A purchase could not be saved. The page (background save) gets the
+    message as JSON and keeps everything the user typed; a plain form
+    post goes back to an empty New Purchase page with the message.
+    """
+
+    if _wants_json(request):
+        return JsonResponse({"success": False, "error": message}, status=status)
+
+    messages.error(request, message)
+    return redirect("add_new_order")
+
+
 def _handle_add_order(request):
     """
     Handles creation of Purchase and PurchaseItem records.
@@ -3066,36 +3086,13 @@ def _handle_add_order(request):
 
 
         # =====================================================
-        # 6. PAYMENT TYPE
+        # 6. PAYMENT (cash only)
+        #
+        # Suppliers are paid in cash. Any payment type sent by
+        # the form is ignored; 0 paid keeps the whole bill due.
         # =====================================================
 
-        payment_type = (
-            request.POST
-            .get(
-                "payment_type",
-                ""
-            )
-            .strip()
-        )
-
-
-        if (
-            paid_amount > Decimal("0")
-            and not payment_type
-        ):
-
-            raise ValueError(
-                gettext('Please select a payment type.')
-            )
-
-        if (
-            paid_amount > Decimal("0")
-            and payment_type == "Credit"
-        ):
-
-            raise ValueError(
-                gettext('A credit purchase cannot have a paid amount. Choose Cash, UPI, Bank Transfer or Cheque for the amount paid now.')
-            )
+        payment_type = PurchasePayment.PAYMENT_TYPE_CASH
 
 
         # =====================================================
@@ -3390,11 +3387,14 @@ def _handle_add_order(request):
 
         # "Save & Print" opens the printable bill.
         if request.POST.get("action") == "save_print":
-            return redirect(
-                reverse("purchase_invoice", args=[purchase.id]) + "?print=1"
-            )
+            next_url = reverse("purchase_invoice", args=[purchase.id]) + "?print=1"
+        else:
+            next_url = reverse("purchase_product_list")
 
-        return redirect("purchase_product_list")
+        if _wants_json(request):
+            return JsonResponse({"success": True, "redirect": next_url})
+
+        return redirect(next_url)
 
 
     # =========================================================
@@ -3418,15 +3418,7 @@ def _handle_add_order(request):
         )
 
 
-        messages.error(
-            request,
-            error_message
-        )
-
-
-        return redirect(
-            "add_new_order"
-        )
+        return _purchase_error(request, error_message)
 
 
     # =========================================================
@@ -3442,14 +3434,10 @@ def _handle_add_order(request):
         )
 
 
-        messages.error(
+        return _purchase_error(
             request,
-            gettext('A purchase with this bill number may already exist.')
-        )
-
-
-        return redirect(
-            "add_new_order"
+            gettext('A purchase with this bill number may already exist.'),
+            status=409,
         )
 
 
@@ -3466,14 +3454,10 @@ def _handle_add_order(request):
         )
 
 
-        messages.error(
+        return _purchase_error(
             request,
-            gettext('Something went wrong while saving the purchase. Please try again.')
-        )
-
-
-        return redirect(
-            "add_new_order"
+            gettext('Something went wrong while saving the purchase. Please try again.'),
+            status=500,
         )
 
 
@@ -4168,7 +4152,6 @@ def purchase_detail(request, purchase_id):
             "items": items,
             "payments": purchase.payments.select_related("created_by").order_by("payment_date", "id"),
             "purchase_returns": purchase.returns.order_by("return_date", "id"),
-            "payment_types": PurchasePayment.PAYMENT_TYPE_CHOICES,
             "today": today,
             "is_overdue": bool(
                 purchase.due_amount > 0
@@ -5481,6 +5464,20 @@ def calculate_sale_totals(items):
     }
 
 
+def _sale_error(request, message, status=400):
+    """
+    A sale could not be saved. The page (background save) gets the
+    message as JSON and keeps everything the user typed; a plain form
+    post goes back to an empty New Sale page with the message.
+    """
+
+    if _wants_json(request):
+        return JsonResponse({"success": False, "error": message}, status=status)
+
+    messages.error(request, message)
+    return redirect("sale_create")
+
+
 @login_required
 def sales_create(request):
     """
@@ -5498,7 +5495,7 @@ def sales_create(request):
         - Validate stock
         - Get price/MRP/GST from database
         - Calculate totals server-side
-        - Validate payment
+        - Validate the cash paid (0 .. grand total)
         - Validate credit limit
         - Create Sale
         - Create SaleItems
@@ -6121,12 +6118,15 @@ def sales_create(request):
             )
 
         # ======================================================
-        # 6. PAYMENT
+        # 6. PAYMENT (cash only)
         # ======================================================
+        #
+        # Sales are paid in cash. The paid amount can be anything
+        # from 0 (whole bill on udhari) up to the grand total; the
+        # rest stays due on the customer's account. Any payment type
+        # sent by the form is ignored.
 
-        payment_type = (
-            request.POST.get("payment_type") or ""
-        ).strip()
+        payment_type = Sale.PAYMENT_TYPE_CASH
 
         paid_amount = decimal_value(
             request.POST.get("paid_amount"),
@@ -6142,46 +6142,6 @@ def sales_create(request):
         due_amount = (
             grand_total - paid_amount
         ).quantize(TWO_PLACES)
-
-        # ======================================================
-        # PAYMENT TYPE VALIDATION
-        # ======================================================
-
-        valid_payment_types = {
-            Sale.PAYMENT_TYPE_CASH,
-            Sale.PAYMENT_TYPE_UPI,
-            Sale.PAYMENT_TYPE_BANK,
-            Sale.PAYMENT_TYPE_CHEQUE,
-            Sale.PAYMENT_TYPE_CREDIT,
-        }
-
-        if payment_type not in valid_payment_types:
-
-            raise ValidationError(
-                gettext('Please select a valid payment type.')
-            )
-
-        # ======================================================
-        # CREDIT SALE
-        # ======================================================
-
-        if payment_type == Sale.PAYMENT_TYPE_CREDIT:
-
-            if paid_amount != ZERO:
-
-                raise ValidationError(
-                    gettext('Credit sales cannot have a paid amount.')
-                )
-
-        # ======================================================
-        # NORMAL PAYMENT
-        # ======================================================
-
-        elif paid_amount == ZERO:
-
-            raise ValidationError(
-                gettext('Please enter the paid amount.')
-            )
 
         # ======================================================
         # REMARKS
@@ -6349,12 +6309,6 @@ def sales_create(request):
 
             if paid_amount > ZERO:
 
-                if payment_type == Sale.PAYMENT_TYPE_CREDIT:
-
-                    raise ValidationError(
-                        gettext('Credit payment cannot be recorded.')
-                    )
-
                 payment = Payment(
                     retailer=retailer,
                     customer=customer,
@@ -6362,11 +6316,6 @@ def sales_create(request):
                     payment_date=invoice_date,
                     amount=paid_amount,
                     payment_type=payment_type,
-                    payment_reference=(
-                        request.POST.get(
-                            "payment_reference"
-                        ) or None
-                    ),
                     receipt_number=(
                         request.POST.get(
                             "receipt_number"
@@ -6433,15 +6382,14 @@ def sales_create(request):
         )
 
         if action == "save_print":
+            next_url = reverse("sale_invoice", args=[sale.id])
+        else:
+            next_url = reverse("sales_list")
 
-            return redirect(
-                "sale_invoice",
-                sale_id=sale.id,
-            )
+        if _wants_json(request):
+            return JsonResponse({"success": True, "redirect": next_url})
 
-        return redirect(
-            "sales_list"
-        )
+        return redirect(next_url)
 
     # ==========================================================
     # VALIDATION ERROR
@@ -6462,14 +6410,7 @@ def sales_create(request):
             error_message,
         )
 
-        messages.error(
-            request,
-            error_message,
-        )
-
-        return redirect(
-            "sale_create"
-        )
+        return _sale_error(request, error_message)
 
     # ==========================================================
     # DATABASE ERROR
@@ -6485,13 +6426,10 @@ def sales_create(request):
             getattr(retailer, "id", None),
         )
 
-        messages.error(
+        return _sale_error(
             request,
             gettext('Unable to create the sale because of a database conflict. Please try again.'),
-        )
-
-        return redirect(
-            "sale_create"
+            status=409,
         )
 
     # ==========================================================
@@ -6507,13 +6445,10 @@ def sales_create(request):
             getattr(retailer, "id", None),
         )
 
-        messages.error(
+        return _sale_error(
             request,
             gettext('An unexpected error occurred while creating the sale. Please try again.'),
-        )
-
-        return redirect(
-            "sale_create"
+            status=500,
         )
 
 

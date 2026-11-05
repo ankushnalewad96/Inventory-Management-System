@@ -256,7 +256,6 @@
             <div>
                 <div class="party-label">{% translate "Payment" %}</div>
                 <div class="party-meta">
-                    {% translate "Type:" %} <strong>{{ sale.get_payment_type_display|tr|default:"—" }}</strong><br>
                     {% translate "Status:" %} <strong>{{ sale.payment_status|tr }}</strong>
                 </div>
                 {% if sale_features.prescription_details and sale.patient_name or sale_features.prescription_details and sale.doctor_name %}

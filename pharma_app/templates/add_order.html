@@ -342,20 +342,13 @@
                             <i class="fas fa-wallet"></i> {% translate "Payment Details" %}
                         </div>
 
-                        <div class="payment-type-group">
-                            <label for="paymentType">{% translate "Payment Type" %}</label>
-                            <select class="form-control" name="payment_type" id="paymentType">
-                                <option value="">{% translate "Select Payment Type" %}</option>
-                                <option value="Cash">{% translate "Cash" %}</option>
-                                <option value="Bank Transfer">{% translate "Bank Transfer" %}</option>
-                                <option value="UPI">UPI</option>
-                                <option value="Cheque">{% translate "Cheque" %}</option>
-                                <option value="Credit">{% translate "Credit" %}</option>
-                            </select>
+                        <div class="cash-only-note">
+                            <span class="cash-chip"><i class="fas fa-money-bill-wave"></i> {% translate "Cash" %}</span>
+                            <span>{% translate "Suppliers are paid in cash. Enter 0 to keep the whole bill as due." %}</span>
                         </div>
 
                         <div class="form-group">
-                            <label for="paidamount">{% translate "Paid Amount" %}</label>
+                            <label for="paidamount">{% translate "Cash paid" %}</label>
                             <input type="number" class="form-control" name="paid_amount" id="paidamount" placeholder="{% translate "Enter paid amount" %}" value="0" min="0" step="0.01" required>
                         </div>
 
@@ -3379,34 +3372,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
                 /* =================================================
-                   PAYMENT TYPE VALIDATION
-                   ================================================= */
-
-                const paymentType =
-                    document.getElementById(
-                        'paymentType'
-                    );
-
-
-                if (
-                    totals.paidAmount > 0 &&
-                    paymentType &&
-                    !paymentType.value
-                ) {
-
-                    event.preventDefault();
-
-                    alert(
-                        gettext('Please select Payment Type.')
-                    );
-
-                    paymentType.focus();
-
-                    return;
-                }
-
-
-                /* =================================================
                    FINAL STATUS
                    ================================================= */
 
@@ -3472,13 +3437,117 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
                 /*
-                 * Do NOT use event.preventDefault()
-                 * here because validation passed.
-                 *
-                 * Form will submit normally.
+                 * Save in the background. If the server finds a
+                 * problem (bill number already used, batch expiry, ...)
+                 * the message is shown and everything typed stays.
                  */
+                event.preventDefault();
+
+                submitPurchase(event.submitter);
             }
         );
+    }
+
+
+    /* =========================================================
+       BACKGROUND SAVE (keeps the form filled on errors)
+       ========================================================= */
+
+    const saveButtons = [
+        document.getElementById('submitBtn'),
+        document.getElementById('submitPrintBtn')
+    ].filter(Boolean);
+
+    let savingPurchase = false;
+
+
+    function setSavingPurchase(on, button) {
+
+        savingPurchase = on;
+
+        saveButtons.forEach(function (btn) {
+
+            btn.disabled = on;
+
+            if (on && btn === button) {
+                btn.dataset.label = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + gettext('Saving...');
+            } else if (!on && btn.dataset.label) {
+                btn.innerHTML = btn.dataset.label;
+                delete btn.dataset.label;
+            }
+        });
+    }
+
+
+    function showPageMessage(message, type) {
+
+        const main = document.getElementById('mainContent') || document.body;
+
+        let box = main.querySelector('.messages-container');
+
+        if (!box) {
+            box = document.createElement('div');
+            box.className = 'messages-container';
+            box.setAttribute('role', 'status');
+            box.setAttribute('aria-live', 'polite');
+            main.insertBefore(box, main.querySelector('.page-body'));
+        }
+
+        const alertBox = document.createElement('div');
+        alertBox.className = 'alert alert-' + type + (type === 'error' ? ' danger' : '');
+        alertBox.innerHTML =
+            '<div class="alert-icon"><i class="fas ' +
+            (type === 'error' ? 'fa-circle-xmark' : 'fa-circle-check') +
+            '"></i></div><div class="alert-text"></div>' +
+            '<button type="button" class="alert-close" aria-label="' + gettext('Close') + '">&times;</button>';
+        alertBox.querySelector('.alert-text').textContent = message;
+        alertBox.querySelector('.alert-close').addEventListener('click', function () {
+            alertBox.remove();
+        });
+        box.appendChild(alertBox);
+
+        setTimeout(function () { alertBox.remove(); }, 9000);
+    }
+
+
+    function submitPurchase(button) {
+
+        if (savingPurchase) return;
+
+        if (!saveButtons.includes(button)) button = saveButtons[0];
+
+        const data = new FormData(form);
+        data.set('action', (button && button.value) || 'save');
+
+        setSavingPurchase(true, button);
+
+        // getAttribute: the Save buttons are named "action", which
+        // hides form.action in JavaScript.
+        fetch(form.getAttribute('action'), {
+            method: 'POST',
+            body: data,
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(function (response) {
+                return response.json().catch(function () {
+                    return { success: false, error: gettext('Could not save the purchase. Please try again.') };
+                });
+            })
+            .then(function (result) {
+                if (result.success && result.redirect) {
+                    // Buttons stay disabled while the next page opens.
+                    window.location.href = result.redirect;
+                    return;
+                }
+                setSavingPurchase(false);
+                showPageMessage(result.error || gettext('Could not save the purchase. Please try again.'), 'error');
+            })
+            .catch(function () {
+                setSavingPurchase(false);
+                showPageMessage(gettext('No connection to the server. Your bill is still here; please try again.'), 'error');
+            });
     }
 
 
